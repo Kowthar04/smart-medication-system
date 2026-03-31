@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 import psycopg2
 
 app = Flask(__name__) 
@@ -84,6 +84,10 @@ def check_adherence(): # checks if the medication was taken on time compared to 
         "scheduled_time": scheduled_time,
         "status": "missed",
     }) # is returned if no event matches the scheduled time
+
+@app.route("/patient/dashboard", methods=["GET"])
+def patient_dashboard():
+    return render_template("patient_dashboard.html")
 
 if __name__ == "__main__":
     print("Starting Flask server...")
