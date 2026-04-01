@@ -10,7 +10,8 @@
     <div class="dashboard-container">
 
         <aside class="sidebar">
-            <h2 class="logo">MediTrack</h2>
+            <div class="sidebar-top">
+                <h2 class="logo">MediTrack</h2>
             <nav>
                 <ul>
                     <li><a href="#">Dashboard</a></li>
@@ -20,6 +21,15 @@
                     <li><a href="#">Doctors & Caregivers</a></li>
                 </ul>
             </nav>
+</div>
+<div class="sidebar-bottom">
+            <nav>
+                <ul>
+                    <li><a href="#">Settings</a></li>
+                    <li><a href="#">Logout</a></li>
+                </ul>
+            </nav>
+</div>
         </aside>
 
         <div class="content-wrapper">
@@ -31,9 +41,9 @@
                         <h1>Welcome Back, [Patient Name]!</h1>
                         <p>Your medication overview for today:</p>
                     </div>
-                    <div class="profile-box">Patient</div>
+                    <div class="profile-box profile-placeholder"></div>
                 </header>
-
+                <div class="middle-section">
                 <div class="middle-grid">
                     <div class="card status-card">
                         <h2>Medication Status</h2>
@@ -41,68 +51,31 @@
                         <p><strong>Scheduled:</strong> 12:00</p>
                         <p><strong>Status:</strong> <span class="status-label">Taken on Time</span></p>
                     </div>
-
                     <div class="card adherence-card">
                         <h2>Adherence Rate</h2>
                         <p class="big-number">100%</p>
                     </div>
-
-                    <div class="card taken-card">
-                        <h2>Medications Taken Today</h2>
-                        <p class="big-number">1</p>
-                    </div>
                 </div>
-
                 <div class="middle-grid">
                     <div class="card team-card">
-                        <h2>Doctors & Caregivers</h2>
+                        <h2>Care team</h2>
                         <ul>
                             <li>Dr. Smith (Primary Care Physician)</li>
                             <li>Nurse Jane (Caregiver)</li>
                             <li>Nurse Amina (Caregiver)</li>
                         </ul>
                     </div>
-
                     <div class="card schedule-card">
-                        <h2>Medication Schedule</h2>
+                        <h2>Wellbeing Check-In</h2>
                         <ul>
-                            <li>08:00 - Blood Pressure Med</li>
-                            <li>12:00 - Vitamin D</li>
-                            <li>18:00 - Iron Tablet</li>
-                        </ul>
-                    </div>
-
-                    <div class="card schedule-card">
-                        <h2>Quick Status</h2>
-                        <ul>
-                            <li>Next dose: 18:00</li>
-                            <li>Missed doses: 0</li>
-                            <li>Alerts today: 1</li>
+                            <li>Mood: Good</li>
+                            <li>Energy: Moderate</li>
+                            <li>Side effects: None reported</li>
                         </ul>
                     </div>
                 </div>
-
-                <div class="bottom-grid">
-                    <div class="card events-card">
-                        <h2>Recent Medication Events</h2>
-                        <ul>
-                            <li>12:00 - Vitamin D - Pillbox opened</li>
-                            <li>08:00 - Blood Pressure Med - Reminder sent</li>
-                            <li>12:00 - Blood Pressure Med - Missed</li>
-                        </ul>
-                    </div>
-
-                    <div class="card schedule-card">
-                        <h2>Today’s Notes</h2>
-                        <ul>
-                            <li>Morning medication completed</li>
-                            <li>Vitamin D taken on time</li>
-                            <li>Evening reminder pending</li>
-                        </ul>
-                    </div>
                 </div>
-
-            </section>
+                </section>
 
             <aside class="right-panel">
                 <div class="task-card">
@@ -114,9 +87,8 @@
                         <li>Schedule checked this morning</li>
                     </ul>
                 </div>
-
                 <div class="goal-card">
-                    <h2>Schedule Tracker</h2>
+                    <h2> Medication Schedule</h2>
                     <ul>
                         <li>08:00 dose completed</li>
                         <li>12:00 dose completed</li>
