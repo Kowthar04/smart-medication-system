@@ -87,7 +87,110 @@ def check_adherence(): # checks if the medication was taken on time compared to 
 
 @app.route("/patient/dashboard", methods=["GET"])
 def patient_dashboard():
-    return render_template("patient_dashboard.html")
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # latest medication event
+    cur.execute("""
+        SELECT event_type, event_time, container_id, weight_change
+        FROM medication_events
+        ORDER BY id DESC
+        LIMIT 1
+    """)
+    last_event = cur.fetchone()
+
+    # latest 4 events for Recent Activity
+    cur.execute("""
+        SELECT event_type, event_time
+        FROM medication_events
+        ORDER BY id DESC
+        LIMIT 4
+    """)
+    recent_rows = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    # latest medication status
+    if last_event:
+        event_time = last_event[1]
+        scheduled_time = medication_schedule["time"]
+
+        if event_time == scheduled_time:
+            status = "On time"
+        else:
+            status = "Late"
+
+        last_taken = {
+            "name": medication_schedule["name"],
+            "time": event_time,
+            "dose": "1 tablet",
+            "status": status
+        }
+    else:
+        last_taken = {
+            "name": "No medication recorded",
+            "time": "--:--",
+            "dose": "--",
+            "status": "No data"
+        }
+
+    # recent activity list
+    recent_activity = []
+    for row in recent_rows:
+        recent_activity.append({
+            "event": row[0],
+            "time": row[1]
+        })
+
+    # adherence based on latest event status
+    if last_event:
+        event_time = last_event[1]
+        scheduled_time = medication_schedule["time"]
+
+        if event_time == scheduled_time:
+            adherence_rate = 100
+            adherence_note = "Dose taken on time"
+        else:
+            adherence_rate = 0
+            adherence_note = "Dose taken late"
+    else:
+        adherence_rate = 0
+        adherence_note = "No dose recorded"
+
+    # next due logic
+    if last_event and last_event[1] == medication_schedule["time"]:
+        next_due = {
+            "name": "No more doses today",
+            "time": "--:--",
+            "dose": "--"
+        }
+    else:
+        next_due = {
+            "name": medication_schedule["name"],
+            "time": medication_schedule["time"],
+            "dose": "1 tablet"
+        }
+
+    # medication schedule for the schedule card
+    schedule = [
+        {
+            "name": medication_schedule["name"],
+            "time": medication_schedule["time"],
+            "dose": "1 tablet"
+        }
+    ]
+
+    dashboard_data = {
+        "last_taken": last_taken,
+        "next_due": next_due,
+        "adherence_rate": adherence_rate,
+        "adherence_note": adherence_note,
+        "recent_activity": recent_activity,
+        "schedule": schedule
+    }
+
+    return render_template("patient_dashboard.html", dashboard_data=dashboard_data)
 
 if __name__ == "__main__":
     print("Starting Flask server...")

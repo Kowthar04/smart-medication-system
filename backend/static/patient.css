@@ -296,10 +296,7 @@ body {
 
 /* Percentage text */
 .adherence-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    position: relative;
     font-size: 18px;
     font-weight: 700;
     color: #1f2937;
@@ -307,14 +304,20 @@ body {
 
 /* Note text */
 .adherence-note {
-    margin-top: 12px;
+    margin-top: 10px;
     font-size: 12px;
     color: #6b7280;
-    text-align: center;
 }
 
 .adherence-circle {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    position: relative;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 

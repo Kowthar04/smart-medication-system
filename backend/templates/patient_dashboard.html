@@ -50,17 +50,23 @@
 
             <div class="med-status-grid">
                 <div class="med-box last">
-                    <p class="med-label">Last Taken</p>
-                    <p class="med-name">Vitamin D</p>
-                    <p class="med-info">12:00 • 1 tablet</p>
-                    <span class="med-badge success">Correct dose</span>
+                <p class="med-label">Last Taken</p>
+                <p class="med-name">{{ dashboard_data.last_taken.name }}</p>
+                 <p class="med-info">{{ dashboard_data.last_taken.time }} • {{ dashboard_data.last_taken.dose }}</p>
+                <span class="med-badge">{{ dashboard_data.last_taken.status }}</span>
                 </div>
 
                 <div class="med-box next">
                     <p class="med-label">Next Due</p>
-                    <p class="med-name">Iron Tablet</p>
-                    <p class="med-info">18:00 • 1 tablet</p>
-                    <span class="med-badge upcoming">Upcoming</span>
+                    <p class="med-name">{{ dashboard_data.next_due.name }}</p>
+                    <p class="med-info">{{ dashboard_data.next_due.time }} • {{ dashboard_data.next_due.dose }}</p>
+                    <span class="med-badge upcoming">
+                    {% if dashboard_data.next_due.name == "No more doses today" %}
+                    Completed
+                    {% else %}
+                    Upcoming
+                     {% endif %}
+                    </span>
                 </div>
             </div>
         </div>
@@ -68,11 +74,16 @@
 <div class="card adherence-card">
     <h2>Adherence Rate</h2>
 
-    <div class="adherence-circle">
-        <span class="adherence-text">100%</span>
+    <div class="adherence-circle"
+         style="background: conic-gradient(#355ad8 {{ dashboard_data.adherence_rate }}%, #e5e7eb 0%);">
+        <span class="adherence-text">
+            {{ dashboard_data.adherence_rate }}%
+        </span>
     </div>
 
-    <p class="adherence-note">7 of 7 doses taken this week</p>
+    <p class="adherence-note">
+        {{ dashboard_data.adherence_note }}
+    </p>
 </div>
     </div>
 
@@ -185,22 +196,29 @@
            </section>
             <aside class="right-panel">
             <div class="task-card">
-            <h2>Recent Activity</h2>
-            <ul>
-             <li>Vitamin D recorded at 12:00</li>
-            <li>Reminder sent at 08:00</li>
-             <li>Caregiver viewed status</li>
-            <li>Schedule checked this morning</li>
-            </ul>
-            </div>
+    <h2>Recent Activity</h2>
+    <ul>
+        {% if dashboard_data.recent_activity %}
+            {% for activity in dashboard_data.recent_activity %}
+                <li>{{ activity.event }} at {{ activity.time }}</li>
+            {% endfor %}
+        {% else %}
+            <li>No recent activity recorded</li>
+        {% endif %}
+    </ul>
+</div>
             <div class="goal-card">
-            <h2> Medication Schedule</h2>
-            <ul>
-            <li>08:00 dose completed</li>
-            <li>12:00 dose completed</li>
-            <li>18:00 dose pending</li>
-            </ul>
-            </div>
+    <h2>Medication Schedule</h2>
+    <ul>
+        {% if dashboard_data.schedule %}
+            {% for item in dashboard_data.schedule %}
+                <li>{{ item.time }} • {{ item.name }} • {{ item.dose }}</li>
+            {% endfor %}
+        {% else %}
+            <li>No medication schedule available</li>
+        {% endif %}
+    </ul>
+</div>
             </aside>
         </div>
     </div>
