@@ -316,6 +316,52 @@ body {
     color: white;
 }
 
+.care-team-list {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+}
+
+.care-member {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 80px;
+}
+
+.care-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+}
+
+.care-avatar.more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #355ad8;
+    color: white;
+    font-weight: 600;
+}
+
+.care-name {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.care-role {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.care-member:hover .care-avatar {
+    background: #dbe7ff;
+}
+
 .status-label {
     font-weight: 700;
     color: #16a34a;
