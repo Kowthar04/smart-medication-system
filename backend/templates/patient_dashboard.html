@@ -43,116 +43,144 @@
                     </div>
                     <div class="profile-box profile-placeholder"></div>
                 </header>
-                <div class="middle-section">
-                <div class="middle-grid">
-                    <div class="card status-card">
-                        <h2>Medication Status</h2>
-                        <p><strong>Medication:</strong> Vitamin D</p>
-                        <p><strong>Scheduled:</strong> 12:00</p>
-                        <p><strong>Status:</strong> <span class="status-label">Taken on Time</span></p>
-                    </div>
-                    <div class="card adherence-card">
-                        <h2>Adherence Rate</h2>
-                        <p class="big-number">100%</p>
-                    </div>
+              <div class="middle-section">
+    <div class="middle-grid top-grid">
+        <div class="card status-card">
+            <h2>Medication Status</h2>
+
+            <div class="med-status-grid">
+                <div class="med-box last">
+                    <p class="med-label">Last Taken</p>
+                    <p class="med-name">Vitamin D</p>
+                    <p class="med-info">12:00 • 1 tablet</p>
+                    <span class="med-badge success">Correct dose</span>
                 </div>
 
-                <div class="middle-grid">
-    <div class="card team-card">
-        <h2>Care team</h2>
-
-        <div class="care-team-list">
-            <div class="care-member">
-                <div class="care-avatar"></div>
-                <p class="care-name">Dr. Smith</p>
-                <p class="care-role">Primary Care Doctor</p>
-            </div>
-
-            <div class="care-member">
-                <div class="care-avatar"></div>
-                <p class="care-name">Nurse Jane</p>
-                <p class="care-role">Caregiver</p>
-            </div>
-
-            <div class="care-member">
-                <div class="care-avatar"></div>
-                <p class="care-name">Nurse Amina</p>
-                <p class="care-role">Caregiver</p>
-            </div>
-
-            <div class="care-member see-all">
-                <div class="care-avatar more">+2</div>
-                <p class="care-name">See all</p>
+                <div class="med-box next">
+                    <p class="med-label">Next Due</p>
+                    <p class="med-name">Iron Tablet</p>
+                    <p class="med-info">18:00 • 1 tablet</p>
+                    <span class="med-badge upcoming">Upcoming</span>
+                </div>
             </div>
         </div>
+
+<div class="card adherence-card">
+    <h2>Adherence Rate</h2>
+
+    <div class="adherence-circle">
+        <span class="adherence-text">100%</span>
     </div>
 
-       <div class="card wellbeing-card">
-        <div class="checkin-step step-1 active-step">
-       <div class="checkin-progress">Step 1 of 3</div>
-     <h2>Wellbeing Check-In</h2>
-     <p class="checkin-question">How is your mood right now?</p>
-    <div class="checkin-options">
-     <button class="checkin-option">Very Good</button>
-  <button class="checkin-option">Good</button>
-      <button class="checkin-option">Neutral</button>
-   <button class="checkin-option">Low</button>
-     <button class="checkin-option">Very low</button>
-      </div>
-    <div class="checkin-actions">
-   <button class="checkin-next" id="to-step-2">Next</button>
-   </div>  
-  </div>
+    <p class="adherence-note">7 of 7 doses taken this week</p>
+</div>
+    </div>
 
-   <div class="checkin-step step-2">
-                    <div class="checkin-progress">Step 2 of 3</div>
-                    <h2>Wellbeing Check-In</h2>
-                    <p class="checkin-question">What is your energy level right now?</p>
-                    <div class="checkin-options">
+    <div class="middle-grid bottom-grid">
+        <div class="card team-card">
+            <h2>Care team</h2>
+
+            <div class="care-team-list">
+                <div class="care-member">
+                    <div class="care-avatar"></div>
+                    <p class="care-name">Dr. Smith</p>
+                    <p class="care-role">Primary Care Doctor</p>
+                </div>
+
+                <div class="care-member">
+                    <div class="care-avatar"></div>
+                    <p class="care-name">Nurse Jane</p>
+                    <p class="care-role">Caregiver</p>
+                </div>
+
+                <div class="care-member">
+                    <div class="care-avatar"></div>
+                    <p class="care-name">Nurse Amina</p>
+                    <p class="care-role">Caregiver</p>
+                </div>
+
+                <div class="care-member see-all">
+                    <div class="care-avatar more">+2</div>
+                    <p class="care-name">See all</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card wellbeing-card">
+            <div class="checkin-step step-1 active-step">
+                <div class="checkin-progress">Step 1 of 3</div>
+                <h2>Wellbeing Check-In</h2>
+                <p class="checkin-question">How is your mood right now?</p>
+
+                <div class="checkin-options">
+                    <button class="checkin-option">Very Good</button>
+                    <button class="checkin-option">Good</button>
+                    <button class="checkin-option">Neutral</button>
+                    <button class="checkin-option">Low</button>
+                    <button class="checkin-option">Very low</button>
+                </div>
+
+                <div class="checkin-actions">
+                    <button class="checkin-next" id="to-step-2">Next</button>
+                </div>
+            </div>
+
+            <div class="checkin-step step-2">
+                <div class="checkin-progress">Step 2 of 3</div>
+                <h2>Wellbeing Check-In</h2>
+                <p class="checkin-question">What is your energy level right now?</p>
+
+                <div class="checkin-options">
                     <button class="checkin-option">High</button>
                     <button class="checkin-option">Moderate</button>
                     <button class="checkin-option">Low</button>
                     <button class="checkin-option">Very low</button>
-                    </div>
-                   <div class="checkin-actions">
-                  <button class="checkin-back" id="back-to-step-1">Back</button>
-                  <button class="checkin-next" id="to-step-3">Next</button>
-                  </div>
-                 </div>
-
-                <div class="checkin-step step-3">
-                                <div class="checkin-progress">Step 3 of 3</div>
-                                <h2>Wellbeing Check-In</h2>
-                                <p class="checkin-question">Are you experiencing any side effects?</p>
-
-                                <div class="checkin-options">
-                                    <button class="checkin-option">None</button>
-                                    <button class="checkin-option">Nausea</button>
-                                    <button class="checkin-option">Dizziness</button>
-                                    <button class="checkin-option">Headache</button>
-                                    <button class="checkin-option">Fatigue</button>
-                                    <button class="checkin-option">Other</button>
-                                </div>
-                                <div class="checkin-actions">
-                                    <button class="checkin-back" id="back-to-step-2">Back</button>
-                                    <button class="checkin-next" id="save-checkin">Save</button>
-                                    </div>
-                            </div>
-                            <div class="checkin-step step-complete">
-                                <div class="checkin-progress">Completed</div>
-                                <h2>Wellbeing Check-In</h2>
-                                <p class="checkin-question">Your wellbeing check-in has been saved.</p>
-                                <div class="checkin-summary">
-                                    <p><strong>Mood:</strong> Selected</p>
-                                    <p><strong>Energy:</strong> Selected</p>
-                                    <p><strong>Side effects:</strong> Recorded</p>
-                                </div>
-                                <div class="checkin-actions">
-                                    <button class="checkin-back" id="edit-checkin">Edit</button>
-                                </div>
-                                </div>
-                             </div>
                 </div>
+
+                <div class="checkin-actions">
+                    <button class="checkin-back" id="back-to-step-1">Back</button>
+                    <button class="checkin-next" id="to-step-3">Next</button>
+                </div>
+            </div>
+
+            <div class="checkin-step step-3">
+                <div class="checkin-progress">Step 3 of 3</div>
+                <h2>Wellbeing Check-In</h2>
+                <p class="checkin-question">Are you experiencing any side effects?</p>
+
+                <div class="checkin-options">
+                    <button class="checkin-option">None</button>
+                    <button class="checkin-option">Nausea</button>
+                    <button class="checkin-option">Dizziness</button>
+                    <button class="checkin-option">Headache</button>
+                    <button class="checkin-option">Fatigue</button>
+                    <button class="checkin-option">Other</button>
+                </div>
+
+                <div class="checkin-actions">
+                    <button class="checkin-back" id="back-to-step-2">Back</button>
+                    <button class="checkin-next" id="save-checkin">Save</button>
+                </div>
+            </div>
+
+            <div class="checkin-step step-complete">
+                <div class="checkin-progress">Completed</div>
+                <h2>Wellbeing Check-In</h2>
+                <p class="checkin-question">Your wellbeing check-in has been saved.</p>
+
+                <div class="checkin-summary">
+                    <p><strong>Mood:</strong> Selected</p>
+                    <p><strong>Energy:</strong> Selected</p>
+                    <p><strong>Side effects:</strong> Recorded</p>
+                </div>
+
+                <div class="checkin-actions">
+                    <button class="checkin-back" id="edit-checkin">Edit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
                              
            </section>
             <aside class="right-panel">
@@ -176,6 +204,7 @@
             </aside>
         </div>
     </div>
+                             
         <script>
         const step1 = document.querySelector('.step-1');
         const step2 = document.querySelector('.step-2');

@@ -89,9 +89,10 @@ body {
 }
 
 .left-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    gap: 24px;
+    min-width: 0;
 }
 
 .top-bar {
@@ -132,16 +133,32 @@ body {
     height: 100%;
     object-fit: cover;
 }
+
 .middle-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: 28px;
+    gap: 24px;
+    min-width: 0;
 }
+
+.top-grid {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+
+.bottom-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.top-grid > .card,
+.bottom-grid > .card {
+    min-width: 0;
+}
+
 .middle-section {
     margin-top: 40px;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-rows: auto auto;
     gap: 24px;
+    min-width: 0;
 }
 
 .card {
@@ -181,14 +198,125 @@ body {
     flex-direction: column;
     justify-content: center;
 }
-
-.events-card,
-.team-card,
-.schedule-card,
-.adherence-card,
-.taken-card {
-    min-height: 0;
+.med-status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 10px;
 }
+.med-box {
+    background: #f8faff;
+    border-radius: 14px;
+    padding: 12px;
+}
+
+.med-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6b7280;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+}
+
+.med-info {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.med-name {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.med-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 10px;
+}
+
+.med-badge.success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.med-badge.upcoming {
+    background: #dbe7ff;
+    color: #1d4ed8;
+}
+
+.med-box.last {
+    border-left: 4px solid #16a34a;
+}
+
+.med-box.next {
+    border-left: 4px solid #355ad8;
+}
+
+
+.status-card {
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.adherence-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Circle container */
+.adherence-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    position: relative;
+    margin-top: 10px;
+
+    /* progress ring */
+    background: conic-gradient(
+        #355ad8 100%,   /* progress */
+        #e5e7eb 0%      /* remaining */
+    );
+}
+
+/* Inner white circle */
+.adherence-circle::before {
+    content: "";
+    position: absolute;
+    inset: 8px;
+    background: white;
+    border-radius: 50%;
+}
+
+/* Percentage text */
+.adherence-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 18px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+/* Note text */
+.adherence-note {
+    margin-top: 12px;
+    font-size: 12px;
+    color: #6b7280;
+    text-align: center;
+}
+
+.adherence-circle {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
 
 .right-panel {
     background: rgb(253, 251, 251);
@@ -231,7 +359,7 @@ body {
 }
 
 .wellbeing-card {
-    min-height: 260px;
+    min-height: 230px;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
@@ -316,10 +444,14 @@ body {
     color: white;
 }
 
+
 .care-team-list {
-    display: flex;
-    gap: 18px;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    align-items: start;
+    justify-items: center;
+    margin-top: 8px;
 }
 
 .care-member {
@@ -327,7 +459,10 @@ body {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    width: 80px;
+}
+
+.team-card {
+    min-height: 230px;
 }
 
 .care-avatar {
