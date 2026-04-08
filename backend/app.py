@@ -152,16 +152,6 @@ def patient_dashboard():
             "dose": row[2]
         })
 
-    # use first medication as the currently monitored test medication
-    if schedule:
-        current_medication = schedule[0]
-    else:
-        current_medication = {
-            "name": "No medication assigned",
-            "time": "--:--",
-            "dose": "--"
-        }
-
     # latest medication event
     cur.execute("""
         SELECT event_type, event_time, container_id, weight_change
@@ -183,22 +173,46 @@ def patient_dashboard():
     cur.close()
     conn.close()
 
-    # latest medication status
+    # find medication matching the latest event time
+    matched_medication = None
     if last_event:
         event_time = last_event[1]
-        scheduled_time = current_medication["time"]
+        for med in schedule:
+            if med["time"] == event_time:
+                matched_medication = med
+                break
 
-        if event_time == scheduled_time:
-            status = "On time"
-        else:
-            status = "Late"
-
+    # latest medication status
+    if last_event and matched_medication:
         last_taken = {
-            "name": current_medication["name"],
-            "time": event_time,
-            "dose": current_medication["dose"],
-            "status": status
+            "name": matched_medication["name"],
+            "time": last_event[1],
+            "dose": matched_medication["dose"],
+            "status": "On time"
         }
+    elif last_event:
+        # if no exact match, try to infer nearest earlier medication as late
+        event_time = last_event[1]
+        earlier_medication = None
+
+        for med in schedule:
+            if med["time"] < event_time:
+                earlier_medication = med
+
+        if earlier_medication:
+            last_taken = {
+                "name": earlier_medication["name"],
+                "time": event_time,
+                "dose": earlier_medication["dose"],
+                "status": "Late"
+            }
+        else:
+            last_taken = {
+                "name": "Unknown medication",
+                "time": event_time,
+                "dose": "--",
+                "status": "No match"
+            }
     else:
         last_taken = {
             "name": "No medication recorded",
@@ -213,24 +227,44 @@ def patient_dashboard():
         event_type = row[0]
         event_time = row[1]
 
-        if event_type == "taken" and event_time == current_medication["time"]:
-            message = f"{current_medication['name']} taken at scheduled time"
+        matched_activity_med = None
+        for med in schedule:
+            if med["time"] == event_time:
+                matched_activity_med = med
+                break
+
+        if event_type == "taken" and matched_activity_med:
+            message = f"{matched_activity_med['name']} taken at scheduled time"
             activity_type = "on-time"
 
-        elif event_type == "taken" and event_time < current_medication["time"]:
-            message = f"{current_medication['name']} taken too early"
-            activity_type = "early"
+        elif event_type == "taken" and not matched_activity_med:
+            earlier_medication = None
+            later_medication = None
 
-        elif event_type == "taken" and event_time > current_medication["time"]:
-            message = f"{current_medication['name']} taken late"
-            activity_type = "late"
+            for med in schedule:
+                if med["time"] > event_time and later_medication is None:
+                    later_medication = med
+
+            for med in schedule:
+                if med["time"] < event_time:
+                    earlier_medication = med
+
+            if earlier_medication:
+                message = f"{earlier_medication['name']} taken late"
+                activity_type = "late"
+            elif later_medication:
+                message = f"{later_medication['name']} taken too early"
+                activity_type = "early"
+            else:
+                message = f"Medication event recorded at {event_time}"
+                activity_type = "default"
 
         elif event_type == "suspicious":
-            message = f"Suspicious event - {current_medication['name']} dosage too high"
+            message = "Suspicious event - dosage too high"
             activity_type = "suspicious"
 
         elif event_type == "new_medication":
-            message = f"New medication assigned - {current_medication['name']}"
+            message = "New medication assigned"
             activity_type = "new"
 
         else:
@@ -243,33 +277,38 @@ def patient_dashboard():
             "type": activity_type
         })
 
-    # adherence based on latest event status
-    if last_event:
-        event_time = last_event[1]
-        scheduled_time = current_medication["time"]
-
-        if event_time == scheduled_time:
-            adherence_rate = 100
-            adherence_note = "Dose taken on time"
-        else:
-            adherence_rate = 0
-            adherence_note = "Dose taken late"
+    # adherence based on latest event
+    if last_event and matched_medication:
+        adherence_rate = 100
+        adherence_note = f"{matched_medication['name']} dose taken on time"
+    elif last_event:
+        adherence_rate = 0
+        adherence_note = "Latest dose was taken late"
     else:
         adherence_rate = 0
         adherence_note = "No dose recorded"
 
-    # next due logic
-    if last_event and last_event[1] == current_medication["time"]:
+        # next due logic
+    next_due = None
+
+    if last_event:
+        event_time = last_event[1]
+
+        # find next medication after current time
+        for med in schedule:
+            if med["time"] > event_time:
+                next_due = med
+                break
+
+    else:
+        next_due = schedule[0]
+
+    # fallback cases
+    if not next_due:
         next_due = {
             "name": "No more doses today",
             "time": "--:--",
             "dose": "--"
-        }
-    else:
-        next_due = {
-            "name": current_medication["name"],
-            "time": current_medication["time"],
-            "dose": current_medication["dose"]
         }
 
     dashboard_data = {

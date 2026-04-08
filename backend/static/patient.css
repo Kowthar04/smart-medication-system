@@ -1,10 +1,14 @@
+/* =========================
+   1. Reset + Base
+========================= */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
     height: 100%;
     overflow: hidden;
     font-family: Arial, sans-serif;
@@ -16,64 +20,16 @@ body {
     font-size: 14px;
 }
 
+
+/* =========================
+   2. Main Dashboard Layout
+========================= */
 .dashboard-container {
     display: flex;
     height: 100vh;
     width: 100%;
     padding: 16px;
     gap: 16px;
-}
-
-.sidebar {
-    width: 190px;
-    background: #ffffff;
-    border-radius: 22px;
-    padding: 34px 22px;
-    display: flex;
-    flex-direction: column;
-}
-
-.sidebar-top {
-    margin-top: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.sidebar-top nav {
-    margin-top: 0;
-}
-
-.sidebar-bottom a {
-    color: #6b7280;
-    font-size: 15px;
-}
-
-.sidebar-bottom {
-    margin-top: auto;
-    padding-top: 20px;
-}
-
-.logo {
-    font-size: 24px;
-    font-weight: 700;
-    margin-bottom: 0;
-    color: #141d3a;
-}
-
-.sidebar ul {
-    list-style: none;
-}
-
-.sidebar li {
-    margin-bottom: 22px;
-}
-
-.sidebar a {
-    text-decoration: none;
-    color: #374151;
-    font-size: 16px;
-    font-weight: 500;
 }
 
 .content-wrapper {
@@ -83,11 +39,106 @@ body {
     gap: 16px;
     height: calc(100vh - 32px);
     max-width: 1200px;
-    margin: 0 auto;
     width: 100%;
+    margin: 0 auto;
     margin-top: 10px;
 }
 
+
+/* =========================
+   3. Sidebar
+========================= */
+.sidebar {
+    width: 210px;
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 28px 18px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.04);
+}
+
+.sidebar-top {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.sidebar-bottom {
+    margin-top: auto;
+    padding-top: 24px;
+}
+
+.logo {
+    font-size: 26px;
+    font-weight: 700;
+    color: #141d3a;
+    padding-left: 8px;
+}
+
+.sidebar ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sidebar li {
+    margin-bottom: 0;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: #4b5563;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 12px 14px;
+    border-radius: 14px;
+    transition: all 0.2s ease;
+}
+
+.sidebar-link:hover {
+    background: #eef4ff;
+    color: #355ad8;
+}
+
+.sidebar-link.active {
+    background: #eaf1ff;
+    color: #355ad8;
+}
+
+.sidebar-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: #f4f7fb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.sidebar-link:hover .sidebar-icon,
+.sidebar-link.active .sidebar-icon {
+    background: #dbe7ff;
+}
+
+.logout-link {
+    color: #6b7280;
+}
+
+.logout-link:hover {
+    background: #f9fafb;
+    color: #111827;
+}
+
+/* =========================
+   4. Left Panel Structure
+========================= */
 .left-panel {
     display: grid;
     grid-template-rows: auto auto 1fr;
@@ -95,6 +146,37 @@ body {
     min-width: 0;
 }
 
+.middle-section {
+    margin-top: 40px;
+    display: grid;
+    grid-template-rows: auto auto;
+    gap: 24px;
+    min-width: 0;
+}
+
+.middle-grid {
+    display: grid;
+    gap: 24px;
+    min-width: 0;
+}
+
+.top-grid {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+}
+
+.bottom-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.top-grid > .card,
+.bottom-grid > .card {
+    min-width: 0;
+}
+
+
+/* =========================
+   5. Top Bar
+========================= */
 .top-bar {
     background: #f4f8ff;
     border-radius: 22px;
@@ -125,7 +207,7 @@ body {
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
 .profile-box img {
@@ -134,39 +216,16 @@ body {
     object-fit: cover;
 }
 
-.middle-grid {
-    display: grid;
-    gap: 24px;
-    min-width: 0;
-}
 
-.top-grid {
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-}
-
-.bottom-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-}
-
-.top-grid > .card,
-.bottom-grid > .card {
-    min-width: 0;
-}
-
-.middle-section {
-    margin-top: 40px;
-    display: grid;
-    grid-template-rows: auto auto;
-    gap: 24px;
-    min-width: 0;
-}
-
+/* =========================
+   6. Shared Card Styles
+========================= */
 .card {
     background: white;
     border-radius: 20px;
     min-height: 100px;
     padding: 18px;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.05);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
     overflow: hidden;
 }
 
@@ -186,28 +245,41 @@ body {
     padding-left: 0;
 }
 
-.big-number {
-    font-size: 34px;
-    font-weight: 700;
-    color: #355ad8;
-    margin-top: 8px;
+.empty-state {
+    font-size: 13px;
+    color: #6b7280;
 }
 
+
+/* =========================
+   7. Medication Status Card
+========================= */
 .status-card {
+    min-height: 180px;
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
+
 .med-status-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
     margin-top: 10px;
 }
+
 .med-box {
     background: #f8faff;
     border-radius: 14px;
     padding: 12px;
+}
+
+.med-box.last {
+    border-left: 4px solid #16a34a;
+}
+
+.med-box.next {
+    border-left: 4px solid #355ad8;
 }
 
 .med-label {
@@ -218,16 +290,16 @@ body {
     text-transform: uppercase;
 }
 
-.med-info {
-    font-size: 12px;
-    color: #6b7280;
-    margin-bottom: 8px;
-}
-
 .med-name {
     font-size: 14px;
     font-weight: 700;
     margin-bottom: 4px;
+}
+
+.med-info {
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 8px;
 }
 
 .med-badge {
@@ -247,22 +319,15 @@ body {
     color: #1d4ed8;
 }
 
-.med-box.last {
-    border-left: 4px solid #16a34a;
-}
-
-.med-box.next {
-    border-left: 4px solid #355ad8;
+.status-label {
+    font-weight: 700;
+    color: #16a34a;
 }
 
 
-.status-card {
-    min-height: 180px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
+/* =========================
+   8. Adherence Card
+========================= */
 .adherence-card {
     display: flex;
     flex-direction: column;
@@ -270,22 +335,17 @@ body {
     justify-content: center;
 }
 
-/* Circle container */
 .adherence-circle {
     width: 100px;
     height: 100px;
     border-radius: 50%;
     position: relative;
     margin-top: 10px;
-
-    /* progress ring */
-    background: conic-gradient(
-        #355ad8 100%,   /* progress */
-        #e5e7eb 0%      /* remaining */
-    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Inner white circle */
 .adherence-circle::before {
     content: "";
     position: absolute;
@@ -294,7 +354,6 @@ body {
     border-radius: 50%;
 }
 
-/* Percentage text */
 .adherence-text {
     position: relative;
     font-size: 18px;
@@ -302,151 +361,27 @@ body {
     color: #1f2937;
 }
 
-/* Note text */
 .adherence-note {
     margin-top: 10px;
     font-size: 12px;
     color: #6b7280;
+    text-align: center;
 }
 
-.adherence-circle {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    position: relative;
-    margin-top: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+.big-number {
+    font-size: 34px;
+    font-weight: 700;
+    color: #355ad8;
+    margin-top: 8px;
 }
 
 
-.right-panel {
-    background: rgb(253, 251, 251);
-    border-radius: 22px;
-    padding: 18px;
-    display: grid;
-    grid-template-rows: 1fr 1fr;
-    gap: 16px;
-    min-height: 0;
-}
-
-.task-card,
-.goal-card {
-    background: #fafcff;
-    border-radius: 18px;
-    padding: 16px;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-}
-
-.task-card h2,
-.goal-card h2 {
-    font-size: 17px;
-    margin-bottom: 10px;
-}
-
-.task-card ul,
-.goal-card ul {
-    list-style: none;
-    padding: 0;
-}
-
-.task-card li,
-.goal-card li {
-    margin-bottom: 10px;
-    font-size: 13px;
-    line-height: 1.4;
-}
-
-.wellbeing-card {
+/* =========================
+   9. Care Team Card
+========================= */
+.team-card {
     min-height: 230px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
 }
-
-.checkin-progress {
-    font-size: 12px;
-    font-weight: 600;
-    color: #6b7280;
-    margin-bottom: 8px;
-}
-
-.checkin-question {
-    font-size: 14px;
-    font-weight: 500;
-    margin-bottom: 14px;
-    color: #1f2937;
-}
-
-.checkin-options {
-    display:flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 18px;
-}
-
-.checkin-option {
-    border: none;
-    background: #eef4ff;
-    color: #374151;
-    padding: 10px 14px;
-    border-radius: 14px;
-    font-size: 13px;
-    cursor: pointer;
-}
-
-.checkin-option:hover {
-    background: #dbe7ff;
-}
-
-.checkin-actions {
-    margin-top: auto;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-}
-
-.checkin-next {
-    border: none;
-    background: #355ad8;
-    color: white;
-    padding: 10px 18px;
-    border-radius: 12px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.checkin-next:hover {
-    background: #2747b8;
-}
-
-.checkin-step {
-    display: none;
-}
-.active-step {
-    display: block;
-}
-
-.checkin-back {
-    border: none;
-    background: transparent;
-    color: #6b7280;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-right: 10px;
-}
-
-.checkin-option.selected {
-    background: #355ad8;
-    color: white;
-}
-
 
 .care-team-list {
     display: grid;
@@ -462,10 +397,6 @@ body {
     flex-direction: column;
     align-items: center;
     text-align: center;
-}
-
-.team-card {
-    min-height: 230px;
 }
 
 .care-avatar {
@@ -500,7 +431,252 @@ body {
     background: #dbe7ff;
 }
 
-.status-label {
+
+/* =========================
+   10. Wellbeing Check-In Card
+========================= */
+.wellbeing-card {
+    min-height: 230px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.checkin-progress {
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+.checkin-question {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 14px;
+    color: #1f2937;
+}
+
+.checkin-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.checkin-option {
+    border: none;
+    background: #eef4ff;
+    color: #374151;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.checkin-option:hover {
+    background: #dbe7ff;
+}
+
+.checkin-option.selected {
+    background: #355ad8;
+    color: white;
+}
+
+.checkin-actions {
+    margin-top: auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.checkin-next {
+    border: none;
+    background: #355ad8;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.checkin-next:hover {
+    background: #2747b8;
+}
+
+.checkin-back {
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.checkin-step {
+    display: none;
+}
+
+.active-step {
+    display: block;
+}
+
+
+/* =========================
+   11. Right Panel
+========================= */
+.right-panel {
+    background: #f4f8ff;
+    border-radius: 22px;
+    padding: 18px;
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: 16px;
+    min-height: 0;
+}
+
+.task-card,
+.goal-card {
+    background: #ffffff;
+    border: 1px solid #e6edff;
+    border-radius: 18px;
+    padding: 18px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
+}
+
+.task-card h2,
+.goal-card h2 {
+    font-size: 17px;
+    margin-bottom: 10px;
+}
+
+
+/* =========================
+   12. Recent Activity Styling
+========================= */
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.activity-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.activity-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-top: 6px;
+    flex-shrink: 0;
+    background: currentColor;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-message {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.activity-time {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.activity-row.on-time {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.activity-row.late,
+.activity-row.early {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.activity-row.suspicious {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.activity-row.new {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.activity-row.default {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+
+/* =========================
+   13. Medication Schedule Styling
+========================= */
+.schedule-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.schedule-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f8faff;
+    border-radius: 14px;
+    padding: 12px 14px;
+    border: 1px solid #e5edff;
+}
+
+.schedule-time {
+    min-width: 58px;
+    font-size: 12px;
     font-weight: 700;
-    color: #16a34a;
+    color: #355ad8;
+    background: #eaf1ff;
+    padding: 6px 8px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.schedule-details {
+    flex: 1;
+}
+
+.schedule-name {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.schedule-dose {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.schedule-tag {
+    font-size: 11px;
+    font-weight: 600;
+    color: #355ad8;
+    background: #dbeafe;
+    padding: 5px 8px;
+    border-radius: 10px;
 }

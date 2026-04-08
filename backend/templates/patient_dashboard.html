@@ -4,33 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='patient.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='patient.css') }}?v=5">
 </head>
 <body>
     <div class="dashboard-container">
 
         <aside class="sidebar">
-            <div class="sidebar-top">
-                <h2 class="logo">MediTrack</h2>
-            <nav>
-                <ul>
-                    <li><a href="#">Dashboard</a></li>
-                    <li><a href="#">Medication Schedule</a></li>
-                    <li><a href="#">Events</a></li>
-                    <li><a href="#">Alerts</a></li>
-                    <li><a href="#">Doctors & Caregivers</a></li>
-                </ul>
-            </nav>
-</div>
-<div class="sidebar-bottom">
-            <nav>
-                <ul>
-                    <li><a href="#">Settings</a></li>
-                    <li><a href="#">Logout</a></li>
-                </ul>
-            </nav>
-</div>
-        </aside>
+    <div class="sidebar-top">
+        <h2 class="logo">MediTrack</h2>
+
+        <nav>
+            <ul>
+                <li>
+                    <a href="#" class="sidebar-link active">
+                        <span class="sidebar-icon">⌂</span>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon">🕒</span>
+                        <span>Schedule</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon">◔</span>
+                        <span>Adherence</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon">👥</span>
+                        <span>Care Team</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="sidebar-bottom">
+        <nav>
+            <ul>
+                <li>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon">⚙</span>
+                        <span>Settings</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="sidebar-link logout-link">
+                        <span class="sidebar-icon">⇦</span>
+                        <span>Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</aside>
 
         <div class="content-wrapper">
 
@@ -197,27 +228,41 @@
             <aside class="right-panel">
             <div class="task-card">
     <h2>Recent Activity</h2>
-    <ul>
+    <div class="activity-list">
         {% if dashboard_data.recent_activity %}
             {% for activity in dashboard_data.recent_activity %}
-                <li>{{ activity.event }} at {{ activity.time }}</li>
+                <div class="activity-row {{ activity.type }}">
+                    <div class="activity-dot"></div>
+                    <div class="activity-content">
+                        <p class="activity-message">{{ activity.message }}</p>
+                        <p class="activity-time">{{ activity.time }}</p>
+                    </div>
+                </div>
             {% endfor %}
         {% else %}
-            <li>No recent activity recorded</li>
+            <p class="empty-state">No recent activity recorded</p>
         {% endif %}
-    </ul>
+    </div>
 </div>
+
             <div class="goal-card">
     <h2>Medication Schedule</h2>
-    <ul>
+    <div class="schedule-list">
         {% if dashboard_data.schedule %}
             {% for item in dashboard_data.schedule %}
-                <li>{{ item.time }} • {{ item.name }} • {{ item.dose }}</li>
+                <div class="schedule-row">
+                    <div class="schedule-time">{{ item.time }}</div>
+                    <div class="schedule-details">
+                        <p class="schedule-name">{{ item.name }}</p>
+                        <p class="schedule-dose">{{ item.dose }}</p>
+                    </div>
+                    <div class="schedule-tag">Due</div>
+                </div>
             {% endfor %}
         {% else %}
-            <li>No medication schedule available</li>
+            <p class="empty-state">No medication schedule available</p>
         {% endif %}
-    </ul>
+    </div>
 </div>
             </aside>
         </div>
