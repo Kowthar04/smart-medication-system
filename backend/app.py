@@ -3,10 +3,7 @@ import psycopg2
 
 app = Flask(__name__) 
 
-medication_schedule = { # hardcoded testing data
-    "name": "Vitamin D",
-    "time": "12:00",
-}
+
 def get_db_connection():
     conn = psycopg2.connect(
         dbname="smart_medication_db",
@@ -42,6 +39,8 @@ def receive_event():
     cur.close()
     conn.close()
     return jsonify({"status": "event received"}) # receives the medication event data and stores it in the database, then returns a confirmation message
+
+
 @app.route("/events", methods=["GET"])
 def get_events():
     conn = get_db_connection()
@@ -61,34 +60,107 @@ def get_events():
             "weight_change": row[4],
         })
     return jsonify(events) # returns the full list of events
+
 @app.route("/schedule", methods=["GET"])
 def get_schedule():
-    return jsonify(medication_schedule) # shows the scheduled data for meds
-@app.route("/adherence", methods=["GET"])
-def check_adherence(): # checks if the medication was taken on time compared to scheduled time
-    scheduled_time = medication_schedule["time"]
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT event_time FROM medication_events WHERE event_time = %s", (scheduled_time,))
-    row = cur.fetchone()
+
+    cur.execute("""
+        SELECT medication_name, scheduled_time, dose
+        FROM medication_schedules
+        ORDER BY scheduled_time ASC
+    """)
+    rows = cur.fetchall()
+
     cur.close()
     conn.close()
+
+    schedule = []
+    for row in rows:
+        schedule.append({
+            "name": row[0],
+            "time": row[1],
+            "dose": row[2]
+        })
+
+    return jsonify(schedule)
+
+@app.route("/adherence", methods=["GET"])
+def check_adherence():
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT medication_name, scheduled_time, dose
+        FROM medication_schedules
+        ORDER BY scheduled_time ASC
+        LIMIT 1
+    """)
+    medication_row = cur.fetchone()
+
+    if not medication_row:
+        cur.close()
+        conn.close()
+        return jsonify({"error": "No medication schedule found"}), 404
+
+    medication_name = medication_row[0]
+    scheduled_time = medication_row[1]
+
+    cur.execute("""
+        SELECT event_time
+        FROM medication_events
+        WHERE event_time = %s
+        LIMIT 1
+    """, (scheduled_time,))
+    row = cur.fetchone()
+
+    cur.close()
+    conn.close()
+
     if row:
         return jsonify({
-            "medication": medication_schedule["name"],
+            "medication": medication_name,
             "scheduled_time": scheduled_time,
             "status": "taken on time",
-        }) # is returned if event matches the scheduled time and function ends
+        })
+
     return jsonify({
-        "medication": medication_schedule["name"],
+        "medication": medication_name,
         "scheduled_time": scheduled_time,
         "status": "missed",
-    }) # is returned if no event matches the scheduled time
+    })
 
 @app.route("/patient/dashboard", methods=["GET"])
 def patient_dashboard():
     conn = get_db_connection()
     cur = conn.cursor()
+
+    # get full medication schedule from database
+    cur.execute("""
+        SELECT medication_name, scheduled_time, dose
+        FROM medication_schedules
+        ORDER BY scheduled_time ASC
+    """)
+    schedule_rows = cur.fetchall()
+
+    schedule = []
+    for row in schedule_rows:
+        schedule.append({
+            "name": row[0],
+            "time": row[1],
+            "dose": row[2]
+        })
+
+    # use first medication as the currently monitored test medication
+    if schedule:
+        current_medication = schedule[0]
+    else:
+        current_medication = {
+            "name": "No medication assigned",
+            "time": "--:--",
+            "dose": "--"
+        }
 
     # latest medication event
     cur.execute("""
@@ -114,7 +186,7 @@ def patient_dashboard():
     # latest medication status
     if last_event:
         event_time = last_event[1]
-        scheduled_time = medication_schedule["time"]
+        scheduled_time = current_medication["time"]
 
         if event_time == scheduled_time:
             status = "On time"
@@ -122,9 +194,9 @@ def patient_dashboard():
             status = "Late"
 
         last_taken = {
-            "name": medication_schedule["name"],
+            "name": current_medication["name"],
             "time": event_time,
-            "dose": "1 tablet",
+            "dose": current_medication["dose"],
             "status": status
         }
     else:
@@ -138,15 +210,43 @@ def patient_dashboard():
     # recent activity list
     recent_activity = []
     for row in recent_rows:
+        event_type = row[0]
+        event_time = row[1]
+
+        if event_type == "taken" and event_time == current_medication["time"]:
+            message = f"{current_medication['name']} taken at scheduled time"
+            activity_type = "on-time"
+
+        elif event_type == "taken" and event_time < current_medication["time"]:
+            message = f"{current_medication['name']} taken too early"
+            activity_type = "early"
+
+        elif event_type == "taken" and event_time > current_medication["time"]:
+            message = f"{current_medication['name']} taken late"
+            activity_type = "late"
+
+        elif event_type == "suspicious":
+            message = f"Suspicious event - {current_medication['name']} dosage too high"
+            activity_type = "suspicious"
+
+        elif event_type == "new_medication":
+            message = f"New medication assigned - {current_medication['name']}"
+            activity_type = "new"
+
+        else:
+            message = f"{event_type} recorded at {event_time}"
+            activity_type = "default"
+
         recent_activity.append({
-            "event": row[0],
-            "time": row[1]
+            "message": message,
+            "time": event_time,
+            "type": activity_type
         })
 
     # adherence based on latest event status
     if last_event:
         event_time = last_event[1]
-        scheduled_time = medication_schedule["time"]
+        scheduled_time = current_medication["time"]
 
         if event_time == scheduled_time:
             adherence_rate = 100
@@ -159,7 +259,7 @@ def patient_dashboard():
         adherence_note = "No dose recorded"
 
     # next due logic
-    if last_event and last_event[1] == medication_schedule["time"]:
+    if last_event and last_event[1] == current_medication["time"]:
         next_due = {
             "name": "No more doses today",
             "time": "--:--",
@@ -167,19 +267,10 @@ def patient_dashboard():
         }
     else:
         next_due = {
-            "name": medication_schedule["name"],
-            "time": medication_schedule["time"],
-            "dose": "1 tablet"
+            "name": current_medication["name"],
+            "time": current_medication["time"],
+            "dose": current_medication["dose"]
         }
-
-    # medication schedule for the schedule card
-    schedule = [
-        {
-            "name": medication_schedule["name"],
-            "time": medication_schedule["time"],
-            "dose": "1 tablet"
-        }
-    ]
 
     dashboard_data = {
         "last_taken": last_taken,
