@@ -192,6 +192,35 @@ def patient_dashboard():
 
     return render_template("patient_dashboard.html", dashboard_data=dashboard_data)
 
+@app.route("/wellbeing", methods=["POST"])
+def save_wellbeing():
+    try:
+        data = request.get_json()
+        print("WELLBEING DATA RECEIVED:", data)
+
+        mood = data.get("mood")
+        energy = data.get("energy")
+        side_effects = data.get("side_effects")
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        cur.execute("""
+            INSERT INTO wellbeing_checkins (mood, energy, side_effects)
+            VALUES (%s, %s, %s)
+        """, (mood, energy, side_effects))
+
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        print("WELLBEING SAVED SUCCESSFULLY")
+        return jsonify({"status": "saved"})
+    
+    except Exception as e:
+        print("WELLBEING ERROR:", e)
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     print("Starting Flask server...")
     app.run(debug=True)
