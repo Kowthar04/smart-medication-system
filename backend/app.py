@@ -191,7 +191,6 @@ def patient_dashboard():
             "status": "On time"
         }
     elif last_event:
-        # if no exact match, try to infer nearest earlier medication as late
         event_time = last_event[1]
         earlier_medication = None
 
@@ -288,22 +287,20 @@ def patient_dashboard():
         adherence_rate = 0
         adherence_note = "No dose recorded"
 
-        # next due logic
+    # next due logic
     next_due = None
 
-    if last_event:
-        event_time = last_event[1]
+    if schedule:
+        if last_event:
+            event_time = last_event[1]
 
-        # find next medication after current time
-        for med in schedule:
-            if med["time"] > event_time:
-                next_due = med
-                break
+            for med in schedule:
+                if med["time"] > event_time:
+                    next_due = med
+                    break
+        else:
+            next_due = schedule[0]
 
-    else:
-        next_due = schedule[0]
-
-    # fallback cases
     if not next_due:
         next_due = {
             "name": "No more doses today",

@@ -5,63 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='patient.css') }}?v=5">
+
 </head>
 <body>
     <div class="dashboard-container">
-
         <aside class="sidebar">
     <div class="sidebar-top">
         <h2 class="logo">MediTrack</h2>
-
         <nav>
-            <ul>
+                <ul>
                 <li>
-                    <a href="#" class="sidebar-link active">
-                        <span class="sidebar-icon">⌂</span>
-                        <span>Dashboard</span>
+                 <a href="#" class="sidebar-link active">
+                 <span class="sidebar-icon">⌂</span>
+                 <span>Dashboard</span>
+                 </a>
+                </li>
+                <li>
+                <a href="#" class="sidebar-link">
+              <span class="sidebar-icon">🕒</span>
+                <span>Schedule</span>
+                </a>
+                </li>
+                <li>
+                <a href="#" class="sidebar-link">
+                <span class="sidebar-icon">◔</span>
+                <span>Adherence</span>
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="sidebar-link">
-                        <span class="sidebar-icon">🕒</span>
-                        <span>Schedule</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="sidebar-link">
-                        <span class="sidebar-icon">◔</span>
-                        <span>Adherence</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="sidebar-link">
-                        <span class="sidebar-icon">👥</span>
+                <a href="#" class="sidebar-link">
+                 <span class="sidebar-icon">👥</span>
                         <span>Care Team</span>
                     </a>
-                </li>
-            </ul>
-        </nav>
-    </div>
+                     </li>
+                     </ul>
+                     </nav>
+                     </div>
 
-    <div class="sidebar-bottom">
-        <nav>
-            <ul>
+                <div class="sidebar-bottom">
+                  <nav>
+                 <ul>
                 <li>
-                    <a href="#" class="sidebar-link">
-                        <span class="sidebar-icon">⚙</span>
-                        <span>Settings</span>
-                    </a>
+                 <a href="#" class="sidebar-link">
+                <span class="sidebar-icon">⚙</span>
+                 <span>Settings</span>
+                </a>
                 </li>
                 <li>
-                    <a href="#" class="sidebar-link logout-link">
-                        <span class="sidebar-icon">⇦</span>
-                        <span>Logout</span>
-                    </a>
+                <a href="#" class="sidebar-link logout-link">
+                 <span class="sidebar-icon">⇦</span>
+                <span>Logout</span>
+                </a>
                 </li>
-            </ul>
-        </nav>
-    </div>
-</aside>
+                 </ul>
+               </nav>
+              </div>
+    </aside>
 
         <div class="content-wrapper">
 
@@ -71,6 +70,7 @@
                     <div>
                         <h1>Welcome Back, [Patient Name]!</h1>
                         <p>Your medication overview for today:</p>
+                        <p class="current-time" id="current-time"></p>
                     </div>
                     <div class="profile-box profile-placeholder"></div>
                 </header>
@@ -87,18 +87,18 @@
                 <span class="med-badge">{{ dashboard_data.last_taken.status }}</span>
                 </div>
 
-                <div class="med-box next">
-                    <p class="med-label">Next Due</p>
-                    <p class="med-name">{{ dashboard_data.next_due.name }}</p>
-                    <p class="med-info">{{ dashboard_data.next_due.time }} • {{ dashboard_data.next_due.dose }}</p>
-                    <span class="med-badge upcoming">
-                    {% if dashboard_data.next_due.name == "No more doses today" %}
-                    Completed
-                    {% else %}
-                    Upcoming
-                     {% endif %}
-                    </span>
-                </div>
+<div class="med-box next">
+    <p class="med-label">Next Due</p>
+    <p class="med-name">{{ dashboard_data.next_due.name }}</p>
+    <p class="med-info">{{ dashboard_data.next_due.time }} • {{ dashboard_data.next_due.dose }}</p>
+    <span class="med-badge upcoming">
+        {% if dashboard_data.next_due.name == "No more doses today" %}
+            Completed
+        {% else %}
+            Upcoming
+        {% endif %}
+    </span>
+</div>
             </div>
         </div>
 
@@ -268,7 +268,7 @@
         </div>
     </div>
                              
-        <script>
+      <script>
     const step1 = document.querySelector('.step-1');
     const step2 = document.querySelector('.step-2');
     const step3 = document.querySelector('.step-3');
@@ -280,18 +280,20 @@
     const backToStep2 = document.getElementById('back-to-step-2');
     const saveCheckin = document.getElementById('save-checkin');
     const editCheckin = document.getElementById('edit-checkin');
+
     const summaryMood = document.getElementById('summary-mood');
     const summaryEnergy = document.getElementById('summary-energy');
     const summarySideEffects = document.getElementById('summary-side-effects');
 
-    // 🔹 store selected data
+    const currentTimeEl = document.getElementById('current-time');
+    
     let checkinData = {
         mood: null,
         energy: null,
         side_effects: null
     };
 
-    // 🔹 navigation
+
     toStep2.addEventListener('click', () => {
         step1.classList.remove('active-step');
         step2.classList.add('active-step');
@@ -312,10 +314,7 @@
         step2.classList.add('active-step');
     });
 
-    // 🔹 save check-in (NOW CONNECTED TO BACKEND)
     saveCheckin.addEventListener('click', () => {
-
-        // send data to Flask
         fetch('/wellbeing', {
             method: 'POST',
             headers: {
@@ -327,11 +326,10 @@
         .then(data => {
             console.log("Saved:", data);
 
-        summaryMood.textContent = checkinData.mood;
-        summaryEnergy.textContent = checkinData.energy;
-        summarySideEffects.textContent = checkinData.side_effects;
+            summaryMood.textContent = checkinData.mood;
+            summaryEnergy.textContent = checkinData.energy;
+            summarySideEffects.textContent = checkinData.side_effects;
 
-            // move to complete screen AFTER saving
             step3.classList.remove('active-step');
             stepComplete.classList.add('active-step');
         })
@@ -345,7 +343,6 @@
         step1.classList.add('active-step');
     });
 
-    // capture selections + highlight buttons
     const optionGroups = document.querySelectorAll('.checkin-options');
 
     optionGroups.forEach(group => {
@@ -353,12 +350,9 @@
 
         buttons.forEach(button => {
             button.addEventListener('click', () => {
-
-                // UI highlight
                 buttons.forEach(btn => btn.classList.remove('selected'));
                 button.classList.add('selected');
 
-                // store data based on step
                 if (group.closest('.step-1')) {
                     checkinData.mood = button.innerText;
                 }
@@ -371,10 +365,56 @@
                     checkinData.side_effects = button.innerText;
                 }
 
-                console.log(checkinData); // debug
+                console.log(checkinData);
             });
         });
     });
+
+    function updateCurrentTime() {
+    const now = new Date();
+
+    if (currentTimeEl) {
+        currentTimeEl.textContent = now.toLocaleString([], {
+            weekday: 'short',
+            day: 'numeric',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+}
+
+function updateCurrentTime() {
+    const now = new Date();
+
+    if (currentTimeEl) {
+        currentTimeEl.textContent = now.toLocaleString([], {
+            weekday: 'short',
+            day: 'numeric',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+}
+
+function updateCurrentTime() {
+    const now = new Date();
+
+    if (currentTimeEl) {
+        currentTimeEl.textContent = now.toLocaleString([], {
+            weekday: 'short',
+            day: 'numeric',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+}
+
+updateCurrentTime();
+setInterval(updateCurrentTime, 60000);
+
 </script>
 </body>
 </html>
