@@ -106,7 +106,7 @@
     <h2>Adherence Rate</h2>
 
     <div class="adherence-circle"
-         style="background: conic-gradient(#355ad8 {{ dashboard_data.adherence_rate }}%, #e5e7eb 0%);">
+     style="--progress: {{ dashboard_data.adherence_rate }}%;">
         <span class="adherence-text">
             {{ dashboard_data.adherence_rate }}%
         </span>
@@ -256,7 +256,7 @@
                         <p class="schedule-name">{{ item.name }}</p>
                         <p class="schedule-dose">{{ item.dose }}</p>
                     </div>
-                    <div class="schedule-tag">Due</div>
+                    <div class="schedule-tag {{ item.tag_class }}">{{ item.status }}</div>
                 </div>
             {% endfor %}
         {% else %}
@@ -268,153 +268,6 @@
         </div>
     </div>
                              
-      <script>
-    const step1 = document.querySelector('.step-1');
-    const step2 = document.querySelector('.step-2');
-    const step3 = document.querySelector('.step-3');
-    const stepComplete = document.querySelector('.step-complete');
-
-    const toStep2 = document.getElementById('to-step-2');
-    const backToStep1 = document.getElementById('back-to-step-1');
-    const toStep3 = document.getElementById('to-step-3');
-    const backToStep2 = document.getElementById('back-to-step-2');
-    const saveCheckin = document.getElementById('save-checkin');
-    const editCheckin = document.getElementById('edit-checkin');
-
-    const summaryMood = document.getElementById('summary-mood');
-    const summaryEnergy = document.getElementById('summary-energy');
-    const summarySideEffects = document.getElementById('summary-side-effects');
-
-    const currentTimeEl = document.getElementById('current-time');
-    
-    let checkinData = {
-        mood: null,
-        energy: null,
-        side_effects: null
-    };
-
-
-    toStep2.addEventListener('click', () => {
-        step1.classList.remove('active-step');
-        step2.classList.add('active-step');
-    });
-
-    backToStep1.addEventListener('click', () => {
-        step2.classList.remove('active-step');
-        step1.classList.add('active-step');
-    });
-
-    toStep3.addEventListener('click', () => {
-        step2.classList.remove('active-step');
-        step3.classList.add('active-step');
-    });
-
-    backToStep2.addEventListener('click', () => {
-        step3.classList.remove('active-step');
-        step2.classList.add('active-step');
-    });
-
-    saveCheckin.addEventListener('click', () => {
-        fetch('/wellbeing', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(checkinData)
-        })
-        .then(res => res.json())
-        .then(data => {
-            console.log("Saved:", data);
-
-            summaryMood.textContent = checkinData.mood;
-            summaryEnergy.textContent = checkinData.energy;
-            summarySideEffects.textContent = checkinData.side_effects;
-
-            step3.classList.remove('active-step');
-            stepComplete.classList.add('active-step');
-        })
-        .catch(err => {
-            console.error("Error saving check-in:", err);
-        });
-    });
-
-    editCheckin.addEventListener('click', () => {
-        stepComplete.classList.remove('active-step');
-        step1.classList.add('active-step');
-    });
-
-    const optionGroups = document.querySelectorAll('.checkin-options');
-
-    optionGroups.forEach(group => {
-        const buttons = group.querySelectorAll('.checkin-option');
-
-        buttons.forEach(button => {
-            button.addEventListener('click', () => {
-                buttons.forEach(btn => btn.classList.remove('selected'));
-                button.classList.add('selected');
-
-                if (group.closest('.step-1')) {
-                    checkinData.mood = button.innerText;
-                }
-
-                if (group.closest('.step-2')) {
-                    checkinData.energy = button.innerText;
-                }
-
-                if (group.closest('.step-3')) {
-                    checkinData.side_effects = button.innerText;
-                }
-
-                console.log(checkinData);
-            });
-        });
-    });
-
-    function updateCurrentTime() {
-    const now = new Date();
-
-    if (currentTimeEl) {
-        currentTimeEl.textContent = now.toLocaleString([], {
-            weekday: 'short',
-            day: 'numeric',
-            month: 'short',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
-}
-
-function updateCurrentTime() {
-    const now = new Date();
-
-    if (currentTimeEl) {
-        currentTimeEl.textContent = now.toLocaleString([], {
-            weekday: 'short',
-            day: 'numeric',
-            month: 'short',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
-}
-
-function updateCurrentTime() {
-    const now = new Date();
-
-    if (currentTimeEl) {
-        currentTimeEl.textContent = now.toLocaleString([], {
-            weekday: 'short',
-            day: 'numeric',
-            month: 'short',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
-}
-
-updateCurrentTime();
-setInterval(updateCurrentTime, 60000);
-
-</script>
+      <script src="{{ url_for('static', filename='js/patient_dashboard.js') }}?v=1"></script>
 </body>
 </html>
