@@ -72,63 +72,123 @@
                 </header>
 
                 <div class="schedule-content">
+</div>
 
-    <div class="schedule-filters">
-        <h3>Medications</h3>
-
-        <label><input type="checkbox" checked> All Medications</label>
-        <label><input type="checkbox"> Blood Pressure Medication</label>
-        <label><input type="checkbox"> Vitamin D</label>
-        <label><input type="checkbox"> Iron Tablet</label>
-        <label><input type="checkbox"> Metformin</label>
-    </div>
-
-    <div class="schedule-calendar">
-
-        <div class="calendar-header">
-            <h3>Today</h3>
-        </div>
-
-        <div class="calendar-grid">
-
-    <div class="schedule-row">
-        <div class="time-label">08:00</div>
-        <div class="med-card taken">
-            <p class="med-card-title">Blood Pressure Medication</p>
-            <p class="med-card-dose">1 tablet</p>
-            <span class="med-card-status">Taken</span>
-        </div>
-    </div>
-
-    <div class="schedule-row">
-        <div class="time-label">12:00</div>
-        <div class="med-card upcoming">
-            <p class="med-card-title">Vitamin D</p>
-            <p class="med-card-dose">1 tablet</p>
-            <span class="med-card-status">Upcoming</span>
-        </div>
-    </div>
-
-    <div class="schedule-row">
-        <div class="time-label">18:00</div>
-        <div class="med-card upcoming">
-            <p class="med-card-title">Iron Tablet</p>
-            <p class="med-card-dose">1 tablet</p>
-            <span class="med-card-status">Upcoming</span>
-        </div>
-    </div>
-
-    <div class="schedule-row">
-        <div class="time-label">20:00</div>
-        <div class="med-card missed">
-            <p class="med-card-title">Metformin</p>
-            <p class="med-card-dose">1 tablet</p>
-            <span class="med-card-status">Missed</span>
-        </div>
-    </div>
- </div>
-    </div>
+  <div class="schedule-content">
+    <div class="schedule-left-column">
+        <div class="schedule-calendar">
+            <div class="calendar-header">
+                <div class="calendar-top">
+                    <h3>April 2026</h3>
+                    <p>Today's Schedule</p>
                 </div>
+
+                <div class="mini-calendar">
+                    <div class="mini-day-name">M</div>
+                    <div class="mini-day-name">T</div>
+                    <div class="mini-day-name">W</div>
+                    <div class="mini-day-name">T</div>
+                    <div class="mini-day-name">F</div>
+                    <div class="mini-day-name">S</div>
+                    <div class="mini-day-name">S</div>
+
+                    <div class="mini-day empty"></div>
+                    <div class="mini-day empty"></div>
+                    <div class="mini-day">1</div>
+                    <div class="mini-day">2</div>
+                    <div class="mini-day">3</div>
+                    <div class="mini-day">4</div>
+                    <div class="mini-day">5</div>
+
+                    <div class="mini-day">6</div>
+                    <div class="mini-day">7</div>
+                    <div class="mini-day">8</div>
+                    <div class="mini-day">9</div>
+                    <div class="mini-day">10</div>
+                    <div class="mini-day">11</div>
+                    <div class="mini-day">12</div>
+
+                    <div class="mini-day active-day">13</div>
+                    <div class="mini-day">14</div>
+                    <div class="mini-day">15</div>
+                    <div class="mini-day">16</div>
+                    <div class="mini-day">17</div>
+                    <div class="mini-day">18</div>
+                    <div class="mini-day">19</div>
+
+                    <div class="mini-day">20</div>
+                    <div class="mini-day">21</div>
+                    <div class="mini-day">22</div>
+                    <div class="mini-day">23</div>
+                    <div class="mini-day">24</div>
+                    <div class="mini-day">25</div>
+                    <div class="mini-day">26</div>
+
+                    <div class="mini-day">27</div>
+                    <div class="mini-day">28</div>
+                    <div class="mini-day">29</div>
+                    <div class="mini-day">30</div>
+                    <div class="mini-day empty"></div>
+                    <div class="mini-day empty"></div>
+                    <div class="mini-day empty"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="schedule-filters">
+            <h3>Filter by Medication</h3>
+            <p class="filter-subtext">Choose a medication to view its schedule</p>
+
+            <div class="filter-options">
+                <label><input type="checkbox" checked> All Medications</label>
+                <label><input type="checkbox"> Blood Pressure Medication</label>
+                <label><input type="checkbox"> Vitamin D</label>
+                <label><input type="checkbox"> Iron Tablet</label>
+                <label><input type="checkbox"> Metformin</label>
+            </div>
+        </div>
+    </div>
+
+    <div class="schedule-board-area">
+        <div class="calendar-grid">
+            <div class="schedule-row">
+                <div class="time-label">08:00</div>
+                <div class="med-card taken">
+                    <p class="med-card-title">Blood Pressure Medication</p>
+                    <p class="med-card-dose">1 tablet</p>
+                    <span class="med-card-status">Taken</span>
+                </div>
+            </div>
+
+            <div class="schedule-row">
+                <div class="time-label">12:00</div>
+                <div class="med-card upcoming">
+                    <p class="med-card-title">Vitamin D</p>
+                    <p class="med-card-dose">1 tablet</p>
+                    <span class="med-card-status">Upcoming</span>
+                </div>
+            </div>
+
+            <div class="schedule-row">
+                <div class="time-label">18:00</div>
+                <div class="med-card upcoming">
+                    <p class="med-card-title">Iron Tablet</p>
+                    <p class="med-card-dose">1 tablet</p>
+                    <span class="med-card-status">Upcoming</span>
+                </div>
+            </div>
+
+            <div class="schedule-row">
+                <div class="time-label">20:00</div>
+                <div class="med-card missed">
+                    <p class="med-card-title">Metformin</p>
+                    <p class="med-card-dose">1 tablet</p>
+                    <span class="med-card-status">Missed</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
             </section>
         </div>
     </div>
