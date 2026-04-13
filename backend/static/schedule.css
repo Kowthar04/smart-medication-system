@@ -1,0 +1,158 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background: #edf3ff;
+    color: #1f2937;
+}
+
+body {
+    font-size: 14px;
+}
+
+
+/* Schedule page layout */
+.dashboard-container {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    padding: 16px;
+    gap: 16px;
+}
+
+.content-wrapper {
+    flex: 1;
+    width: 100%;
+    max-width: 1250px;
+    margin: 0 auto;
+}
+
+.main-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+
+/* Sidebar layout */
+.sidebar {
+    width: 210px;
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 28px 18px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.04);
+}
+
+.sidebar-top {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.sidebar-bottom {
+    margin-top: auto;
+    padding-top: 24px;
+}
+
+.logo {
+    font-size: 26px;
+    font-weight: 700;
+    color: #141d3a;
+    padding-left: 8px;
+}
+
+.sidebar ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: #4b5563;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 12px 14px;
+    border-radius: 14px;
+    transition: all 0.2s ease;
+}
+
+.sidebar-link:hover {
+    background: #eef4ff;
+    color: #355ad8;
+}
+
+.sidebar-link.active {
+    background: #eaf1ff;
+    color: #355ad8;
+}
+
+.sidebar-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: #f4f7fb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.sidebar-link:hover .sidebar-icon,
+.sidebar-link.active .sidebar-icon {
+    background: #dbe7ff;
+}
+
+
+/* Top bar layout */
+.top-bar {
+    background: #f4f8ff;
+    border-radius: 22px;
+    padding: 28px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.top-bar h1 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.top-bar p {
+    font-size: 14px;
+    color: #000000;
+}
+
+.profile-box {
+    width: 72px;
+    height: 72px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+
+/* Placeholder */
+.schedule-placeholder {
+    background: white;
+    border-radius: 20px;
+    min-height: 400px;
+    padding: 24px;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
+}

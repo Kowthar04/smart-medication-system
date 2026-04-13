@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medication Schedule</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='schedule.css') }}">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-top">
+                <h2 class="logo">MediTrack</h2>
+                <nav>
+                    <ul>
+                        <li>
+                            <a href="{{ url_for('patient_dashboard') }}" class="sidebar-link">
+                                <span class="sidebar-icon">⌂</span>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('patient_schedule') }}" class="sidebar-link active">
+                                <span class="sidebar-icon">🕒</span>
+                                <span>Schedule</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="sidebar-link">
+                                <span class="sidebar-icon">◔</span>
+                                <span>Adherence</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="sidebar-link">
+                                <span class="sidebar-icon">👥</span>
+                                <span>Care Team</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="sidebar-bottom">
+                <nav>
+                    <ul>
+                        <li>
+                            <a href="#" class="sidebar-link">
+                                <span class="sidebar-icon">⚙</span>
+                                <span>Settings</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="sidebar-link logout-link">
+                                <span class="sidebar-icon">⇦</span>
+                                <span>Logout</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <div class="content-wrapper">
+            <section class="main-panel">
+                <header class="top-bar">
+                    <div>
+                        <h1>Medication Schedule</h1>
+                        <p>Track your doses, timings, and today's medication plan</p>
+                    </div>
+                    <div class="profile-box"></div>
+                </header>
+
+                <div class="schedule-placeholder">
+                    <h2>Schedule page coming next</h2>
+                </div>
+            </section>
+        </div>
+    </div>
+</body>
+</html>

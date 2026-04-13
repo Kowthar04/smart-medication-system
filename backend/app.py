@@ -480,6 +480,27 @@ def patient_dashboard():
 
     return render_template("patient_dashboard.html", dashboard_data=dashboard_data)
 
+@app.route("/patient/schedule", methods=["GET"])
+def patient_schedule():
+    schedule = get_schedule_data()
+    recent_events = get_recent_events()
+
+    schedule_with_status = build_schedule_with_status(schedule, recent_events)
+    next_due = get_next_due(schedule, recent_events)
+
+    medications = ["All Medications"]
+    for item in schedule:
+        if item["name"] not in medications:
+            medications.append(item["name"])
+
+    schedule_data = {
+        "schedule": schedule_with_status,
+        "next_due": next_due,
+        "medications": medications
+    }
+
+    return render_template("patient_schedule.html", schedule_data=schedule_data)
+
 
 @app.route("/wellbeing", methods=["POST"])
 def save_wellbeing():
