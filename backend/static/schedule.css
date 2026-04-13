@@ -147,12 +147,51 @@ body {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
+/*Schedule Layout*/
+.schedule-content {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+}
 
-/* Placeholder */
-.schedule-placeholder {
-    background: white;
-    border-radius: 20px;
-    min-height: 400px;
-    padding: 24px;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
+/* Filters */
+.schedule-filters {
+    width: 250px;
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.schedule-filters h3 {
+    margin-bottom: 10px;
+}
+
+.schedule-filters label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+/* Calendar */
+.schedule-calendar {
+    flex: 1;
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.calendar-header {
+    margin-bottom: 15px;
+}
+
+.calendar-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.time-slot {
+    padding: 10px;
+    background: #f3f4f6;
+    border-radius: 8px;
 }
