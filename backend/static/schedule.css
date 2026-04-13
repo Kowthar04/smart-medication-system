@@ -218,6 +218,34 @@ body {
     color: #6b7280;
 }
 
+.schedule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.schedule-header h3 {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.schedule-header p {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.primary-btn {
+    background: #355ad8;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
 /* Filter box */
 .filter-subtext {
     font-size: 12px;
@@ -296,7 +324,7 @@ body {
 .calendar-grid {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
 }
 
 .schedule-row {
@@ -304,26 +332,41 @@ body {
     grid-template-columns: 90px 1fr;
     gap: 16px;
     align-items: center;
+    background: #f9fbff;
+    padding: 14px;
+    border-radius: 14px;
+    width: 100%;
+}
+
+.schedule-row:hover {
+    transform: translateY(-2px);
+    transition: 0.2s ease;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.05);
 }
 
 .time-label {
-    font-size: 14px;
+    min-width: 70px;
+    font-size: 13px;
     font-weight: 700;
     color: #355ad8;
     background: #eef4ff;
-    padding: 12px 10px;
+    padding: 10px;
     border-radius: 10px;
     text-align: center;
 }
 
 .med-card {
-    padding: 14px 16px;
+    width: 100%;
+    padding: 16px 18px;
     border-radius: 14px;
-    min-height: 70px;
+    min-height: 82px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .med-card-title {
-    font-size: 15px;
+    font-size: 17px;
     font-weight: 700;
     margin-bottom: 4px;
 }
@@ -331,7 +374,7 @@ body {
 .med-card-dose {
     font-size: 13px;
     color: #6b7280;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 .med-card-status {
@@ -343,8 +386,9 @@ body {
 }
 
 .med-card.taken {
-    background: #dcfce7;
+    border-left: 6px solid #22c55e;
 }
+
 
 .med-card.taken .med-card-status {
     background: #bbf7d0;
@@ -352,8 +396,9 @@ body {
 }
 
 .med-card.upcoming {
-    background: #dbeafe;
+    border-left: 6px solid #3b82f6;
 }
+
 
 .med-card.upcoming .med-card-status {
     background: #bfdbfe;
@@ -361,7 +406,7 @@ body {
 }
 
 .med-card.missed {
-    background: #fee2e2;
+    border-left: 6px solid #ef4444;
 }
 
 .med-card.missed .med-card-status {
@@ -370,7 +415,7 @@ body {
 }
 
 .schedule-board-area {
-    background: #fff;
+    background: linear-gradient(to bottom, #ffffff, #f8faff);
     padding: 18px;
     border-radius: 16px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.04);
