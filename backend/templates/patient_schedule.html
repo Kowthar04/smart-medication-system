@@ -137,12 +137,18 @@
             <p class="filter-subtext">Choose a medication to view its schedule</p>
 
             <div class="filter-options">
-                <label><input type="checkbox" checked> All Medications</label>
-                <label><input type="checkbox"> Blood Pressure Medication</label>
-                <label><input type="checkbox"> Vitamin D</label>
-                <label><input type="checkbox"> Iron Tablet</label>
-                <label><input type="checkbox"> Metformin</label>
-            </div>
+        <label>
+        <input type="radio" name="medication-filter" value="all" checked>
+        All Medications
+        </label>
+
+        {% for medication in schedule_data.medications %}
+        <label>
+            <input type="radio" name="medication-filter" value="{{ medication }}">
+            {{ medication }}
+        </label>
+    {% endfor %}
+    </div>
         </div>
     </div>
 
@@ -150,45 +156,23 @@
         <div class="schedule-header">
             <div>
                 <h3>Today's Medications</h3>
-                <p>4 doses scheduled • 1 taken • 1 missed</p>
+                <p>{{ schedule_data.schedule|length }} doses scheduled today</p>
             </div>
         </div>
 
         <div class="calendar-grid">
-            <div class="schedule-row">
-                <div class="time-label">08:00</div>
-                <div class="med-card taken">
-                    <p class="med-card-title">Blood Pressure Medication</p>
-                    <p class="med-card-dose">1 tablet</p>
-                    <span class="med-card-status">Taken</span>
-                </div>
-            </div>
+    {% for item in schedule_data.schedule %}
+        <div class="schedule-row" data-medication="{{ item.name }}">
+            <div class="time-label">{{ item.time }}</div>
 
-            <div class="schedule-row">
-                <div class="time-label">12:00</div>
-                <div class="med-card upcoming">
-                    <p class="med-card-title">Vitamin D</p>
-                    <p class="med-card-dose">1 tablet</p>
-                    <span class="med-card-status">Upcoming</span>
-                </div>
+            <div class="med-card {{ item.tag_class }}">
+                <p class="med-card-title">{{ item.name }}</p>
+                <p class="med-card-dose">{{ item.dose }}</p>
+                <span class="med-card-status">{{ item.status }}</span>
             </div>
-
-            <div class="schedule-row">
-                <div class="time-label">18:00</div>
-                <div class="med-card upcoming">
-                    <p class="med-card-title">Iron Tablet</p>
-                    <p class="med-card-dose">1 tablet</p>
-                    <span class="med-card-status">Upcoming</span>
-                </div>
-            </div>
-
-            <div class="schedule-row">
-                <div class="time-label">20:00</div>
-                <div class="med-card missed">
-                    <p class="med-card-title">Metformin</p>
-                    <p class="med-card-dose">1 tablet</p>
-                    <span class="med-card-status">Missed</span>
-                </div>
+        </div>
+    {% endfor %}
+</div>
             </div>
         </div>
     </div>
@@ -196,5 +180,6 @@
             </section>
         </div>
     </div>
+    <script src="{{ url_for('static', filename='js/patient_schedule.js') }}"></script>
 </body>
 </html>

@@ -320,16 +320,11 @@ def build_schedule_with_status(schedule, recent_events):
 
     updated_schedule = []
 
-    taken_found = False
-
     for item in schedule:
         if item["time_obj"] in taken_times:
             status = "Taken"
             tag_class = "taken"
-            taken_found = True
-        elif not taken_found:
-            status = "Missed"
-            tag_class = "missed"
+        
         else:
             status = "Upcoming"
             tag_class = "upcoming"
@@ -486,16 +481,15 @@ def patient_schedule():
     recent_events = get_recent_events()
 
     schedule_with_status = build_schedule_with_status(schedule, recent_events)
-    next_due = get_next_due(schedule, recent_events)
+    
 
-    medications = ["All Medications"]
-    for item in schedule:
+    medications = []
+    for item in schedule_with_status:
         if item["name"] not in medications:
             medications.append(item["name"])
 
     schedule_data = {
         "schedule": schedule_with_status,
-        "next_due": next_due,
         "medications": medications
     }
 
