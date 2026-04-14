@@ -78,14 +78,40 @@
                     <div class="profile-box"></div>
                 </header>
 
+<div class="adherence-stats">
+    <div class="stat-card">
+        <div class="stat-icon adherence-icon">◔</div>
+        <div class="stat-text">
+            <p class="stat-label">Overall Adherence</p>
+            <h2 class="stat-value">{{ summary.overall_adherence }}%</h2>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon taken-icon">✓</div>
+        <div class="stat-text">
+            <p class="stat-label">Doses Taken</p>
+            <h2 class="stat-value">{{ summary.doses_taken }}</h2>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon missed-icon">!</div>
+        <div class="stat-text">
+            <p class="stat-label">Missed Doses</p>
+            <h2 class="stat-value">{{ summary.missed_doses }}</h2>
+        </div>
+    </div>
+</div>
+
                 <!-- Main Chart Card -->
                 <div class="adherence-card">
 
                     <div class="adherence-header">
                         <h3>Medication Adherence</h3>
 
-                        <select class="med-filter">
-                            <option>All Medications</option>
+                        <select class="med-filter" id="medicationFilter">
+                            <option value="all">All Medications</option>
                             {% if medications %}
                                 {% for medication in medications %}
                                     <option value="{{ medication }}">{{ medication }}</option>
@@ -99,9 +125,9 @@
                     </div>
 
                     <div class="time-tabs">
-                        <button class="time-tab active">Today</button>
-                        <button class="time-tab">This Week</button>
-                        <button class="time-tab">This Month</button>
+                        <button class="time-tab active" data-period="daily">Today</button>
+                        <button class="time-tab" data-period="weekly">This Week</button>
+                        <button class="time-tab" data-period="monthly">This Month</button>
                     </div>
 
                 </div>

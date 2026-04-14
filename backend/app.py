@@ -498,13 +498,42 @@ def patient_schedule():
 @app.route("/patient/adherence", methods=["GET"])
 def patient_adherence():
     schedule = get_schedule_data()
+    recent_events = get_recent_events(limit=200)
 
     medications = []
     for item in schedule:
         if item["name"] not in medications:
             medications.append(item["name"])
 
-    return render_template("patient_adherence.html", medications=medications)
+    total_doses = len(schedule)
+    taken_doses = 0
+
+    taken_times = set()
+    for event in recent_events:
+        if event["event_type"] == "taken" and event["event_time_obj"] is not None:
+            taken_times.add(event["event_time_obj"])
+
+    for item in schedule:
+        if item["time_obj"] in taken_times:
+            taken_doses += 1
+
+    missed_doses = total_doses - taken_doses
+
+    overall_adherence = 0
+    if total_doses > 0:
+        overall_adherence = round((taken_doses / total_doses) * 100)
+
+    summary = {
+        "overall_adherence": overall_adherence,
+        "doses_taken": f"{taken_doses} / {total_doses}",
+        "missed_doses": missed_doses
+    }
+
+    return render_template(
+        "patient_adherence.html",
+        medications=medications,
+        summary=summary
+    )
 
 def calculate_adherence(schedule, events):
     result = {}
