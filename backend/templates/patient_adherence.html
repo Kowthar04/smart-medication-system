@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adherence</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='schedule.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='adherence.css') }}">
+</head>
+<body>
+    <div class="dashboard-container">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-top">
+                <h2 class="logo">MediTrack</h2>
+                <nav>
+                    <ul>
+                        <li>
+                            <a href="{{ url_for('patient_dashboard') }}" class="sidebar-link">
+                                <span class="sidebar-icon">⌂</span>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('patient_schedule') }}" class="sidebar-link">
+                                <span class="sidebar-icon">🕒</span>
+                                <span>Schedule</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('patient_adherence') }}" class="sidebar-link active">
+                                <span class="sidebar-icon">◔</span>
+                                <span>Adherence</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="sidebar-link">
+                                <span class="sidebar-icon">👥</span>
+                                <span>Care Team</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="sidebar-bottom">
+                <nav>
+                    <ul>
+                        <li>
+                            <a href="#" class="sidebar-link">
+                                <span class="sidebar-icon">⚙</span>
+                                <span>Settings</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="sidebar-link logout-link">
+                                <span class="sidebar-icon">⇦</span>
+                                <span>Logout</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="content-wrapper">
+            <section class="main-panel">
+
+                <!-- Top Bar -->
+                <header class="top-bar">
+                    <div>
+                        <h1>Adherence Overview</h1>
+                        <p>Track your medication adherence over time</p>
+                    </div>
+                    <div class="profile-box"></div>
+                </header>
+
+                <!-- Main Chart Card -->
+                <div class="adherence-card">
+
+                    <div class="adherence-header">
+                        <h3>Adherence by Time</h3>
+
+                        <select class="med-filter">
+                            <option>All Medications</option>
+                        </select>
+                    </div>
+
+                    <div class="chart-placeholder">
+                        <p>Chart will go here</p>
+                    </div>
+
+                    <div class="time-tabs">
+                        <button class="time-tab active">Daily</button>
+                        <button class="time-tab">Weekly</button>
+                        <button class="time-tab">Monthly</button>
+                    </div>
+
+                </div>
+
+            </section>
+        </div>
+
+    </div>
+</body>
+</html>

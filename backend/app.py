@@ -495,6 +495,10 @@ def patient_schedule():
 
     return render_template("patient_schedule.html", schedule_data=schedule_data)
 
+@app.route("/patient/adherence", methods=["GET"])
+def patient_adherence():
+    return render_template("patient_adherence.html")
+
 
 @app.route("/wellbeing", methods=["POST"])
 def save_wellbeing():
