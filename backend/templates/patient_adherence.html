@@ -82,10 +82,15 @@
                 <div class="adherence-card">
 
                     <div class="adherence-header">
-                        <h3>Adherence by Time</h3>
+                        <h3>Medication Adherence</h3>
 
                         <select class="med-filter">
                             <option>All Medications</option>
+                            {% if medications %}
+                                {% for medication in medications %}
+                                    <option value="{{ medication }}">{{ medication }}</option>
+                                {% endfor %}
+                            {% endif %}
                         </select>
                     </div>
 
@@ -94,9 +99,9 @@
                     </div>
 
                     <div class="time-tabs">
-                        <button class="time-tab active">Daily</button>
-                        <button class="time-tab">Weekly</button>
-                        <button class="time-tab">Monthly</button>
+                        <button class="time-tab active">Today</button>
+                        <button class="time-tab">This Week</button>
+                        <button class="time-tab">This Month</button>
                     </div>
 
                 </div>
@@ -108,6 +113,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{{ url_for('static', filename='js/adherence.js') }}"></script>
-    
+
 </body>
 </html>

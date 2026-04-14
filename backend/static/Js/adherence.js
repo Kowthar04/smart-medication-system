@@ -1,25 +1,28 @@
-const ctx = document.getElementById('adherenceChart');
+let adherenceChart = null;
+let currentPeriod = "daily";
+let currentMedication = "all";
 
-if (ctx) {
+function createChart(labels, values) {
+    const canvas = document.getElementById("adherenceChart");
 
-    const chartContext = ctx.getContext('2d');
+    if (!canvas) {
+        return;
+    }
+
+  
+    const chartContext = canvas.getContext('2d');
 
     const gradient = chartContext.createLinearGradient(0, 0, 400, 0);
     gradient.addColorStop(0, '#4f7cff');
     gradient.addColorStop(1, '#355ad8');
 
-    new Chart(ctx, {
+    adherenceChart = new Chart(canvas, {
         type: 'bar',
         data: {
-            labels: [
-                'Blood Pressure Medication',
-                'Vitamin D',
-                'Iron Tablet',
-                'Metformin'
-            ],
+            labels: labels,
             datasets: [{
                 label: 'Adherence (%)',
-                data: [100, 80, 90, 60],
+                data: values,
                 backgroundColor: gradient,
                 borderRadius: 12,
                 barThickness: 26,
@@ -49,10 +52,10 @@ if (ctx) {
                     displayColors: false,
                     callbacks: {
                         label: function(context) {
-                            return context.raw + '%';
+                            return `${context.raw}%`;
+                        }
+                    }
                 }
-            }
-        }
     },
 
             scales: {
@@ -67,7 +70,7 @@ if (ctx) {
                     },
                     ticks: {
                         callback: function(value) {
-                            return value + '%';
+                            return `${value}%`;
                         },
                         color: '#6b7280',
                         font: {
@@ -92,5 +95,73 @@ if (ctx) {
                 }
             }
         }
+
+    });
+
+}
+
+
+function updateChart(labels, values) {
+    if (!adherenceChart) {
+        createChart(labels, values);
+        return;
+    }
+
+    adherenceChart.data.labels = labels;
+    adherenceChart.data.datasets[0].data = values;
+    adherenceChart.update();
+}
+
+function fetchAdherenceData() {
+    const params = new URLSearchParams({
+        period: currentPeriod,
+        medication: currentMedication
+    });
+
+    fetch(`/adherence-data?${params.toString()}`)
+        .then(response => response.json())
+        .then(data => {
+            const labels = data.labels || [];
+            const values = data.data || [];
+
+            updateChart(labels, values);
+        })
+        .catch(error => {
+            console.error("Error loading adherence data:", error);
+        });
+}
+
+function setupTimeTabs() {
+    const tabs = document.querySelectorAll(".time-tab");
+
+    tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            tabs.forEach(button => button.classList.remove("active"));
+            tab.classList.add("active");
+
+            currentPeriod = tab.dataset.period;
+            fetchAdherenceData();
+        });
     });
 }
+
+function setupMedicationFilter() {
+    const medicationFilter = document.getElementById("medicationFilter");
+
+    if (!medicationFilter) {
+        return;
+    }
+
+    medicationFilter.addEventListener("change", () => {
+        currentMedication = medicationFilter.value;
+        fetchAdherenceData();
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    setupTimeTabs();
+    setupMedicationFilter();
+    fetchAdherenceData();
+});
+
+    

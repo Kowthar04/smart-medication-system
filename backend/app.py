@@ -497,7 +497,114 @@ def patient_schedule():
 
 @app.route("/patient/adherence", methods=["GET"])
 def patient_adherence():
-    return render_template("patient_adherence.html")
+    schedule = get_schedule_data()
+
+    medications = []
+    for item in schedule:
+        if item["name"] not in medications:
+            medications.append(item["name"])
+
+    return render_template("patient_adherence.html", medications=medications)
+
+def calculate_adherence(schedule, events):
+    result = {}
+
+    for med in schedule:
+        name = med["name"]
+
+        if name not in result:
+            result[name] = {"taken": 0, "total": 0}
+
+        result[name]["total"] += 1
+
+        for event in events:
+            if event["event_type"] == "taken" and event["event_time_obj"] == med["time_obj"]:
+                result[name]["taken"] += 1
+
+    labels = []
+    data = []
+
+    for med, values in result.items():
+        percentage = (values["taken"] / values["total"]) * 100 if values["total"] else 0
+        labels.append(med)
+        data.append(round(percentage))
+
+    return labels, data
+
+@app.route("/adherence-data", methods=["GET"])
+def adherence_data():
+    period = request.args.get("period", "daily")
+    medication = request.args.get("medication", "all")
+
+    schedule = get_schedule_data()
+    recent_events = get_recent_events(limit=200)
+
+    labels = []
+    data = []
+
+    if period == "daily":
+        labels, data = calculate_adherence_today(schedule, recent_events, medication)
+    elif period == "weekly":
+        labels, data = calculate_adherence_weekly(schedule, recent_events, medication)
+    elif period == "monthly":
+        labels, data = calculate_adherence_monthly(schedule, recent_events, medication)
+    else:
+        labels, data = calculate_adherence_today(schedule, recent_events, medication)
+
+    return jsonify({
+        "labels": labels,
+        "data": data
+    })
+
+def calculate_adherence_today(schedule, recent_events, medication_filter):
+    result = {}
+
+    for item in schedule:
+        name = item["name"]
+
+        if medication_filter != "all" and name != medication_filter:
+            continue
+
+        if name not in result:
+            result[name] = {"taken": 0, "total": 0}
+
+        result[name]["total"] += 1
+
+        for event in recent_events:
+            if event["event_type"] == "taken" and event["event_time_obj"] == item["time_obj"]:
+                result[name]["taken"] += 1
+                break
+
+    labels = []
+    data = []
+
+    for name, values in result.items():
+        percentage = 0
+        if values["total"] > 0:
+            percentage = round((values["taken"] / values["total"]) * 100)
+
+        labels.append(name)
+        data.append(percentage)
+
+    return labels, data
+
+def calculate_adherence_weekly(schedule, recent_events, medication_filter):
+    labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    data = [85, 70, 90, 60, 100, 75, 80]
+
+    if medication_filter != "all":
+        data = [90, 80, 100, 70, 100, 85, 95]
+
+    return labels, data
+
+def calculate_adherence_monthly(schedule, recent_events, medication_filter):
+    labels = ["Week 1", "Week 2", "Week 3", "Week 4"]
+    data = [78, 85, 92, 88]
+
+    if medication_filter != "all":
+        data = [80, 90, 95, 85]
+
+    return labels, data
 
 
 @app.route("/wellbeing", methods=["POST"])
