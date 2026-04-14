@@ -4,25 +4,53 @@ if (ctx) {
     new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            labels: [
+                'Blood Pressure Medication',
+                'Vitamin D',
+                'Iron Tablet',
+                'Metformin'
+            ],
             datasets: [{
                 label: 'Adherence (%)',
-                data: [100, 80, 90, 70, 100, 60, 85],
-                borderWidth: 1,
-                borderRadius: 8
+                data: [100, 80, 90, 60],
+                backgroundColor: '#355ad8',
+                borderRadius: 12,
+                barThickness: 18
             }]
         },
         options: {
+            indexAxis: 'y', // 🔥 MAKES IT HORIZONTAL
             responsive: true,
+            maintainAspectRatio: false,
+
             plugins: {
                 legend: {
                     display: false
+                },
+                tooltip: {
+                    backgroundColor: '#1f2937',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    padding: 10,
+                    cornerRadius: 8
                 }
             },
+
             scales: {
-                y: {
+                x: {
                     beginAtZero: true,
-                    max: 100
+                    max: 100,
+                    grid: {
+                        color: '#e5e7eb'
+                    },
+                    ticks: {
+                        callback: value => value + '%'
+                    }
+                },
+                y: {
+                    grid: {
+                        display: false
+                    }
                 }
             }
         }
