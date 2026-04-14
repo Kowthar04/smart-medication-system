@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 import psycopg2
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 
 app = Flask(__name__) 
 
@@ -109,12 +109,11 @@ def get_last_event():
     }
 
 
-def get_recent_events(limit=10):
+def get_recent_events(limit=200):
     rows = run_query(
         """
         SELECT event_type, event_time, created_at
         FROM medication_events
-        WHERE DATE(created_at) = CURRENT_DATE
         ORDER BY created_at DESC
         LIMIT %s
         """,
@@ -586,6 +585,7 @@ def adherence_data():
     })
 
 def calculate_adherence_today(schedule, recent_events, medication_filter):
+    today = datetime.now().date()
     result = {}
 
     for item in schedule:
@@ -600,7 +600,11 @@ def calculate_adherence_today(schedule, recent_events, medication_filter):
         result[name]["total"] += 1
 
         for event in recent_events:
-            if event["event_type"] == "taken" and event["event_time_obj"] == item["time_obj"]:
+            if (
+                event["event_type"] == "taken"
+                and event["event_time_obj"] == item["time_obj"]
+                and event["created_at"].date() == today
+            ):
                 result[name]["taken"] += 1
                 break
 
@@ -618,20 +622,94 @@ def calculate_adherence_today(schedule, recent_events, medication_filter):
     return labels, data
 
 def calculate_adherence_weekly(schedule, recent_events, medication_filter):
-    labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-    data = [85, 70, 90, 60, 100, 75, 80]
+    today = datetime.now().date()
+    start_of_week = today - timedelta(days=today.weekday())
+    end_of_week = start_of_week + timedelta(days=6)
 
-    if medication_filter != "all":
-        data = [90, 80, 100, 70, 100, 85, 95]
+    result = {}
+
+    for item in schedule:
+        name = item["name"]
+
+        if medication_filter != "all" and name != medication_filter:
+            continue
+
+        if name not in result:
+            result[name] = {"taken": 0, "total": 0}
+
+        result[name]["total"] += 7
+
+        for event in recent_events:
+            if event["event_type"] != "taken":
+                continue
+
+            if event["event_time_obj"] != item["time_obj"]:
+                continue
+
+            event_date = event["created_at"].date()
+
+            if start_of_week <= event_date <= end_of_week:
+                result[name]["taken"] += 1
+
+    labels = []
+    data = []
+
+    for name, values in result.items():
+        percentage = 0
+        if values["total"] > 0:
+            percentage = round((values["taken"] / values["total"]) * 100)
+
+        labels.append(name)
+        data.append(percentage)
 
     return labels, data
 
 def calculate_adherence_monthly(schedule, recent_events, medication_filter):
-    labels = ["Week 1", "Week 2", "Week 3", "Week 4"]
-    data = [78, 85, 92, 88]
+    today = datetime.now().date()
+    start_of_month = today.replace(day=1)
 
-    if medication_filter != "all":
-        data = [80, 90, 95, 85]
+    if today.month == 12:
+        next_month = today.replace(year=today.year + 1, month=1, day=1)
+    else:
+        next_month = today.replace(month=today.month + 1, day=1)
+
+    days_in_month = (next_month - start_of_month).days
+
+    result = {}
+
+    for item in schedule:
+        name = item["name"]
+
+        if medication_filter != "all" and name != medication_filter:
+            continue
+
+        if name not in result:
+            result[name] = {"taken": 0, "total": 0}
+
+        result[name]["total"] += days_in_month
+
+        for event in recent_events:
+            if event["event_type"] != "taken":
+                continue
+
+            if event["event_time_obj"] != item["time_obj"]:
+                continue
+
+            event_date = event["created_at"].date()
+
+            if start_of_month <= event_date < next_month:
+                result[name]["taken"] += 1
+
+    labels = []
+    data = []
+
+    for name, values in result.items():
+        percentage = 0
+        if values["total"] > 0:
+            percentage = round((values["taken"] / values["total"]) * 100)
+
+        labels.append(name)
+        data.append(percentage)
 
     return labels, data
 
