@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='schedule.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='adherence.css') }}">
 </head>
+
 <body>
     <div class="dashboard-container">
 
@@ -89,7 +90,7 @@
                     </div>
 
                     <div class="chart-placeholder">
-                        <p>Chart will go here</p>
+                        <canvas id="adherenceChart"></canvas>
                     </div>
 
                     <div class="time-tabs">
@@ -104,5 +105,9 @@
         </div>
 
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{{ url_for('static', filename='js/adherence.js') }}"></script>
+    
 </body>
 </html>
