@@ -742,6 +742,16 @@ def save_wellbeing():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+
+@app.route("/patient/care-team", methods=["GET"])
+def patient_care_team():
+    return render_template("patient_care_team.html")
+
+
+@app.route("/patient/settings", methods=["GET"])
+def patient_settings():
+    return render_template("patient_settings.html")
 
 
 if __name__ == "__main__":
