@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caregiver Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='schedule.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='caregiver.css') }}">
 </head>
-<link rel="stylesheet" href="{{ url_for('static', filename='schedule.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='caregiver.css') }}">
-<body>
+
+<body class="caregiver-page">
     <div class="dashboard-container">
 
         <aside class="sidebar">
@@ -39,7 +40,7 @@
                     </div>
                 </header>
 
-                <div class="overview-cards">
+    <div class="overview-cards">
 
     <div class="overview-card">
         <p>Patient</p>
@@ -60,6 +61,47 @@
         <p>Latest Alert</p>
         <h2>None</h2>
     </div>
+
+    </div>
+
+    <div class="caregiver-content">
+
+    <!-- LEFT: Schedule -->
+    <div class="caregiver-panel">
+        <h3>Medication Schedule</h3>
+
+        <div class="caregiver-item">
+            <span>08:00</span>
+            <div>
+                <strong>Blood Pressure Medication</strong>
+                <p>1 tablet</p>
+            </div>
+            <span class="badge upcoming">Upcoming</span>
+        </div>
+
+        <div class="caregiver-item">
+            <span>12:00</span>
+            <div>
+                <strong>Vitamin D</strong>
+                <p>1 tablet</p>
+            </div>
+            <span class="badge upcoming">Upcoming</span>
+        </div>
+
+    </div>
+
+    <!-- RIGHT: Alerts -->
+    <div class="caregiver-panel">
+        <h3>Recent Alerts</h3>
+
+        <div class="alert-box">
+            <strong>No alerts yet</strong>
+            <p>Patient activity will appear here</p>
+        </div>
+
+    </div>
+
+</div>
 
 </div>
 
