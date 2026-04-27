@@ -6,6 +6,7 @@
     <title>Caregiver Dashboard</title>
 </head>
 <link rel="stylesheet" href="{{ url_for('static', filename='schedule.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='caregiver.css') }}">
 <body>
     <div class="dashboard-container">
 
@@ -37,6 +38,30 @@
                         <p>Monitor patient activity</p>
                     </div>
                 </header>
+
+                <div class="overview-cards">
+
+    <div class="overview-card">
+        <p>Patient</p>
+        <h2>John Doe</h2>
+    </div>
+
+    <div class="overview-card">
+        <p>Adherence Today</p>
+        <h2>0%</h2>
+    </div>
+
+    <div class="overview-card">
+        <p>Missed Doses</p>
+        <h2>0</h2>
+    </div>
+
+    <div class="overview-card">
+        <p>Latest Alert</p>
+        <h2>None</h2>
+    </div>
+
+</div>
 
             </section>
         </div>
