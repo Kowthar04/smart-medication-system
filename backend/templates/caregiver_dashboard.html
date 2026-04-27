@@ -67,39 +67,40 @@
     <div class="caregiver-content">
 
     <!-- LEFT: Schedule -->
-    <div class="caregiver-panel">
-        <h3>Medication Schedule</h3>
+ <div class="caregiver-panel">
+    <h3>Medication Schedule</h3>
 
-        <div class="caregiver-item">
-            <span>08:00</span>
-            <div>
-                <strong>Blood Pressure Medication</strong>
-                <p>1 tablet</p>
-            </div>
-            <span class="badge upcoming">Upcoming</span>
+    {% for item in schedule %}
+    <div class="caregiver-item">
+        <span>{{ item.time }}</span>
+        <div>
+            <strong>{{ item.name }}</strong>
+            <p>{{ item.dose }}</p>
         </div>
-
-        <div class="caregiver-item">
-            <span>12:00</span>
-            <div>
-                <strong>Vitamin D</strong>
-                <p>1 tablet</p>
-            </div>
-            <span class="badge upcoming">Upcoming</span>
-        </div>
-
+        <span class="badge {{ item.tag_class }}">{{ item.status }}</span>
     </div>
+    {% endfor %}
+
+</div>
 
     <!-- RIGHT: Alerts -->
     <div class="caregiver-panel">
-        <h3>Recent Alerts</h3>
+    <h3>Recent Alerts</h3>
 
+    {% if activity %}
+        {% for event in activity[:3] %}
+        <div class="alert-box">
+            <strong>{{ event.message }}</strong>
+            <p>{{ event.time }}</p>
+        </div>
+        {% endfor %}
+    {% else %}
         <div class="alert-box">
             <strong>No alerts yet</strong>
-            <p>Patient activity will appear here</p>
         </div>
+    {% endif %}
 
-    </div>
+</div>
 
 </div>
 

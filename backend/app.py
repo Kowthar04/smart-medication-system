@@ -755,8 +755,17 @@ def patient_settings():
 
 @app.route("/caregiver/dashboard", methods=["GET"])
 def caregiver_dashboard():
-    return render_template("caregiver_dashboard.html")
+    schedule = get_schedule_data()
+    recent_events = get_recent_events()
 
+    schedule_with_status = build_schedule_with_status(schedule, recent_events)
+    recent_activity = build_recent_activity(recent_events, schedule)
+
+    return render_template(
+        "caregiver_dashboard.html",
+        schedule=schedule_with_status,
+        activity=recent_activity
+    )
 
 if __name__ == "__main__":
     print("Starting Flask server...")
