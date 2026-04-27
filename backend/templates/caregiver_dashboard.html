@@ -5,10 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caregiver Dashboard</title>
 </head>
+<link rel="stylesheet" href="{{ url_for('static', filename='schedule.css') }}">
 <body>
+    <div class="dashboard-container">
 
-<h1>Caregiver Dashboard</h1>
-<p>This is the caregiver view</p>
+        <aside class="sidebar">
+            <h2 class="logo">MediTrack</h2>
 
+            <nav>
+                <ul>
+                    <li>
+                        <a href="{{ url_for('caregiver_dashboard') }}" class="sidebar-link active">
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('patient_dashboard') }}" class="sidebar-link">
+                            Patient View
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <div class="content-wrapper">
+            <section class="main-panel">
+
+                <header class="top-bar">
+                    <div>
+                        <h1>Caregiver Dashboard</h1>
+                        <p>Monitor patient activity</p>
+                    </div>
+                </header>
+
+            </section>
+        </div>
+
+    </div>
 </body>
 </html>
