@@ -753,6 +753,10 @@ def patient_care_team():
 def patient_settings():
     return render_template("patient_settings.html")
 
+@app.route("/caregiver/dashboard", methods=["GET"])
+def caregiver_dashboard():
+    return render_template("caregiver_dashboard.html")
+
 
 if __name__ == "__main__":
     print("Starting Flask server...")
