@@ -1,25 +1,12 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 html,
 body {
     height: 100%;
     overflow: hidden;
-    font-family: Arial, sans-serif;
-    background: #edf3ff;
-    color: #1f2937;
 }
-
-body {
-    font-size: 14px;
-}
-
-
+ 
+ 
 /* dashboard layout*/
-
+ 
 .dashboard-container {
     display: flex;
     height: 100vh;
@@ -27,7 +14,7 @@ body {
     padding: 16px;
     gap: 16px;
 }
-
+ 
 .content-wrapper {
     flex: 1;
     display: grid;
@@ -39,8 +26,8 @@ body {
     margin: 0 auto;
     margin-top: 10px;
 }
-
-
+ 
+ 
 /* Sidebar layout */
 .sidebar {
     width: 210px;
@@ -51,36 +38,36 @@ body {
     flex-direction: column;
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.04);
 }
-
+ 
 .sidebar-top {
     display: flex;
     flex-direction: column;
     gap: 22px;
 }
-
+ 
 .sidebar-bottom {
     margin-top: auto;
     padding-top: 24px;
 }
-
+ 
 .logo {
     font-size: 26px;
     font-weight: 700;
     color: #141d3a;
     padding-left: 8px;
 }
-
+ 
 .sidebar ul {
     list-style: none;
     display: flex;
     flex-direction: column;
     gap: 10px;
 }
-
+ 
 .sidebar li {
     margin-bottom: 0;
 }
-
+ 
 .sidebar-link {
     display: flex;
     align-items: center;
@@ -93,17 +80,17 @@ body {
     border-radius: 14px;
     transition: all 0.2s ease;
 }
-
+ 
 .sidebar-link:hover {
     background: #eef4ff;
     color: #355ad8;
 }
-
+ 
 .sidebar-link.active {
     background: #eaf1ff;
     color: #355ad8;
 }
-
+ 
 .sidebar-icon {
     width: 32px;
     height: 32px;
@@ -115,30 +102,30 @@ body {
     font-size: 15px;
     flex-shrink: 0;
 }
-
+ 
 .sidebar-link:hover .sidebar-icon,
 .sidebar-link.active .sidebar-icon {
     background: #dbe7ff;
 }
-
+ 
 .logout-link {
     color: #6b7280;
 }
-
+ 
 .logout-link:hover {
     background: #f9fafb;
     color: #111827;
 }
-
+ 
 /* Left Panel layout */
-
+ 
 .left-panel {
     display: grid;
     grid-template-rows: auto auto 1fr;
     gap: 24px;
     min-width: 0;
 }
-
+ 
 .middle-section {
     margin-top: 40px;
     display: grid;
@@ -146,29 +133,29 @@ body {
     gap: 24px;
     min-width: 0;
 }
-
+ 
 .middle-grid {
     display: grid;
     gap: 24px;
     min-width: 0;
 }
-
+ 
 .top-grid {
     grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
 }
-
+ 
 .bottom-grid {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
-
+ 
 .top-grid > .card,
 .bottom-grid > .card {
     min-width: 0;
 }
-
-
+ 
+ 
 /* Top Bar layout*/
-
+ 
 .top-bar {
     background: #f4f8ff;
     border-radius: 22px;
@@ -177,18 +164,18 @@ body {
     justify-content: space-between;
     align-items: center;
 }
-
+ 
 .top-bar h1 {
     font-size: 32px;
     font-weight: 700;
     margin-bottom: 6px;
 }
-
+ 
 .top-bar p {
     font-size: 14px;
     color: #000000;
 }
-
+ 
 .profile-box {
     width: 72px;
     height: 72px;
@@ -201,14 +188,14 @@ body {
     overflow: hidden;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
-
+ 
 .profile-box img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
-
-
+ 
+ 
 /* Styling for the cards*/
 .card {
     background: white;
@@ -218,29 +205,29 @@ body {
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
     overflow: hidden;
 }
-
+ 
 .card h2 {
     font-size: 17px;
     margin-bottom: 10px;
 }
-
+ 
 .card p,
 .card li {
     font-size: 14px;
     line-height: 1.5;
 }
-
+ 
 .card ul {
     list-style: none;
     padding-left: 0;
 }
-
+ 
 .empty-state {
     font-size: 13px;
     color: #6b7280;
 }
-
-
+ 
+ 
 /* Medication Status layout*/
 .status-card {
     min-height: 180px;
@@ -248,28 +235,28 @@ body {
     flex-direction: column;
     justify-content: center;
 }
-
+ 
 .med-status-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
     margin-top: 10px;
 }
-
+ 
 .med-box {
     background: #f8faff;
     border-radius: 14px;
     padding: 12px;
 }
-
+ 
 .med-box.last {
     border-left: 4px solid #16a34a;
 }
-
+ 
 .med-box.next {
     border-left: 4px solid #355ad8;
 }
-
+ 
 .med-label {
     font-size: 11px;
     font-weight: 700;
@@ -277,55 +264,55 @@ body {
     margin-bottom: 6px;
     text-transform: uppercase;
 }
-
+ 
 .med-name {
     font-size: 14px;
     font-weight: 700;
     margin-bottom: 4px;
 }
-
+ 
 .med-info {
     font-size: 12px;
     color: #6b7280;
     margin-bottom: 8px;
 }
-
+ 
 .med-badge {
     font-size: 11px;
     font-weight: 600;
     padding: 4px 10px;
     border-radius: 10px;
 }
-
+ 
 .med-badge.success {
     background: #dcfce7;
     color: #166534;
 }
-
+ 
 .med-badge.upcoming {
     background: #dbe7ff;
     color: #1d4ed8;
 }
-
+ 
 .status-label {
     font-weight: 700;
     color: #16a34a;
 }
-
+ 
 .current-time {
     font-size: 12px;
     color: #6b7280;
     margin-top: 6px;
 }
-
+ 
 .med-countdown {
     font-size: 11px;
     color: #355ad8;
     font-weight: 600;
     margin-bottom: 8px;
 }
-
-
+ 
+ 
 /* Adherence layout*/
 .adherence-card {
     display: flex;
@@ -333,7 +320,7 @@ body {
     align-items: center;
     justify-content: center;
 }
-
+ 
 .adherence-circle {
     width: 100px;
     height: 100px;
@@ -345,7 +332,7 @@ body {
     justify-content: center;
     background: conic-gradient(#355ad8 var(--progress), #e5e7eb 0%);
 }
-
+ 
 .adherence-circle::before {
     content: "";
     position: absolute;
@@ -353,34 +340,34 @@ body {
     background: white;
     border-radius: 50%;
 }
-
+ 
 .adherence-text {
     position: relative;
     font-size: 18px;
     font-weight: 700;
     color: #1f2937;
 }
-
+ 
 .adherence-note {
     margin-top: 10px;
     font-size: 12px;
     color: #6b7280;
     text-align: center;
 }
-
+ 
 .big-number {
     font-size: 34px;
     font-weight: 700;
     color: #355ad8;
     margin-top: 8px;
 }
-
-
+ 
+ 
 /* Care Team layout*/
 .team-card {
     min-height: 230px;
 }
-
+ 
 .care-team-list {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -389,14 +376,14 @@ body {
     justify-items: center;
     margin-top: 8px;
 }
-
+ 
 .care-member {
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
 }
-
+ 
 .care-avatar {
     width: 48px;
     height: 48px;
@@ -405,7 +392,7 @@ body {
     margin-bottom: 8px;
     flex-shrink: 0;
 }
-
+ 
 .care-avatar.more {
     display: flex;
     align-items: center;
@@ -414,22 +401,22 @@ body {
     color: white;
     font-weight: 600;
 }
-
+ 
 .care-name {
     font-size: 13px;
     font-weight: 600;
 }
-
+ 
 .care-role {
     font-size: 11px;
     color: #6b7280;
 }
-
+ 
 .care-member:hover .care-avatar {
     background: #dbe7ff;
 }
-
-
+ 
+ 
 /* Wellbeing Check-In layout*/
 .wellbeing-card {
     min-height: 230px;
@@ -437,28 +424,28 @@ body {
     flex-direction: column;
     justify-content: flex-start;
 }
-
+ 
 .checkin-progress {
     font-size: 12px;
     font-weight: 600;
     color: #6b7280;
     margin-bottom: 8px;
 }
-
+ 
 .checkin-question {
     font-size: 14px;
     font-weight: 500;
     margin-bottom: 14px;
     color: #1f2937;
 }
-
+ 
 .checkin-options {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     margin-bottom: 18px;
 }
-
+ 
 .checkin-option {
     border: none;
     background: #eef4ff;
@@ -468,23 +455,23 @@ body {
     font-size: 13px;
     cursor: pointer;
 }
-
+ 
 .checkin-option:hover {
     background: #dbe7ff;
 }
-
+ 
 .checkin-option.selected {
     background: #355ad8;
     color: white;
 }
-
+ 
 .checkin-actions {
     margin-top: auto;
     display: flex;
     justify-content: flex-end;
     align-items: center;
 }
-
+ 
 .checkin-next {
     border: none;
     background: #355ad8;
@@ -495,11 +482,11 @@ body {
     font-weight: 600;
     cursor: pointer;
 }
-
+ 
 .checkin-next:hover {
     background: #2747b8;
 }
-
+ 
 .checkin-back {
     border: none;
     background: transparent;
@@ -509,16 +496,16 @@ body {
     cursor: pointer;
     margin-right: 10px;
 }
-
+ 
 .checkin-step {
     display: none;
 }
-
+ 
 .active-step {
     display: block;
 }
-
-
+ 
+ 
 /* Right Panel layout*/
 .right-panel {
     background: #f4f8ff;
@@ -529,7 +516,7 @@ body {
     gap: 16px;
     min-height: 0;
 }
-
+ 
 .task-card,
 .goal-card {
     background: #ffffff;
@@ -542,14 +529,14 @@ body {
     justify-content: flex-start;
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
 }
-
+ 
 .task-card h2,
 .goal-card h2 {
     font-size: 17px;
     margin-bottom: 10px;
 }
-
-
+ 
+ 
 /* Recent Activity layout*/
 .activity-list {
     display: flex;
@@ -560,7 +547,7 @@ body {
     max-height: 320px;
     padding-right: 4px;
 }
-
+ 
 .activity-row {
     display: flex;
     align-items: flex-start;
@@ -569,7 +556,7 @@ body {
     border-radius: 12px;
     border: 1px solid rgba(0, 0, 0, 0.04);
 }
-
+ 
 .activity-dot {
     width: 10px;
     height: 10px;
@@ -578,65 +565,65 @@ body {
     flex-shrink: 0;
     background: currentColor;
 }
-
+ 
 .activity-content {
     flex: 1;
 }
-
+ 
 .activity-message {
     font-size: 12px;
     font-weight: 600;
     margin-bottom: 1px;
     line-height: 1.3;
 }
-
+ 
 .activity-time {
     font-size: 10px;
     color: #6b7280;
 }
-
+ 
 .activity-row.on-time {
     background: #dcfce7;
     color: #166534;
 }
-
+ 
 .activity-row.late,
 .activity-row.early {
     background: #fef3c7;
     color: #92400e;
 }
-
+ 
 .activity-row.suspicious {
     background: #fee2e2;
     color: #991b1b;
 }
-
+ 
 .activity-row.new {
     background: #dbeafe;
     color: #1d4ed8;
 }
-
+ 
 .activity-row.default {
     background: #f3f4f6;
     color: #374151;
 }
-
+ 
 .activity-list::-webkit-scrollbar,
 .schedule-list::-webkit-scrollbar {
     width: 6px;
 }
-
+ 
 .activity-list::-webkit-scrollbar-thumb,
 .schedule-list::-webkit-scrollbar-thumb {
     background: #cbd5e1;
     border-radius: 10px;
 }
-
+ 
 .activity-list::-webkit-scrollbar-track,
 .schedule-list::-webkit-scrollbar-track {
     background: transparent;
 }
-
+ 
 /* Medication Schedule layout*/
 .schedule-list {
     display: flex;
@@ -646,7 +633,7 @@ body {
     overflow-y: auto;
     padding-right: 4px;
 }
-
+ 
 .schedule-row {
     display: flex;
     align-items: center;
@@ -656,7 +643,7 @@ body {
     padding: 8px 10px;
     border: 1px solid var(--border-light);
 }
-
+ 
 .schedule-time {
     min-width: 54px;
     font-size: 11px;
@@ -667,22 +654,22 @@ body {
     border-radius: 8px;
     text-align: center;
 }
-
+ 
 .schedule-details {
     flex: 1;
 }
-
+ 
 .schedule-name {
     font-size: 12px;
     font-weight: 600;
     margin-bottom: 1px;
 }
-
+ 
 .schedule-dose {
     font-size: 10px;
     color: #6b7280;
 }
-
+ 
 .schedule-tag {
     font-size: 11px;
     font-weight: 600;
@@ -691,17 +678,17 @@ body {
     padding: 5px 8px;
     border-radius: 10px;
 }
-
+ 
 .schedule-tag.taken {
     color: #166534;
     background: #dcfce7;
 }
-
+ 
 .schedule-tag.upcoming {
     color: #1d4ed8;
     background: #dbeafe;
 }
-
+ 
 .schedule-tag.missed {
     color: #991b1b;
     background: #fee2e2;

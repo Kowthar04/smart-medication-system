@@ -59,4 +59,34 @@
     --shadow-dark: 0 8px 30px rgba(15, 23, 42, 0.18);
  
 }
+
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+ 
+body {
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--text);
+    background:
+        radial-gradient(circle at 20% 0%, var(--bg-tint-a) 0%, transparent 40%),
+        radial-gradient(circle at 80% 100%, var(--bg-tint-b) 0%, transparent 40%),
+        var(--bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+ 
+
+button,
+input,
+select,
+textarea {
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+}
  
