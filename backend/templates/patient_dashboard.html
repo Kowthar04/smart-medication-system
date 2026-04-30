@@ -127,19 +127,30 @@
                         </div>
 
                         <div class="card adherence-card">
-                            <h2>Adherence Rate</h2>
+    <h2>This week</h2>
 
-                            <div class="adherence-circle" style="--progress: {{ dashboard_data.adherence_rate }}%;">
-                                <span class="adherence-text">
-                                    {{ dashboard_data.adherence_rate }}%
-                                </span>
-                            </div>
+    <div class="adherence-circle large"
+         style="--progress: {{ dashboard_data.adherence_rate }}%;">
+        <span class="adherence-text">
+            {{ dashboard_data.adherence_rate }}%
+        </span>
+    </div>
 
-                            <p class="adherence-note">
-                                {{ dashboard_data.adherence_note }}
-                            </p>
-                        </div>
-
+    <div class="adherence-breakdown">
+        <div class="stat">
+            <span class="dot success"></span>
+            On time
+        </div>
+        <div class="stat">
+            <span class="dot warning"></span>
+            Late
+        </div>
+        <div class="stat">
+            <span class="dot danger"></span>
+            Missed
+        </div>
+    </div>
+</div>
                     </div>
 
                     <div class="card timeline-card">
