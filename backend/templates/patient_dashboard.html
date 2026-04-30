@@ -6,291 +6,301 @@
     <title>Patient Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='patient.css') }}?v=5">
-
 </head>
+
 <body>
     <div class="dashboard-container">
+
         <aside class="sidebar">
-    <div class="sidebar-top">
-        <h2 class="logo">
-    <span class="logo-mark">M</span>
-    <span>MediTrack</span>
-</h2>
-        <nav>
-    <p class="nav-section-label">Today</p>
-    <ul>
-        <li>
-            <a href="{{ url_for('patient_dashboard') }}" class="sidebar-link active">
-                <span class="sidebar-icon">⌂</span>
-                <span>Dashboard</span>
-            </a>
-        </li>
-        <li>
-            <a href="{{ url_for('patient_schedule') }}" class="sidebar-link">
-                <span class="sidebar-icon">🕒</span>
-                <span>Schedule</span>
-            </a>
-        </li>
-    </ul>
+            <div class="sidebar-top">
+                <h2 class="logo">
+                    <span class="logo-mark">M</span>
+                    <span>MediTrack</span>
+                </h2>
 
-    <p class="nav-section-label">Insights</p>
-    <ul>
-        <li>
-            <a href="{{ url_for('patient_adherence') }}" class="sidebar-link">
-                <span class="sidebar-icon">◔</span>
-                <span>Adherence</span>
-            </a>
-        </li>
-    </ul>
+                <nav>
+                    <p class="nav-section-label">Today</p>
+                    <ul>
+                        <li>
+                            <a href="{{ url_for('patient_dashboard') }}" class="sidebar-link active">
+                                <span class="sidebar-icon">⌂</span>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('patient_schedule') }}" class="sidebar-link">
+                                <span class="sidebar-icon">🕒</span>
+                                <span>Schedule</span>
+                            </a>
+                        </li>
+                    </ul>
 
-    <p class="nav-section-label">People</p>
-    <ul>
-        <li>
-            <a href="#" class="sidebar-link">
-                <span class="sidebar-icon">👥</span>
-                <span>Care Team</span>
-            </a>
-        </li>
-    </ul>
-</nav>
-                     </div>
+                    <p class="nav-section-label">Insights</p>
+                    <ul>
+                        <li>
+                            <a href="{{ url_for('patient_adherence') }}" class="sidebar-link">
+                                <span class="sidebar-icon">◔</span>
+                                <span>Adherence</span>
+                            </a>
+                        </li>
+                    </ul>
 
-                <div class="sidebar-bottom">
-                  <nav>
-                 <ul>
-                <li>
-                 <a href="#" class="sidebar-link">
-                <span class="sidebar-icon">⚙</span>
-                 <span>Settings</span>
-                </a>
-                </li>
-                <li>
-                <a href="#" class="sidebar-link logout-link">
-                 <span class="sidebar-icon">⇦</span>
-                <span>Logout</span>
-                </a>
-                </li>
-                 </ul>
-               </nav>
-              </div>
-    </aside>
+                    <p class="nav-section-label">People</p>
+                    <ul>
+                        <li>
+                            <a href="#" class="sidebar-link">
+                                <span class="sidebar-icon">👥</span>
+                                <span>Care Team</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+            <div class="sidebar-bottom">
+                <nav>
+                    <ul>
+                        <li>
+                            <a href="#" class="sidebar-link">
+                                <span class="sidebar-icon">⚙</span>
+                                <span>Settings</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="sidebar-link logout-link">
+                                <span class="sidebar-icon">⇦</span>
+                                <span>Logout</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </aside>
 
         <div class="content-wrapper">
 
             <section class="left-panel">
 
                 <header class="top-bar dashboard-greeting">
-    <div>
-        <h1>Welcome back, Sarah</h1>
-        <p><span class="status-dot"></span>Your medication overview for today</p>
-        <p class="current-time" id="current-time"></p>
-    </div>
+                    <div>
+                        <h1>Welcome back, Sarah</h1>
+                        <p><span class="status-dot"></span>Your medication overview for today</p>
+                        <p class="current-time" id="current-time"></p>
+                    </div>
 
-    <div class="greeting-actions">
-        <div class="streak-pill">
-            <span>▥</span>
-            <strong>3</strong>
-            <span>day streak</span>
-        </div>
+                    <div class="greeting-actions">
+                        <div class="streak-pill">
+                            <span>▥</span>
+                            <strong>3</strong>
+                            <span>day streak</span>
+                        </div>
 
-        <div class="profile-box profile-initial">S</div>
-    </div>
-</header>
+                        <div class="profile-box profile-initial">S</div>
+                    </div>
+                </header>
 
-              <div class="middle-section">
-    <div class="middle-grid top-grid">
-        <div class="card status-card">
-            <h2>Medication Status</h2>
+                <div class="middle-section">
 
-            <div class="med-status-grid">
-                <div class="med-box last">
-                <p class="med-label">Last Taken</p>
-                <p class="med-name">{{ dashboard_data.last_taken.name }}</p>
-                 <p class="med-info">{{ dashboard_data.last_taken.time }} • {{ dashboard_data.last_taken.dose }}</p>
-                <span class="med-badge">{{ dashboard_data.last_taken.status }}</span>
+                    <div class="middle-grid top-grid">
+
+                        <div class="next-dose-hero">
+                            <div>
+                                <span class="hero-label">
+                                    <span class="status-dot"></span>
+                                    Next dose
+                                </span>
+
+                                <h2>{{ dashboard_data.next_due.name }}</h2>
+                                <p>{{ dashboard_data.next_due.dose }} scheduled for {{ dashboard_data.next_due.time }}</p>
+
+                                <div class="hero-time">
+                                    <div>
+                                        <strong>{{ dashboard_data.next_due.time }}</strong>
+                                        <span>Due time</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="hero-pill-visual">
+                                <span></span>
+                            </div>
+                        </div>
+
+                        <div class="card adherence-card">
+                            <h2>Adherence Rate</h2>
+
+                            <div class="adherence-circle" style="--progress: {{ dashboard_data.adherence_rate }}%;">
+                                <span class="adherence-text">
+                                    {{ dashboard_data.adherence_rate }}%
+                                </span>
+                            </div>
+
+                            <p class="adherence-note">
+                                {{ dashboard_data.adherence_note }}
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="middle-grid bottom-grid">
+
+                        <div class="card team-card">
+                            <h2>Care team</h2>
+
+                            <div class="care-team-list">
+                                <div class="care-member">
+                                    <div class="care-avatar"></div>
+                                    <p class="care-name">Dr. Smith</p>
+                                    <p class="care-role">Primary Care Doctor</p>
+                                </div>
+
+                                <div class="care-member">
+                                    <div class="care-avatar"></div>
+                                    <p class="care-name">Nurse Jane</p>
+                                    <p class="care-role">Caregiver</p>
+                                </div>
+
+                                <div class="care-member">
+                                    <div class="care-avatar"></div>
+                                    <p class="care-name">Nurse Amina</p>
+                                    <p class="care-role">Caregiver</p>
+                                </div>
+
+                                <div class="care-member see-all">
+                                    <div class="care-avatar more">+2</div>
+                                    <p class="care-name">See all</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card wellbeing-card">
+                            <div class="checkin-step step-1 active-step">
+                                <div class="checkin-progress">Step 1 of 3</div>
+                                <h2>Wellbeing Check-In</h2>
+                                <p class="checkin-question">How is your mood right now?</p>
+
+                                <div class="checkin-options">
+                                    <button class="checkin-option">Very Good</button>
+                                    <button class="checkin-option">Good</button>
+                                    <button class="checkin-option">Neutral</button>
+                                    <button class="checkin-option">Low</button>
+                                    <button class="checkin-option">Very low</button>
+                                </div>
+
+                                <div class="checkin-actions">
+                                    <button class="checkin-next" id="to-step-2">Next</button>
+                                </div>
+                            </div>
+
+                            <div class="checkin-step step-2">
+                                <div class="checkin-progress">Step 2 of 3</div>
+                                <h2>Wellbeing Check-In</h2>
+                                <p class="checkin-question">What is your energy level right now?</p>
+
+                                <div class="checkin-options">
+                                    <button class="checkin-option">High</button>
+                                    <button class="checkin-option">Moderate</button>
+                                    <button class="checkin-option">Low</button>
+                                    <button class="checkin-option">Very low</button>
+                                </div>
+
+                                <div class="checkin-actions">
+                                    <button class="checkin-back" id="back-to-step-1">Back</button>
+                                    <button class="checkin-next" id="to-step-3">Next</button>
+                                </div>
+                            </div>
+
+                            <div class="checkin-step step-3">
+                                <div class="checkin-progress">Step 3 of 3</div>
+                                <h2>Wellbeing Check-In</h2>
+                                <p class="checkin-question">Are you experiencing any side effects?</p>
+
+                                <div class="checkin-options">
+                                    <button class="checkin-option">None</button>
+                                    <button class="checkin-option">Nausea</button>
+                                    <button class="checkin-option">Dizziness</button>
+                                    <button class="checkin-option">Headache</button>
+                                    <button class="checkin-option">Fatigue</button>
+                                    <button class="checkin-option">Other</button>
+                                </div>
+
+                                <div class="checkin-actions">
+                                    <button class="checkin-back" id="back-to-step-2">Back</button>
+                                    <button class="checkin-next" id="save-checkin">Save</button>
+                                </div>
+                            </div>
+
+                            <div class="checkin-step step-complete">
+                                <div class="checkin-progress">Completed</div>
+                                <h2>Wellbeing Check-In</h2>
+                                <p class="checkin-question">Your wellbeing check-in has been saved.</p>
+
+                                <div class="checkin-summary">
+                                    <p><strong>Mood:</strong> <span id="summary-mood">-</span></p>
+                                    <p><strong>Energy:</strong> <span id="summary-energy">-</span></p>
+                                    <p><strong>Side effects:</strong> <span id="summary-side-effects">-</span></p>
+                                </div>
+
+                                <div class="checkin-actions">
+                                    <button class="checkin-back" id="edit-checkin">Edit</button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
                 </div>
 
-<div class="med-box next">
-    <p class="med-label">Next Due</p>
-    <p class="med-name">{{ dashboard_data.next_due.name }}</p>
-    <p class="med-info">{{ dashboard_data.next_due.time }} • {{ dashboard_data.next_due.dose }}</p>
-    <span class="med-badge upcoming">
-        {% if dashboard_data.next_due.name == "No more doses today" %}
-            Completed
-        {% else %}
-            Upcoming
-        {% endif %}
-    </span>
-</div>
-            </div>
-        </div>
+            </section>
 
-<div class="card adherence-card">
-    <h2>Adherence Rate</h2>
-
-    <div class="adherence-circle"
-     style="--progress: {{ dashboard_data.adherence_rate }}%;">
-        <span class="adherence-text">
-            {{ dashboard_data.adherence_rate }}%
-        </span>
-    </div>
-
-    <p class="adherence-note">
-        {{ dashboard_data.adherence_note }}
-    </p>
-</div>
-    </div>
-
-    <div class="middle-grid bottom-grid">
-        <div class="card team-card">
-            <h2>Care team</h2>
-
-            <div class="care-team-list">
-                <div class="care-member">
-                    <div class="care-avatar"></div>
-                    <p class="care-name">Dr. Smith</p>
-                    <p class="care-role">Primary Care Doctor</p>
-                </div>
-
-                <div class="care-member">
-                    <div class="care-avatar"></div>
-                    <p class="care-name">Nurse Jane</p>
-                    <p class="care-role">Caregiver</p>
-                </div>
-
-                <div class="care-member">
-                    <div class="care-avatar"></div>
-                    <p class="care-name">Nurse Amina</p>
-                    <p class="care-role">Caregiver</p>
-                </div>
-
-                <div class="care-member see-all">
-                    <div class="care-avatar more">+2</div>
-                    <p class="care-name">See all</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="card wellbeing-card">
-            <div class="checkin-step step-1 active-step">
-                <div class="checkin-progress">Step 1 of 3</div>
-                <h2>Wellbeing Check-In</h2>
-                <p class="checkin-question">How is your mood right now?</p>
-
-                <div class="checkin-options">
-                    <button class="checkin-option">Very Good</button>
-                    <button class="checkin-option">Good</button>
-                    <button class="checkin-option">Neutral</button>
-                    <button class="checkin-option">Low</button>
-                    <button class="checkin-option">Very low</button>
-                </div>
-
-                <div class="checkin-actions">
-                    <button class="checkin-next" id="to-step-2">Next</button>
-                </div>
-            </div>
-
-            <div class="checkin-step step-2">
-                <div class="checkin-progress">Step 2 of 3</div>
-                <h2>Wellbeing Check-In</h2>
-                <p class="checkin-question">What is your energy level right now?</p>
-
-                <div class="checkin-options">
-                    <button class="checkin-option">High</button>
-                    <button class="checkin-option">Moderate</button>
-                    <button class="checkin-option">Low</button>
-                    <button class="checkin-option">Very low</button>
-                </div>
-
-                <div class="checkin-actions">
-                    <button class="checkin-back" id="back-to-step-1">Back</button>
-                    <button class="checkin-next" id="to-step-3">Next</button>
-                </div>
-            </div>
-
-            <div class="checkin-step step-3">
-                <div class="checkin-progress">Step 3 of 3</div>
-                <h2>Wellbeing Check-In</h2>
-                <p class="checkin-question">Are you experiencing any side effects?</p>
-
-                <div class="checkin-options">
-                    <button class="checkin-option">None</button>
-                    <button class="checkin-option">Nausea</button>
-                    <button class="checkin-option">Dizziness</button>
-                    <button class="checkin-option">Headache</button>
-                    <button class="checkin-option">Fatigue</button>
-                    <button class="checkin-option">Other</button>
-                </div>
-
-                <div class="checkin-actions">
-                    <button class="checkin-back" id="back-to-step-2">Back</button>
-                    <button class="checkin-next" id="save-checkin">Save</button>
-                </div>
-            </div>
-
-            <div class="checkin-step step-complete">
-                <div class="checkin-progress">Completed</div>
-                <h2>Wellbeing Check-In</h2>
-                <p class="checkin-question">Your wellbeing check-in has been saved.</p>
-
-                <div class="checkin-summary">
-                <p><strong>Mood:</strong> <span id="summary-mood">-</span></p>
-                <p><strong>Energy:</strong> <span id="summary-energy">-</span></p>
-                <p><strong>Side effects:</strong> <span id="summary-side-effects">-</span></p>
-                </div>
-
-                <div class="checkin-actions">
-                    <button class="checkin-back" id="edit-checkin">Edit</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-                             
-           </section>
             <aside class="right-panel">
-            <div class="task-card">
-    <h2>Recent Activity</h2>
-    <div class="activity-list">
-        {% if dashboard_data.recent_activity %}
-            {% for activity in dashboard_data.recent_activity %}
-                <div class="activity-row {{ activity.type }}">
-                    <div class="activity-dot"></div>
-                    <div class="activity-content">
-                        <p class="activity-message">{{ activity.message }}</p>
-                        <p class="activity-time">{{ activity.time }}</p>
-                    </div>
-                </div>
-            {% endfor %}
-        {% else %}
-            <p class="empty-state">No recent activity recorded</p>
-        {% endif %}
-    </div>
-</div>
 
-            <div class="goal-card">
-    <h2>Medication Schedule</h2>
-    <div class="schedule-list">
-        {% if dashboard_data.schedule %}
-            {% for item in dashboard_data.schedule %}
-                <div class="schedule-row">
-                    <div class="schedule-time">{{ item.time }}</div>
-                    <div class="schedule-details">
-                        <p class="schedule-name">{{ item.name }}</p>
-                        <p class="schedule-dose">{{ item.dose }}</p>
+                <div class="task-card">
+                    <h2>Recent Activity</h2>
+
+                    <div class="activity-list">
+                        {% if dashboard_data.recent_activity %}
+                            {% for activity in dashboard_data.recent_activity %}
+                                <div class="activity-row {{ activity.type }}">
+                                    <div class="activity-dot"></div>
+                                    <div class="activity-content">
+                                        <p class="activity-message">{{ activity.message }}</p>
+                                        <p class="activity-time">{{ activity.time }}</p>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="empty-state">No recent activity recorded</p>
+                        {% endif %}
                     </div>
-                    <div class="schedule-tag {{ item.tag_class }}">{{ item.status }}</div>
                 </div>
-            {% endfor %}
-        {% else %}
-            <p class="empty-state">No medication schedule available</p>
-        {% endif %}
-    </div>
-</div>
+
+                <div class="goal-card">
+                    <h2>Medication Schedule</h2>
+
+                    <div class="schedule-list">
+                        {% if dashboard_data.schedule %}
+                            {% for item in dashboard_data.schedule %}
+                                <div class="schedule-row">
+                                    <div class="schedule-time">{{ item.time }}</div>
+                                    <div class="schedule-details">
+                                        <p class="schedule-name">{{ item.name }}</p>
+                                        <p class="schedule-dose">{{ item.dose }}</p>
+                                    </div>
+                                    <div class="schedule-tag {{ item.tag_class }}">{{ item.status }}</div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="empty-state">No medication schedule available</p>
+                        {% endif %}
+                    </div>
+                </div>
+
             </aside>
+
         </div>
     </div>
-                             
-      <script src="{{ url_for('static', filename='js/patient_dashboard.js') }}?v=1"></script>
+
+    <script src="{{ url_for('static', filename='js/patient_dashboard.js') }}?v=1"></script>
 </body>
 </html>

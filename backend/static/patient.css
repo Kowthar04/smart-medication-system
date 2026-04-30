@@ -748,3 +748,76 @@ body {
     color: white;
     font-weight: 700;
 }
+
+.next-dose-hero {
+    background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+    color: white;
+    border-radius: 22px;
+    padding: 28px 30px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.hero-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 12px;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.12);
+    padding: 8px 12px;
+    border-radius: 999px;
+    margin-bottom: 18px;
+}
+
+.next-dose-hero h2 {
+    font-family: var(--font-display);
+    font-size: 34px;
+    margin-bottom: 8px;
+}
+
+.next-dose-hero p {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.hero-time {
+    margin-top: 20px;
+    display: flex;
+    gap: 16px;
+}
+
+.hero-time strong {
+    display: block;
+    font-size: 24px;
+}
+
+.hero-time span {
+    font-size: 12px;
+    opacity: 0.75;
+}
+
+.hero-pill-visual {
+    width: 92px;
+    height: 48px;
+    border-radius: 999px;
+    background: white;
+    transform: rotate(-25deg);
+    position: relative;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+}
+
+.hero-pill-visual span {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 46%;
+    height: 100%;
+    background: var(--success);
+    border-radius: 999px 0 0 999px;
+}
