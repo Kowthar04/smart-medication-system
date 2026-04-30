@@ -142,6 +142,30 @@
 
                     </div>
 
+                    <div class="card timeline-card">
+    <div class="timeline-header">
+        <h2>Today's medications</h2>
+        <a href="{{ url_for('patient_schedule') }}">View schedule →</a>
+    </div>
+
+    <div class="timeline-list">
+        {% for item in dashboard_data.schedule %}
+        <div class="timeline-row">
+            <div class="timeline-time">{{ item.time }}</div>
+
+            <div class="timeline-details">
+                <p class="timeline-name">{{ item.name }}</p>
+                <p class="timeline-dose">{{ item.dose }}</p>
+            </div>
+
+            <div class="timeline-status {{ item.tag_class }}">
+                {{ item.status }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
                     <div class="middle-grid bottom-grid">
 
                         <div class="card team-card">
@@ -275,26 +299,6 @@
                     </div>
                 </div>
 
-                <div class="goal-card">
-                    <h2>Medication Schedule</h2>
-
-                    <div class="schedule-list">
-                        {% if dashboard_data.schedule %}
-                            {% for item in dashboard_data.schedule %}
-                                <div class="schedule-row">
-                                    <div class="schedule-time">{{ item.time }}</div>
-                                    <div class="schedule-details">
-                                        <p class="schedule-name">{{ item.name }}</p>
-                                        <p class="schedule-dose">{{ item.dose }}</p>
-                                    </div>
-                                    <div class="schedule-tag {{ item.tag_class }}">{{ item.status }}</div>
-                                </div>
-                            {% endfor %}
-                        {% else %}
-                            <p class="empty-state">No medication schedule available</p>
-                        {% endif %}
-                    </div>
-                </div>
 
             </aside>
 
