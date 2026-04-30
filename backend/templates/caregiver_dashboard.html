@@ -13,22 +13,49 @@
     <div class="dashboard-container">
 
         <aside class="sidebar">
-            <h2 class="logo">MediTrack</h2>
+           
+            <h2 class="logo">
+    <span class="logo-mark">M</span>
+    <span>MediTrack</span>
+</h2>
 
             <nav>
-                <ul>
-                    <li>
-                        <a href="{{ url_for('caregiver_dashboard') }}" class="sidebar-link active">
-                            Dashboard
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ url_for('patient_dashboard') }}" class="sidebar-link">
-                            Patient View
-                        </a>
-                    </li>
-                </ul>
-            </nav>
+    <p class="nav-section-label">Today</p>
+    <ul>
+        <li>
+            <a href="{{ url_for('patient_dashboard') }}" class="sidebar-link active">
+                <span class="sidebar-icon">⌂</span>
+                <span>Dashboard</span>
+            </a>
+        </li>
+        <li>
+            <a href="{{ url_for('patient_schedule') }}" class="sidebar-link">
+                <span class="sidebar-icon">🕒</span>
+                <span>Schedule</span>
+            </a>
+        </li>
+    </ul>
+
+    <p class="nav-section-label">Insights</p>
+    <ul>
+        <li>
+            <a href="{{ url_for('patient_adherence') }}" class="sidebar-link">
+                <span class="sidebar-icon">◔</span>
+                <span>Adherence</span>
+            </a>
+        </li>
+    </ul>
+
+    <p class="nav-section-label">People</p>
+    <ul>
+        <li>
+            <a href="#" class="sidebar-link">
+                <span class="sidebar-icon">👥</span>
+                <span>Care Team</span>
+            </a>
+        </li>
+    </ul>
+</nav>
         </aside>
 
         <div class="content-wrapper">
