@@ -550,17 +550,43 @@ def patient_schedule():
     recent_events = get_recent_events()
 
     schedule_with_status = build_schedule_with_status(schedule, recent_events)
-    
 
     medications = []
     for item in schedule_with_status:
         if item["name"] not in medications:
             medications.append(item["name"])
 
-        schedule_data = {
+            taken_count = 0
+            upcoming_count = 0
+            late_count = 0
+
+            for item in schedule_with_status:
+                if item["tag_class"] == "taken":
+                     taken_count += 1
+                elif item["tag_class"] == "upcoming":
+                 upcoming_count += 1
+                elif item["tag_class"] == "late":
+                     late_count += 1
+
+            day_stats = {
+                "taken": taken_count,
+                "upcoming": upcoming_count,
+                "late": late_count,
+                "total": len(schedule_with_status)
+            }
+
+            day_stats = {
+                "taken": taken_count,
+                "upcoming": upcoming_count,
+                "late": late_count,
+                "total": len(schedule_with_status)
+            }
+
+    schedule_data = {
         "schedule": schedule_with_status,
         "medications": medications,
-        "calendar": build_month_calendar()
+        "calendar": build_month_calendar(),
+        "day_stats": day_stats
     }
 
     return render_template("patient_schedule.html", schedule_data=schedule_data)
