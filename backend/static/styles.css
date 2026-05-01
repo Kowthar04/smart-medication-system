@@ -230,4 +230,51 @@ textarea {
     color: var(--text);
 }
     
- 
+/*page load animation*/
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card,
+.next-dose-hero,
+.task-card,
+.insight-card,
+.trend-card {
+    animation: fadeUp 0.45s ease both;
+}
+
+.next-dose-hero {
+    animation-delay: 0.05s;
+}
+
+.card:nth-of-type(2),
+.task-card {
+    animation-delay: 0.1s;
+}
+
+.card:nth-of-type(3),
+.trend-card {
+    animation-delay: 0.15s;
+}
+
+.insight-card {
+    animation-delay: 0.2s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card,
+    .next-dose-hero,
+    .task-card,
+    .insight-card,
+    .trend-card {
+        animation: none;
+    }
+}
