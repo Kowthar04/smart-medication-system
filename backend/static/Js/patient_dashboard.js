@@ -172,3 +172,42 @@ if (snoozeBtn) {
         snoozeBtn.disabled = true;
     });
 }
+
+const countdownEl = document.getElementById("hero-countdown");
+const countdownTimeEl = document.getElementById("countdown-time");
+const countdownLabel = document.getElementById("countdown-label");
+
+function updateCountdown() {
+    if (!countdownEl) return;
+
+    const dueTimeStr = countdownEl.dataset.dueTime;
+    if (!dueTimeStr) return;
+
+    const now = new Date();
+
+    const [hours, minutes] = dueTimeStr.split(":");
+    const due = new Date();
+    due.setHours(parseInt(hours));
+    due.setMinutes(parseInt(minutes));
+    due.setSeconds(0);
+
+    const diff = due - now;
+
+    if (diff <= 0) {
+        countdownLabel.textContent = "Due now";
+        countdownTimeEl.textContent = "00:00:00";
+        return;
+    }
+
+    const h = Math.floor(diff / (1000 * 60 * 60));
+    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+    countdownTimeEl.textContent =
+        `${String(h).padStart(2, "0")}:` +
+        `${String(m).padStart(2, "0")}:` +
+        `${String(s).padStart(2, "0")}`;
+}
+
+setInterval(updateCountdown, 1000);
+updateCountdown();

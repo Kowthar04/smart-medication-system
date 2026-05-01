@@ -297,6 +297,22 @@ body {
     cursor: not-allowed;
 }
 
+.hero-countdown {
+    margin-top: 14px;
+    display: flex;
+    flex-direction: column;
+}
+
+.hero-countdown span {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.hero-countdown strong {
+    font-size: 20px;
+    font-weight: 700;
+}
+
 
 /* Adherence ring + breakdown */
 
