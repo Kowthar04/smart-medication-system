@@ -720,3 +720,30 @@ body {
 .activity-list::-webkit-scrollbar-track {
     background: transparent;
 }
+
+.insight-card {
+    background: linear-gradient(135deg, #1f2937, #111827);
+    color: var(--text-on-dark);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    box-shadow: var(--shadow-dark);
+}
+
+.insight-label {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--primary-bright);
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.insight-card h4 {
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+.insight-card p {
+    font-size: 12px;
+    opacity: 0.8;
+}
