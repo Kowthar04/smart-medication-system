@@ -461,9 +461,27 @@ body {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: var(--border);
     margin-bottom: 8px;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-on-dark);
+    font-weight: 700;
+    font-size: 13px;
+    box-shadow: var(--shadow-xs);
+}
+
+.doctor-avatar {
+    background: linear-gradient(135deg, var(--primary), var(--primary-bright));
+}
+
+.nurse-avatar {
+    background: linear-gradient(135deg, #fb7185, #f97316);
+}
+
+.green-avatar {
+    background: linear-gradient(135deg, var(--success), #14b8a6);
 }
  
 .care-avatar.more {
