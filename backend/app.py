@@ -500,6 +500,50 @@ def patient_dashboard():
 
     return render_template("patient_dashboard.html", dashboard_data=dashboard_data)
 
+def build_month_calendar():
+    today = datetime.now().date()
+    first_day = today.replace(day=1)
+
+    if today.month == 12:
+        next_month = today.replace(year=today.year + 1, month=1, day=1)
+    else:
+        next_month = today.replace(month=today.month + 1, day=1)
+
+    days_in_month = (next_month - first_day).days
+    start_offset = first_day.weekday()
+
+    calendar_days = []
+
+    for _ in range(start_offset):
+        calendar_days.append({
+            "day": "",
+            "is_empty": True,
+            "is_today": False,
+            "dot_class": ""
+        })
+
+    for day in range(1, days_in_month + 1):
+        current_date = first_day.replace(day=day)
+
+        if current_date < today:
+            dot_class = "taken-dot"
+        elif current_date == today:
+            dot_class = "today-dot"
+        else:
+            dot_class = ""
+
+        calendar_days.append({
+            "day": day,
+            "is_empty": False,
+            "is_today": current_date == today,
+            "dot_class": dot_class
+        })
+
+    return {
+        "month_name": today.strftime("%B %Y"),
+        "days": calendar_days
+    }
+
 @app.route("/patient/schedule", methods=["GET"])
 def patient_schedule():
     schedule = get_schedule_data()
@@ -513,9 +557,10 @@ def patient_schedule():
         if item["name"] not in medications:
             medications.append(item["name"])
 
-    schedule_data = {
+        schedule_data = {
         "schedule": schedule_with_status,
-        "medications": medications
+        "medications": medications,
+        "calendar": build_month_calendar()
     }
 
     return render_template("patient_schedule.html", schedule_data=schedule_data)

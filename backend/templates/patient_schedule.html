@@ -85,63 +85,35 @@
                 </header>
 
                 <div class="schedule-content">
+
     <div class="schedule-left-column">
+
         <div class="schedule-calendar">
-            <div class="calendar-header">
-                <div class="calendar-top">
-                    <h3>April 2026</h3>
-                    <p>Today's Schedule</p>
-                </div>
+            <div class="calendar-top">
+                <h3>{{ schedule_data.calendar.month_name }}</h3>
+                <p>Today's Schedule</p>
+            </div>
 
-                <div class="mini-calendar">
-                    <div class="mini-day-name">M</div>
-                    <div class="mini-day-name">T</div>
-                    <div class="mini-day-name">W</div>
-                    <div class="mini-day-name">T</div>
-                    <div class="mini-day-name">F</div>
-                    <div class="mini-day-name">S</div>
-                    <div class="mini-day-name">S</div>
+            <div class="mini-calendar">
+                <div class="mini-day-name">M</div>
+                <div class="mini-day-name">T</div>
+                <div class="mini-day-name">W</div>
+                <div class="mini-day-name">T</div>
+                <div class="mini-day-name">F</div>
+                <div class="mini-day-name">S</div>
+                <div class="mini-day-name">S</div>
 
-                    <div class="mini-day empty"></div>
-                    <div class="mini-day empty"></div>
-                    <div class="mini-day">1</div>
-                    <div class="mini-day">2</div>
-                    <div class="mini-day">3</div>
-                    <div class="mini-day">4</div>
-                    <div class="mini-day">5</div>
+                {% for day in schedule_data.calendar.days %}
+                    <div class="mini-day {% if day.is_empty %}empty{% endif %} {% if day.is_today %}active-day{% endif %}">
+                        {% if not day.is_empty %}
+                            <span>{{ day.day }}</span>
 
-                    <div class="mini-day">6</div>
-                    <div class="mini-day">7</div>
-                    <div class="mini-day">8</div>
-                    <div class="mini-day">9</div>
-                    <div class="mini-day">10</div>
-                    <div class="mini-day">11</div>
-                    <div class="mini-day">12</div>
-
-                    <div class="mini-day active-day">13</div>
-                    <div class="mini-day">14</div>
-                    <div class="mini-day">15</div>
-                    <div class="mini-day">16</div>
-                    <div class="mini-day">17</div>
-                    <div class="mini-day">18</div>
-                    <div class="mini-day">19</div>
-
-                    <div class="mini-day">20</div>
-                    <div class="mini-day">21</div>
-                    <div class="mini-day">22</div>
-                    <div class="mini-day">23</div>
-                    <div class="mini-day">24</div>
-                    <div class="mini-day">25</div>
-                    <div class="mini-day">26</div>
-
-                    <div class="mini-day">27</div>
-                    <div class="mini-day">28</div>
-                    <div class="mini-day">29</div>
-                    <div class="mini-day">30</div>
-                    <div class="mini-day empty"></div>
-                    <div class="mini-day empty"></div>
-                    <div class="mini-day empty"></div>
-                </div>
+                            {% if day.dot_class %}
+                                <span class="calendar-dot {{ day.dot_class }}"></span>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                {% endfor %}
             </div>
         </div>
 
@@ -150,19 +122,20 @@
             <p class="filter-subtext">Choose a medication to view its schedule</p>
 
             <div class="filter-options">
-        <label>
-        <input type="radio" name="medication-filter" value="all" checked>
-        All Medications
-        </label>
+                <label>
+                    <input type="radio" name="medication-filter" value="all" checked>
+                    All Medications
+                </label>
 
-        {% for medication in schedule_data.medications %}
-        <label>
-            <input type="radio" name="medication-filter" value="{{ medication }}">
-            {{ medication }}
-        </label>
-    {% endfor %}
-    </div>
+                {% for medication in schedule_data.medications %}
+                    <label>
+                        <input type="radio" name="medication-filter" value="{{ medication }}">
+                        {{ medication }}
+                    </label>
+                {% endfor %}
+            </div>
         </div>
+
     </div>
 
     <div class="schedule-board-area">
@@ -174,21 +147,20 @@
         </div>
 
         <div class="calendar-grid">
-    {% for item in schedule_data.schedule %}
-        <div class="schedule-row" data-medication="{{ item.name }}">
-            <div class="time-label">{{ item.time }}</div>
+            {% for item in schedule_data.schedule %}
+                <div class="schedule-row" data-medication="{{ item.name }}">
+                    <div class="time-label">{{ item.time }}</div>
 
-            <div class="med-card {{ item.tag_class }}">
-                <p class="med-card-title">{{ item.name }}</p>
-                <p class="med-card-dose">{{ item.dose }}</p>
-                <span class="med-card-status">{{ item.status }}</span>
-            </div>
-        </div>
-    {% endfor %}
-</div>
-            </div>
+                    <div class="med-card {{ item.tag_class }}">
+                        <p class="med-card-title">{{ item.name }}</p>
+                        <p class="med-card-dose">{{ item.dose }}</p>
+                        <span class="med-card-status">{{ item.status }}</span>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
     </div>
+
 </div>
             </section>
         </div>
