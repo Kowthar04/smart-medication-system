@@ -181,11 +181,18 @@ function updateCountdown() {
     if (!countdownEl) return;
 
     const dueTimeStr = countdownEl.dataset.dueTime;
-    if (!dueTimeStr) return;
+
+
+    if (!dueTimeStr || dueTimeStr.includes("-")) {
+        countdownLabel.textContent = "";
+        countdownTimeEl.textContent = "";
+        return;
+    }
 
     const now = new Date();
 
     const [hours, minutes] = dueTimeStr.split(":");
+
     const due = new Date();
     due.setHours(parseInt(hours));
     due.setMinutes(parseInt(minutes));
