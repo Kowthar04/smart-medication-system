@@ -119,6 +119,20 @@
                                         <span>Due time</span>
                                     </div>
                                 </div>
+
+                                <div class="hero-actions">
+    <button 
+        class="hero-btn-primary" 
+        id="log-dose-btn"
+        data-dose-time="{{ dashboard_data.next_due.time }}"
+        data-dose-name="{{ dashboard_data.next_due.name }}">
+        ✓ I took it
+    </button>
+
+    <button class="hero-btn-ghost" id="snooze-btn">
+        Snooze 15 min
+    </button>
+</div>
                             </div>
 
                             <div class="hero-pill-visual">

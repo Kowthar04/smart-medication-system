@@ -370,6 +370,32 @@ def receive_event():
 
     return jsonify({"status": "event received"})
 
+@app.route("/log-dose", methods=["POST"])
+def log_dose():
+    data = request.get_json()
+
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    dose_time = data.get("time")
+
+    if not dose_time:
+        return jsonify({"error": "Missing dose time"}), 400
+
+    run_query(
+        """
+        INSERT INTO medication_events (event_type, event_time, container_id, weight_change)
+        VALUES (%s, %s, %s, %s)
+        """,
+        ("taken", dose_time, "manual_dashboard", None),
+        commit=True
+    )
+
+    return jsonify({
+        "status": "logged",
+        "message": "Dose marked as taken"
+    })
+
 
 @app.route("/events", methods=["GET"])
 def get_events():

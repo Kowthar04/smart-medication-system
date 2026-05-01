@@ -125,3 +125,50 @@ if (editCheckin) {
 setupOptionGroups();
 updateCurrentTime();
 setInterval(updateCurrentTime, 60000);
+
+const logDoseBtn = document.getElementById("log-dose-btn");
+const snoozeBtn = document.getElementById("snooze-btn");
+
+async function logDoseTaken() {
+    const doseTime = logDoseBtn.dataset.doseTime;
+
+    try {
+        const response = await fetch("/log-dose", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                time: doseTime
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Failed to log dose");
+        }
+
+        logDoseBtn.textContent = "✓ Taken";
+        logDoseBtn.disabled = true;
+
+        setTimeout(() => {
+            window.location.reload();
+        }, 1200);
+
+    } catch (error) {
+        console.error("Error logging dose:", error);
+        alert("There was a problem logging this dose.");
+    }
+}
+
+if (logDoseBtn) {
+    logDoseBtn.addEventListener("click", logDoseTaken);
+}
+
+if (snoozeBtn) {
+    snoozeBtn.addEventListener("click", () => {
+        snoozeBtn.textContent = "Snoozed";
+        snoozeBtn.disabled = true;
+    });
+}
