@@ -7,9 +7,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='schedule.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='caregiver.css') }}">
-    <script src="{{ url_for('static', filename='js/caregiver_dashboard.js') }}"></script>
+    
 </head>
 
+<script src="{{ url_for('static', filename='js/caregiver_dashboard.js') }}"></script>
 <body class="caregiver-page">
     <div class="dashboard-container">
 
@@ -147,6 +148,12 @@
         ✎
     </button>
 </div>
+
+<div class="note-form">
+    <textarea placeholder="Add a caregiver note..."></textarea>
+    <button class="save-note-btn">Save note</button>
+</div>
+
     </div>
     {% endfor %}
 

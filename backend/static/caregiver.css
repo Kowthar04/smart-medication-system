@@ -196,3 +196,35 @@
     width: 30px;
     height: 30px;
 }
+
+/* caregiver notes */
+.note-form {
+    display: none;
+    grid-column: 1 / -1;
+    margin-top: 10px;
+}
+
+.note-form.active {
+    display: block;
+}
+
+.note-form textarea {
+    width: 100%;
+    min-height: 70px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 10px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.save-note-btn {
+    margin-top: 8px;
+    border: none;
+    background: var(--primary);
+    color: var(--text-on-dark);
+    padding: 8px 12px;
+    border-radius: var(--radius-full);
+    font-weight: 700;
+    cursor: pointer;
+}
