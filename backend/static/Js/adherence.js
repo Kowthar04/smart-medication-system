@@ -2,6 +2,12 @@ let adherenceChart = null;
 let currentPeriod = "daily";
 let currentMedication = "all";
 
+function getCssVariable(name) {
+    return getComputedStyle(document.documentElement)
+        .getPropertyValue(name)
+        .trim();
+}
+
 function createChart(labels, values) {
     const canvas = document.getElementById("adherenceChart");
 
@@ -9,61 +15,82 @@ function createChart(labels, values) {
         return;
     }
 
-  
-    const chartContext = canvas.getContext('2d');
+    const chartContext = canvas.getContext("2d");
 
-    const gradient = chartContext.createLinearGradient(0, 0, 400, 0);
-    gradient.addColorStop(0, '#4f7cff');
-    gradient.addColorStop(1, '#355ad8');
+    const primary = getCssVariable("--primary") || "#3b5fe0";
+    const textMuted = getCssVariable("--text-muted") || "#64748b";
+    const borderSubtle = getCssVariable("--border-subtle") || "#f0f3f9";
+    const text = getCssVariable("--text") || "#0f172a";
+
+    const gradient = chartContext.createLinearGradient(0, 0, 0, 320);
+    gradient.addColorStop(0, "rgba(59, 95, 224, 0.25)");
+    gradient.addColorStop(1, "rgba(59, 95, 224, 0.02)");
 
     adherenceChart = new Chart(canvas, {
-        type: 'bar',
+        type: "line",
         data: {
             labels: labels,
             datasets: [{
-                label: 'Adherence (%)',
+                label: "Adherence (%)",
                 data: values,
+                borderColor: primary,
                 backgroundColor: gradient,
-                borderRadius: 12,
-                barThickness: 26,
-                borderSkipped: false
-
-                 }]
+                fill: true,
+                tension: 0.4,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                pointBackgroundColor: primary,
+                pointBorderColor: "#ffffff",
+                pointBorderWidth: 2,
+                borderWidth: 3
+            }]
         },
         options: {
-            indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
             animation: {
                 duration: 800,
-                easing: 'easeOutQuart'
+                easing: "easeOutQuart"
             },
-
             plugins: {
                 legend: {
                     display: false
                 },
                 tooltip: {
-                    backgroundColor: '#1f2937',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    padding: 10,
-                    cornerRadius: 8,
+                    backgroundColor: text,
+                    titleColor: "#ffffff",
+                    bodyColor: "#ffffff",
+                    padding: 12,
+                    cornerRadius: 10,
                     displayColors: false,
                     callbacks: {
                         label: function(context) {
-                            return `${context.raw}%`;
+                            return `${context.raw}% adherence`;
                         }
                     }
                 }
-    },
-
+            },
             scales: {
                 x: {
+                    grid: {
+                        display: false
+                    },
+                    border: {
+                        display: false
+                    },
+                    ticks: {
+                        color: textMuted,
+                        font: {
+                            size: 12,
+                            weight: "600"
+                        }
+                    }
+                },
+                y: {
                     beginAtZero: true,
                     max: 100,
                     grid: {
-                        color: '#e5e7eb'
+                        color: borderSubtle
                     },
                     border: {
                         display: false
@@ -72,34 +99,16 @@ function createChart(labels, values) {
                         callback: function(value) {
                             return `${value}%`;
                         },
-                        color: '#6b7280',
+                        color: textMuted,
                         font: {
                             size: 12
-                        }
-                    }
-                },
-                y: {
-                    grid: {
-                        display: false
-                    },
-                    border: {
-                        display: false
-                    },
-                    ticks: {
-                        color: '#1f2937',
-                        font: {
-                            size: 13,
-                            weight: '600'
                         }
                     }
                 }
             }
         }
-
     });
-
 }
-
 
 function updateChart(labels, values) {
     if (!adherenceChart) {
@@ -163,5 +172,3 @@ document.addEventListener("DOMContentLoaded", () => {
     setupMedicationFilter();
     fetchAdherenceData();
 });
-
-    
