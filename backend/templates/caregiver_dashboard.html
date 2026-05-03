@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='schedule.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='caregiver.css') }}">
+    <script src="{{ url_for('static', filename='js/caregiver_dashboard.js') }}"></script>
 </head>
 
 <body class="caregiver-page">
@@ -133,7 +134,19 @@
             <strong>{{ item.name }}</strong>
             <p>{{ item.dose }}</p>
         </div>
-        <span class="badge {{ item.tag_class }}">{{ item.status }}</span>
+       <div class="caregiver-actions">
+    <span class="badge {{ item.tag_class }}">{{ item.status }}</span>
+
+    {% if item.tag_class == "upcoming" %}
+        <button class="caregiver-log-btn" data-time="{{ item.time }}">
+            Log dose
+        </button>
+    {% endif %}
+
+    <button class="caregiver-note-btn">
+        ✎
+    </button>
+</div>
     </div>
     {% endfor %}
 

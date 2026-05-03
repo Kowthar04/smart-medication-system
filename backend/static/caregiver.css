@@ -167,3 +167,32 @@
     font-weight: 700;
     cursor: pointer;
 }
+
+/* manual logging */
+.caregiver-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.caregiver-log-btn,
+.caregiver-note-btn {
+    border: none;
+    border-radius: var(--radius-full);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.caregiver-log-btn {
+    background: var(--primary);
+    color: var(--text-on-dark);
+    padding: 7px 10px;
+}
+
+.caregiver-note-btn {
+    background: var(--surface-alt);
+    color: var(--text-muted);
+    width: 30px;
+    height: 30px;
+}
