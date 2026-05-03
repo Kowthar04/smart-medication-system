@@ -12,78 +12,42 @@
 <body>
     <div class="dashboard-container">
 
-        <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-top">
-                
                 <h2 class="logo">
-    <span class="logo-mark">M</span>
-    <span>MediTrack</span>
-</h2>
+                    <span class="logo-mark">M</span>
+                    <span>MediTrack</span>
+                </h2>
                 <nav>
-    <p class="nav-section-label">Today</p>
-    <ul>
-        <li>
-            <a href="{{ url_for('patient_dashboard') }}" class="sidebar-link active">
-                <span class="sidebar-icon">⌂</span>
-                <span>Dashboard</span>
-            </a>
-        </li>
-        <li>
-            <a href="{{ url_for('patient_schedule') }}" class="sidebar-link">
-                <span class="sidebar-icon">🕒</span>
-                <span>Schedule</span>
-            </a>
-        </li>
-    </ul>
-
-    <p class="nav-section-label">Insights</p>
-    <ul>
-        <li>
-            <a href="{{ url_for('patient_adherence') }}" class="sidebar-link">
-                <span class="sidebar-icon">◔</span>
-                <span>Adherence</span>
-            </a>
-        </li>
-    </ul>
-
-    <p class="nav-section-label">People</p>
-    <ul>
-        <li>
-            <a href="#" class="sidebar-link">
-                <span class="sidebar-icon">👥</span>
-                <span>Care Team</span>
-            </a>
-        </li>
-    </ul>
-</nav>
+                    <p class="nav-section-label">Today</p>
+                    <ul>
+                        <li><a href="{{ url_for('patient_dashboard') }}" class="sidebar-link"><span class="sidebar-icon">⌂</span><span>Dashboard</span></a></li>
+                        <li><a href="{{ url_for('patient_schedule') }}" class="sidebar-link"><span class="sidebar-icon">🕒</span><span>Schedule</span></a></li>
+                    </ul>
+                    <p class="nav-section-label">Insights</p>
+                    <ul>
+                        <li><a href="{{ url_for('patient_adherence') }}" class="sidebar-link active"><span class="sidebar-icon">◔</span><span>Adherence</span></a></li>
+                    </ul>
+                    <p class="nav-section-label">People</p>
+                    <ul>
+                        <li><a href="#" class="sidebar-link"><span class="sidebar-icon">👥</span><span>Care Team</span></a></li>
+                    </ul>
+                </nav>
             </div>
 
             <div class="sidebar-bottom">
                 <nav>
                     <ul>
-                        <li>
-                            <a href="#" class="sidebar-link">
-                                <span class="sidebar-icon">⚙</span>
-                                <span>Settings</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="sidebar-link logout-link">
-                                <span class="sidebar-icon">⇦</span>
-                                <span>Logout</span>
-                            </a>
-                        </li>
+                        <li><a href="#" class="sidebar-link"><span class="sidebar-icon">⚙</span><span>Settings</span></a></li>
+                        <li><a href="{{ url_for('auth.logout') }}" class="sidebar-link logout-link"><span class="sidebar-icon">⇦</span><span>Sign out</span></a></li>
                     </ul>
                 </nav>
             </div>
         </aside>
 
-        <!-- Main Content -->
         <div class="content-wrapper">
             <section class="main-panel">
 
-                <!-- Top Bar -->
                 <header class="top-bar">
                     <div>
                         <h1>Adherence Overview</h1>
@@ -92,89 +56,79 @@
                     <div class="profile-box"></div>
                 </header>
 
-<div class="adherence-stats">
-    <div class="stat-card">
-        <div class="stat-icon adherence-icon">◔</div>
-        <div class="stat-text">
-            <p class="stat-label">Overall Adherence</p>
-            <h2 class="stat-value">{{ summary.overall_adherence }}%</h2>
-        </div>
-    </div>
+                <div class="adherence-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon adherence-icon">◔</div>
+                        <div class="stat-text">
+                            <p class="stat-label">Overall Adherence</p>
+                            <h2 class="stat-value">{{ summary.overall_adherence }}%</h2>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon taken-icon">✓</div>
+                        <div class="stat-text">
+                            <p class="stat-label">Doses Taken</p>
+                            <h2 class="stat-value">{{ summary.doses_taken }}</h2>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon missed-icon">!</div>
+                        <div class="stat-text">
+                            <p class="stat-label">Missed Doses</p>
+                            <h2 class="stat-value">{{ summary.missed_doses }}</h2>
+                        </div>
+                    </div>
+                </div>
 
-    <div class="stat-card">
-        <div class="stat-icon taken-icon">✓</div>
-        <div class="stat-text">
-            <p class="stat-label">Doses Taken</p>
-            <h2 class="stat-value">{{ summary.doses_taken }}</h2>
-        </div>
-    </div>
-
-    <div class="stat-card">
-        <div class="stat-icon missed-icon">!</div>
-        <div class="stat-text">
-            <p class="stat-label">Missed Doses</p>
-            <h2 class="stat-value">{{ summary.missed_doses }}</h2>
-        </div>
-    </div>
-</div>
-
-                <!-- Main Chart Card -->
                 <div class="adherence-card">
-
                     <div class="adherence-header">
                         <h3>Medication Adherence</h3>
-
                         <select class="med-filter" id="medicationFilter">
                             <option value="all">All Medications</option>
-                            {% if medications %}
-                                {% for medication in medications %}
-                                    <option value="{{ medication }}">{{ medication }}</option>
-                                {% endfor %}
-                            {% endif %}
+                            {% for medication in medications %}
+                                <option value="{{ medication }}">{{ medication }}</option>
+                            {% endfor %}
                         </select>
                     </div>
-
                     <div class="chart-placeholder">
                         <canvas id="adherenceChart"></canvas>
                     </div>
-
                     <div class="time-tabs">
                         <button class="time-tab active" data-period="daily">Today</button>
                         <button class="time-tab" data-period="weekly">This Week</button>
                         <button class="time-tab" data-period="monthly">This Month</button>
                     </div>
-
                 </div>
 
                 <div class="med-breakdown-card">
-    <div class="breakdown-header">
-        <h3>Medication breakdown</h3>
-        <p>Today's adherence by medication</p>
-    </div>
+                    <div class="breakdown-header">
+                        <h3>Medication breakdown</h3>
+                        <p>Today's adherence by medication</p>
+                    </div>
+                    <div class="breakdown-list">
+                        {% for item in medication_breakdown %}
+                        <div class="breakdown-row">
+                            <div class="breakdown-info">
+                                <strong>{{ item.name }}</strong>
+                                <span>Current period</span>
+                            </div>
+                            <div class="breakdown-bar">
+                                <div class="breakdown-fill" data-width="{{ item.percentage }}"></div>
+                            </div>
+                            <span class="breakdown-percent">{{ item.percentage }}%</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
 
-    <div class="breakdown-list">
-        {% for item in medication_breakdown %}
-        <div class="breakdown-row">
-            <div class="breakdown-info">
-                <strong>{{ item.name }}</strong>
-                <span>Current period</span>
-            </div>
+                {% if insight %}
+                <div class="adherence-insight-card">
+                    <div class="insight-label">{{ insight.label }}</div>
+                    <h3>{{ insight.headline }}</h3>
+                    <p>{{ insight.body }}</p>
+                </div>
+                {% endif %}
 
-            <div class="breakdown-bar">
-                <div class="breakdown-fill" data-width="{{ item.percentage }}"></div>
-            </div>
-
-            <span class="breakdown-percent">{{ item.percentage }}%</span>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-
-<div class="adherence-insight-card">
-    <div class="insight-label">INSIGHT</div>
-    <h3>Vitamin D is your strongest routine today</h3>
-    <p>Your current adherence data shows which medications are being taken most consistently.</p>
-</div>
             </section>
         </div>
 

@@ -11,64 +11,32 @@
     <div class="dashboard-container">
         <aside class="sidebar">
             <div class="sidebar-top">
-               <h2 class="logo">
-    <span class="logo-mark">M</span>
-    <span>MediTrack</span>
-</h2>
-               <nav>
-    <p class="nav-section-label">Today</p>
-    <ul>
-        <li>
-            <a href="{{ url_for('patient_dashboard') }}" class="sidebar-link active">
-                <span class="sidebar-icon">⌂</span>
-                <span>Dashboard</span>
-            </a>
-        </li>
-        <li>
-            <a href="{{ url_for('patient_schedule') }}" class="sidebar-link">
-                <span class="sidebar-icon">🕒</span>
-                <span>Schedule</span>
-            </a>
-        </li>
-    </ul>
-
-    <p class="nav-section-label">Insights</p>
-    <ul>
-        <li>
-            <a href="{{ url_for('patient_adherence') }}" class="sidebar-link">
-                <span class="sidebar-icon">◔</span>
-                <span>Adherence</span>
-            </a>
-        </li>
-    </ul>
-
-    <p class="nav-section-label">People</p>
-    <ul>
-        <li>
-            <a href="#" class="sidebar-link">
-                <span class="sidebar-icon">👥</span>
-                <span>Care Team</span>
-            </a>
-        </li>
-    </ul>
-</nav>
+                <h2 class="logo">
+                    <span class="logo-mark">M</span>
+                    <span>MediTrack</span>
+                </h2>
+                <nav>
+                    <p class="nav-section-label">Today</p>
+                    <ul>
+                        <li><a href="{{ url_for('patient_dashboard') }}" class="sidebar-link"><span class="sidebar-icon">⌂</span><span>Dashboard</span></a></li>
+                        <li><a href="{{ url_for('patient_schedule') }}" class="sidebar-link active"><span class="sidebar-icon">🕒</span><span>Schedule</span></a></li>
+                    </ul>
+                    <p class="nav-section-label">Insights</p>
+                    <ul>
+                        <li><a href="{{ url_for('patient_adherence') }}" class="sidebar-link"><span class="sidebar-icon">◔</span><span>Adherence</span></a></li>
+                    </ul>
+                    <p class="nav-section-label">People</p>
+                    <ul>
+                        <li><a href="#" class="sidebar-link"><span class="sidebar-icon">👥</span><span>Care Team</span></a></li>
+                    </ul>
+                </nav>
             </div>
 
             <div class="sidebar-bottom">
                 <nav>
                     <ul>
-                        <li>
-                            <a href="#" class="sidebar-link">
-                                <span class="sidebar-icon">⚙</span>
-                                <span>Settings</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" class="sidebar-link logout-link">
-                                <span class="sidebar-icon">⇦</span>
-                                <span>Logout</span>
-                            </a>
-                        </li>
+                        <li><a href="#" class="sidebar-link"><span class="sidebar-icon">⚙</span><span>Settings</span></a></li>
+                        <li><a href="{{ url_for('auth.logout') }}" class="sidebar-link logout-link"><span class="sidebar-icon">⇦</span><span>Sign out</span></a></li>
                     </ul>
                 </nav>
             </div>
@@ -86,114 +54,105 @@
 
                 <div class="schedule-content">
 
-    <div class="schedule-left-column">
+                    <div class="schedule-left-column">
 
-        <div class="schedule-calendar">
-            <div class="calendar-top">
-                <h3>{{ schedule_data.calendar.month_name }}</h3>
-                <p>Today's Schedule</p>
-            </div>
+                        <div class="schedule-calendar">
+                            <div class="calendar-top">
+                                <h3>{{ schedule_data.calendar.month_name }}</h3>
+                                <p>Today's Schedule</p>
+                            </div>
 
-            <div class="mini-calendar">
-                <div class="mini-day-name">M</div>
-                <div class="mini-day-name">T</div>
-                <div class="mini-day-name">W</div>
-                <div class="mini-day-name">T</div>
-                <div class="mini-day-name">F</div>
-                <div class="mini-day-name">S</div>
-                <div class="mini-day-name">S</div>
+                            <div class="mini-calendar">
+                                <div class="mini-day-name">M</div>
+                                <div class="mini-day-name">T</div>
+                                <div class="mini-day-name">W</div>
+                                <div class="mini-day-name">T</div>
+                                <div class="mini-day-name">F</div>
+                                <div class="mini-day-name">S</div>
+                                <div class="mini-day-name">S</div>
 
-                {% for day in schedule_data.calendar.days %}
-                    <div class="mini-day {% if day.is_empty %}empty{% endif %} {% if day.is_today %}active-day{% endif %}">
-                        {% if not day.is_empty %}
-                            <span>{{ day.day }}</span>
+                                {% for day in schedule_data.calendar.days %}
+                                    <div class="mini-day {% if day.is_empty %}empty{% endif %} {% if day.is_today %}active-day{% endif %}">
+                                        {% if not day.is_empty %}
+                                            <span>{{ day.day }}</span>
+                                            {% if day.dot_class %}
+                                                <span class="calendar-dot {{ day.dot_class }}"></span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
 
-                            {% if day.dot_class %}
-                                <span class="calendar-dot {{ day.dot_class }}"></span>
-                            {% endif %}
-                        {% endif %}
+                        <div class="schedule-filters">
+                            <h3>Filter by Medication</h3>
+                            <p class="filter-subtext">Choose a medication to view its schedule</p>
+                            <div class="filter-options">
+                                <label>
+                                    <input type="radio" name="medication-filter" value="all" checked>
+                                    All Medications
+                                </label>
+                                {% for medication in schedule_data.medications %}
+                                    <label>
+                                        <input type="radio" name="medication-filter" value="{{ medication }}">
+                                        {{ medication }}
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
                     </div>
-                {% endfor %}
-            </div>
-        </div>
 
-        <div class="schedule-filters">
-            <h3>Filter by Medication</h3>
-            <p class="filter-subtext">Choose a medication to view its schedule</p>
+                    <div class="schedule-board-area">
 
-            <div class="filter-options">
-                <label>
-                    <input type="radio" name="medication-filter" value="all" checked>
-                    All Medications
-                </label>
+                        <div class="day-stats">
+                            <div class="day-stat">
+                                <span>{{ schedule_data.day_stats.taken }}</span>
+                                <p>Taken</p>
+                            </div>
+                            <div class="day-stat">
+                                <span>{{ schedule_data.day_stats.upcoming }}</span>
+                                <p>Upcoming</p>
+                            </div>
+                            <div class="day-stat">
+                                <span>{{ schedule_data.day_stats.late }}</span>
+                                <p>Late</p>
+                            </div>
+                            <div class="day-stat">
+                                <span>{{ schedule_data.day_stats.total }}</span>
+                                <p>Total</p>
+                            </div>
+                        </div>
 
-                {% for medication in schedule_data.medications %}
-                    <label>
-                        <input type="radio" name="medication-filter" value="{{ medication }}">
-                        {{ medication }}
-                    </label>
-                {% endfor %}
-            </div>
-        </div>
+                        <div class="schedule-header">
+                            <div>
+                                <h3>Today's Medications</h3>
+                                <p>{{ schedule_data.schedule|length }} doses scheduled today</p>
+                            </div>
+                        </div>
 
-    </div>
+                        <div class="calendar-grid">
+                            {% for item in schedule_data.schedule %}
+                                <div class="schedule-row" data-medication="{{ item.name }}">
+                                    <div class="time-label">{{ item.time }}</div>
+                                    <div class="med-card {{ item.tag_class }} med-{{ item.name|replace(' ', '-')|lower }}">
+                                        <p class="med-card-title">{{ item.name }}</p>
+                                        <p class="med-card-dose">{{ item.dose }}</p>
+                                        {% if item.tag_class == "upcoming" %}
+                                            <button class="mark-taken-btn" data-time="{{ item.time }}">
+                                                ✓ Mark taken
+                                            </button>
+                                        {% else %}
+                                            <span class="med-card-status">{{ item.status }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
 
-    <div class="schedule-board-area">
+                    </div>
 
-        <div class="day-stats">
-    <div class="day-stat">
-        <span>{{ schedule_data.day_stats.taken }}</span>
-        <p>Taken</p>
-    </div>
-
-    <div class="day-stat">
-        <span>{{ schedule_data.day_stats.upcoming }}</span>
-        <p>Upcoming</p>
-    </div>
-
-    <div class="day-stat">
-        <span>{{ schedule_data.day_stats.late }}</span>
-        <p>Late</p>
-    </div>
-
-    <div class="day-stat">
-        <span>{{ schedule_data.day_stats.total }}</span>
-        <p>Total</p>
-    </div>
-</div>
-
-        <div class="schedule-header">
-            <div>
-                <h3>Today's Medications</h3>
-                <p>{{ schedule_data.schedule|length }} doses scheduled today</p>
-            </div>
-        </div>
-
-        <div class="calendar-grid">
-            {% for item in schedule_data.schedule %}
-                <div class="schedule-row" data-medication="{{ item.name }}">
-                    <div class="time-label">{{ item.time }}</div>
-
-                    <div class="med-card {{ item.tag_class }} med-{{ item.name|replace(' ', '-')|lower }}">
-
-    <p class="med-card-title">{{ item.name }}</p>
-    <p class="med-card-dose">{{ item.dose }}</p>
-
-    {% if item.tag_class == "upcoming" %}
-        <button class="mark-taken-btn" data-time="{{ item.time }}">
-            ✓ Mark taken
-        </button>
-    {% else %}
-        <span class="med-card-status">{{ item.status }}</span>
-    {% endif %}
-
-</div>
                 </div>
-            {% endfor %}
-        </div>
-    </div>
-
-</div>
             </section>
         </div>
     </div>

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='patient.css') }}?v=6">
+    <link rel="stylesheet" href="{{ url_for('static', filename='patient.css') }}?v=8">
 </head>
 
 <body>
@@ -67,9 +67,9 @@
                             </a>
                         </li>
                         <li>
-                            <a href="#" class="sidebar-link logout-link">
+                            <a href="{{ url_for('auth.logout') }}" class="sidebar-link logout-link">
                                 <span class="sidebar-icon">⇦</span>
-                                <span>Logout</span>
+                                <span>Sign out</span>
                             </a>
                         </li>
                     </ul>
@@ -83,19 +83,21 @@
 
                 <header class="top-bar dashboard-greeting">
                     <div>
-                        <h1>Welcome back, Sarah</h1>
+                        <h1>Welcome back, {{ dashboard_data.patient_name.split()[0] }}</h1>
                         <p><span class="status-dot"></span>Your medication overview for today</p>
                         <p class="current-time" id="current-time"></p>
                     </div>
 
                     <div class="greeting-actions">
+                        {% if dashboard_data.streak > 0 %}
                         <div class="streak-pill">
                             <span>▥</span>
-                            <strong>3</strong>
+                            <strong>{{ dashboard_data.streak }}</strong>
                             <span>day streak</span>
                         </div>
+                        {% endif %}
 
-                        <div class="profile-box profile-initial">S</div>
+                        <div class="profile-box profile-initial">{{ dashboard_data.patient_name[0] }}</div>
                     </div>
                 </header>
 
@@ -120,108 +122,78 @@
                                     </div>
                                 </div>
 
-                                <div class="hero-countdown" 
-     id="hero-countdown"
-     data-due-time="{{ dashboard_data.next_due.time }}">
-    <span id="countdown-label">Due in</span>
-    <strong id="countdown-time">--:--:--</strong>
-</div>
+                                <div class="hero-countdown" id="hero-countdown"
+                                     data-due-time="{{ dashboard_data.next_due.time }}">
+                                    <span id="countdown-label">Due in</span>
+                                    <strong id="countdown-time">--:--:--</strong>
+                                </div>
 
                                 <div class="hero-actions">
-    <button 
-        class="hero-btn-primary" 
-        id="log-dose-btn"
-        data-dose-time="{{ dashboard_data.next_due.time }}"
-        data-dose-name="{{ dashboard_data.next_due.name }}">
-        ✓ I took it
-    </button>
-
-    <button class="hero-btn-ghost" id="snooze-btn">
-        Snooze 15 min
-    </button>
-</div>
+                                    <button class="hero-btn-primary" id="log-dose-btn"
+                                        data-dose-time="{{ dashboard_data.next_due.time }}"
+                                        data-dose-name="{{ dashboard_data.next_due.name }}">
+                                        ✓ I took it
+                                    </button>
+                                    <button class="hero-btn-ghost" id="snooze-btn">Snooze 15 min</button>
+                                </div>
                             </div>
 
-                            <div class="hero-pill-visual">
-                                <span></span>
-                            </div>
+                            <div class="hero-pill-visual"><span></span></div>
                         </div>
 
                         <div class="card adherence-card">
-    <h2>This week</h2>
-
-    <div class="adherence-circle large"
-         style="--progress: {{ dashboard_data.adherence_rate }}%;">
-        <span class="adherence-text">
-            {{ dashboard_data.adherence_rate }}%
-        </span>
-    </div>
-
-    <div class="adherence-breakdown">
-        <div class="stat">
-            <span class="dot success"></span>
-            On time
-        </div>
-        <div class="stat">
-            <span class="dot warning"></span>
-            Late
-        </div>
-        <div class="stat">
-            <span class="dot danger"></span>
-            Missed
-        </div>
-    </div>
-</div>
+                            <h2>This week</h2>
+                            <div class="adherence-circle large"
+                                 style="--progress: {{ dashboard_data.adherence_rate }}%;">
+                                <span class="adherence-text">{{ dashboard_data.adherence_rate }}%</span>
+                            </div>
+                            <div class="adherence-breakdown">
+                                <div class="stat"><span class="dot success"></span>On time</div>
+                                <div class="stat"><span class="dot warning"></span>Late</div>
+                                <div class="stat"><span class="dot danger"></span>Missed</div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="card timeline-card">
-    <div class="timeline-header">
-        <h2>Today's medications</h2>
-        <a href="{{ url_for('patient_schedule') }}">View schedule →</a>
-    </div>
-
-    <div class="timeline-list">
-        {% for item in dashboard_data.schedule %}
-        <div class="timeline-row">
-            <div class="timeline-time">{{ item.time }}</div>
-
-            <div class="timeline-details">
-                <p class="timeline-name">{{ item.name }}</p>
-                <p class="timeline-dose">{{ item.dose }}</p>
-            </div>
-
-            <div class="timeline-status {{ item.tag_class }}">
-                {{ item.status }}
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
+                        <div class="timeline-header">
+                            <h2>Today's medications</h2>
+                            <a href="{{ url_for('patient_schedule') }}">View schedule →</a>
+                        </div>
+                        <div class="timeline-list">
+                            {% for item in dashboard_data.schedule %}
+                            <div class="timeline-row">
+                                <div class="timeline-time">{{ item.time }}</div>
+                                <div class="timeline-details">
+                                    <p class="timeline-name">{{ item.name }}</p>
+                                    <p class="timeline-dose">{{ item.dose }}</p>
+                                </div>
+                                <div class="timeline-status {{ item.tag_class }}">{{ item.status }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
 
                     <div class="middle-grid bottom-grid">
 
                         <div class="card team-card">
                             <h2>Care team</h2>
-
                             <div class="care-team-list">
                                 <div class="care-member">
                                     <div class="care-avatar doctor-avatar">DS</div>
                                     <p class="care-name">Dr. Smith</p>
                                     <p class="care-role">Primary Care Doctor</p>
                                 </div>
-
                                 <div class="care-member">
                                     <div class="care-avatar nurse-avatar">NJ</div>
                                     <p class="care-name">Nurse Jane</p>
                                     <p class="care-role">Caregiver</p>
                                 </div>
-
                                 <div class="care-member">
                                     <div class="care-avatar nurse-avatar green-avatar">NA</div>
                                     <p class="care-name">Nurse Amina</p>
                                     <p class="care-role">Caregiver</p>
                                 </div>
-
                                 <div class="care-member see-all">
                                     <div class="care-avatar more">+2</div>
                                     <p class="care-name">See all</p>
@@ -234,7 +206,6 @@
                                 <div class="checkin-progress">Step 1 of 3</div>
                                 <h2>Wellbeing Check-In</h2>
                                 <p class="checkin-question">How is your mood right now?</p>
-
                                 <div class="checkin-options">
                                     <button class="checkin-option">Very Good</button>
                                     <button class="checkin-option">Good</button>
@@ -242,7 +213,6 @@
                                     <button class="checkin-option">Low</button>
                                     <button class="checkin-option">Very low</button>
                                 </div>
-
                                 <div class="checkin-actions">
                                     <button class="checkin-next" id="to-step-2">Next</button>
                                 </div>
@@ -252,14 +222,12 @@
                                 <div class="checkin-progress">Step 2 of 3</div>
                                 <h2>Wellbeing Check-In</h2>
                                 <p class="checkin-question">What is your energy level right now?</p>
-
                                 <div class="checkin-options">
                                     <button class="checkin-option">High</button>
                                     <button class="checkin-option">Moderate</button>
                                     <button class="checkin-option">Low</button>
                                     <button class="checkin-option">Very low</button>
                                 </div>
-
                                 <div class="checkin-actions">
                                     <button class="checkin-back" id="back-to-step-1">Back</button>
                                     <button class="checkin-next" id="to-step-3">Next</button>
@@ -270,7 +238,6 @@
                                 <div class="checkin-progress">Step 3 of 3</div>
                                 <h2>Wellbeing Check-In</h2>
                                 <p class="checkin-question">Are you experiencing any side effects?</p>
-
                                 <div class="checkin-options">
                                     <button class="checkin-option">None</button>
                                     <button class="checkin-option">Nausea</button>
@@ -279,7 +246,6 @@
                                     <button class="checkin-option">Fatigue</button>
                                     <button class="checkin-option">Other</button>
                                 </div>
-
                                 <div class="checkin-actions">
                                     <button class="checkin-back" id="back-to-step-2">Back</button>
                                     <button class="checkin-next" id="save-checkin">Save</button>
@@ -290,13 +256,11 @@
                                 <div class="checkin-progress">Completed</div>
                                 <h2>Wellbeing Check-In</h2>
                                 <p class="checkin-question">Your wellbeing check-in has been saved.</p>
-
                                 <div class="checkin-summary">
                                     <p><strong>Mood:</strong> <span id="summary-mood">-</span></p>
                                     <p><strong>Energy:</strong> <span id="summary-energy">-</span></p>
                                     <p><strong>Side effects:</strong> <span id="summary-side-effects">-</span></p>
                                 </div>
-
                                 <div class="checkin-actions">
                                     <button class="checkin-back" id="edit-checkin">Edit</button>
                                 </div>
@@ -311,31 +275,28 @@
 
             <aside class="right-panel">
 
-
+                {% if dashboard_data.trend %}
                 <div class="trend-card">
-    <div class="trend-header">
-        <div>
-            <h2>Adherence trend</h2>
-            <p>Last 14 days</p>
-        </div>
-        <span class="trend-delta">↑ 12%</span>
-    </div>
-
-    <svg class="trend-line" viewBox="0 0 260 90" preserveAspectRatio="none">
-        <polyline
-            points="0,65 25,55 50,60 75,42 100,50 125,38 150,45 175,28 200,34 225,22 250,18"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="4"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-        />
-    </svg>
-</div>
+                    <div class="trend-header">
+                        <div>
+                            <h2>Adherence trend</h2>
+                            <p>Last 14 days</p>
+                        </div>
+                        <span class="trend-delta trend-delta-{{ dashboard_data.trend.delta_class }}">
+                            {{ dashboard_data.trend.delta_label }}
+                        </span>
+                    </div>
+                    <svg class="trend-line" viewBox="0 0 260 90" preserveAspectRatio="none">
+                        <polyline
+                            points="{{ dashboard_data.trend.points }}"
+                            fill="none" stroke="currentColor" stroke-width="4"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+                {% endif %}
 
                 <div class="task-card">
                     <h2>Recent Activity</h2>
-
                     <div class="activity-list">
                         {% if dashboard_data.recent_activity %}
                             {% for activity in dashboard_data.recent_activity %}
@@ -353,18 +314,19 @@
                     </div>
                 </div>
 
+                {% if dashboard_data.insight %}
                 <div class="insight-card">
-    <div class="insight-label">PATTERN DETECTED</div>
-    <h4>You're most consistent with morning doses</h4>
-    <p>Evening medications run 14 minutes late on average.</p>
-</div>
-
+                    <div class="insight-label">{{ dashboard_data.insight.label }}</div>
+                    <h4>{{ dashboard_data.insight.headline }}</h4>
+                    <p>{{ dashboard_data.insight.body }}</p>
+                </div>
+                {% endif %}
 
             </aside>
 
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/patient_dashboard.js') }}?v=1"></script>
+    <script src="{{ url_for('static', filename='js/patient_dashboard.js') }}?v=2"></script>
 </body>
 </html>
