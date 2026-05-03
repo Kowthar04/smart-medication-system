@@ -6,21 +6,23 @@
 }
 
 .overview-card {
-    background: white;
-    border-radius: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
     padding: 20px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    box-shadow: var(--shadow-sm);
 }
 
 .overview-card p {
     font-size: 13px;
-    color: #6b7280;
+    color: var(--text-muted);
     margin-bottom: 6px;
 }
 
 .overview-card h2 {
     font-size: 24px;
-    color: #1f2937;
+    font-family: var(--font-display);
+    color: var(--text);
 }
 
 .caregiver-content {
