@@ -21,7 +21,6 @@ const checkinData = {
 function showStep(stepClass) {
     steps.forEach(step => step.classList.remove("active-step"));
     const nextStep = document.querySelector(stepClass);
-
     if (nextStep) {
         nextStep.classList.add("active-step");
     }
@@ -29,31 +28,23 @@ function showStep(stepClass) {
 
 function updateCurrentTime() {
     const now = new Date();
-
     if (currentTimeEl) {
         currentTimeEl.textContent = now.toLocaleString([], {
-            weekday: "short",
-            day: "numeric",
-            month: "short",
-            hour: "2-digit",
-            minute: "2-digit"
+            weekday: "short", day: "numeric", month: "short",
+            hour: "2-digit", minute: "2-digit",
         });
     }
 }
 
 function setupOptionGroups() {
     const optionGroups = document.querySelectorAll(".checkin-options");
-
     optionGroups.forEach(group => {
         const buttons = group.querySelectorAll(".checkin-option");
-
         buttons.forEach(button => {
             button.addEventListener("click", () => {
                 buttons.forEach(btn => btn.classList.remove("selected"));
                 button.classList.add("selected");
-
                 const step = group.closest(".checkin-step");
-
                 if (step.classList.contains("step-1")) {
                     checkinData.mood = button.innerText;
                 } else if (step.classList.contains("step-2")) {
@@ -75,22 +66,16 @@ async function saveWellbeingCheckin() {
     try {
         const response = await fetch("/wellbeing", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(checkinData)
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(checkinData),
         });
-
         const data = await response.json();
-
         if (!response.ok) {
             throw new Error(data.error || "Failed to save wellbeing check-in");
         }
-
         summaryMood.textContent = checkinData.mood;
         summaryEnergy.textContent = checkinData.energy;
         summarySideEffects.textContent = checkinData.side_effects;
-
         showStep(".step-complete");
     } catch (error) {
         console.error("Error saving check-in:", error);
@@ -98,29 +83,12 @@ async function saveWellbeingCheckin() {
     }
 }
 
-if (toStep2) {
-    toStep2.addEventListener("click", () => showStep(".step-2"));
-}
-
-if (backToStep1) {
-    backToStep1.addEventListener("click", () => showStep(".step-1"));
-}
-
-if (toStep3) {
-    toStep3.addEventListener("click", () => showStep(".step-3"));
-}
-
-if (backToStep2) {
-    backToStep2.addEventListener("click", () => showStep(".step-2"));
-}
-
-if (saveCheckin) {
-    saveCheckin.addEventListener("click", saveWellbeingCheckin);
-}
-
-if (editCheckin) {
-    editCheckin.addEventListener("click", () => showStep(".step-1"));
-}
+if (toStep2) toStep2.addEventListener("click", () => showStep(".step-2"));
+if (backToStep1) backToStep1.addEventListener("click", () => showStep(".step-1"));
+if (toStep3) toStep3.addEventListener("click", () => showStep(".step-3"));
+if (backToStep2) backToStep2.addEventListener("click", () => showStep(".step-2"));
+if (saveCheckin) saveCheckin.addEventListener("click", saveWellbeingCheckin);
+if (editCheckin) editCheckin.addEventListener("click", () => showStep(".step-1"));
 
 setupOptionGroups();
 updateCurrentTime();
@@ -131,41 +99,29 @@ const snoozeBtn = document.getElementById("snooze-btn");
 
 async function logDoseTaken() {
     const doseTime = logDoseBtn.dataset.doseTime;
-
     try {
         const response = await fetch("/log-dose", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                time: doseTime
-            })
+                time: doseTime,
+                source: "patient_dashboard",
+            }),
         });
-
         const data = await response.json();
-
         if (!response.ok) {
             throw new Error(data.error || "Failed to log dose");
         }
-
         logDoseBtn.textContent = "✓ Taken";
         logDoseBtn.disabled = true;
-
-        setTimeout(() => {
-            window.location.reload();
-        }, 1200);
-
+        setTimeout(() => { window.location.reload(); }, 1200);
     } catch (error) {
         console.error("Error logging dose:", error);
         alert("There was a problem logging this dose.");
     }
 }
 
-if (logDoseBtn) {
-    logDoseBtn.addEventListener("click", logDoseTaken);
-}
-
+if (logDoseBtn) logDoseBtn.addEventListener("click", logDoseTaken);
 if (snoozeBtn) {
     snoozeBtn.addEventListener("click", () => {
         snoozeBtn.textContent = "Snoozed";
@@ -179,9 +135,7 @@ const countdownLabel = document.getElementById("countdown-label");
 
 function updateCountdown() {
     if (!countdownEl) return;
-
     const dueTimeStr = countdownEl.dataset.dueTime;
-
 
     if (!dueTimeStr || dueTimeStr.includes("-")) {
         countdownLabel.textContent = "";
@@ -190,16 +144,13 @@ function updateCountdown() {
     }
 
     const now = new Date();
-
     const [hours, minutes] = dueTimeStr.split(":");
-
     const due = new Date();
     due.setHours(parseInt(hours));
     due.setMinutes(parseInt(minutes));
     due.setSeconds(0);
 
     const diff = due - now;
-
     if (diff <= 0) {
         countdownLabel.textContent = "Due now";
         countdownTimeEl.textContent = "00:00:00";

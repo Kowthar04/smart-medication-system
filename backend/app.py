@@ -16,7 +16,6 @@ app.secret_key = os.environ.get(
 app.register_blueprint(auth_bp)
 
 
-
 def get_db_connection():
     conn = psycopg2.connect(
         dbname="smart_medication_db",
@@ -66,17 +65,13 @@ def parse_time_value(value):
     return None
 
 
-
 def get_active_patient_id():
     """Return the patient_id the current request should operate on.
 
     For patients: their own patient_id.
     For caregivers/doctors: whichever patient they've selected via the
-    picker (session["viewing_patient_id"]). If they haven't picked one
-    yet, we default to the first patient assigned to them.
-
-    Returns None if the user is somehow logged in but unable to resolve
-    a patient (e.g. a caregiver with no assignments yet).
+    picker (session["viewing_patient_id"]). If that's stale or missing,
+    we re-pick the first assigned patient.
     """
     role = session.get("role")
 
@@ -84,16 +79,23 @@ def get_active_patient_id():
         return session.get("patient_id")
 
     if role in ("caregiver", "doctor"):
+        assigned = list_assigned_patients(session["user_id"], role)
+        assigned_ids = {p["patient_id"] for p in assigned}
+
         viewing = session.get("viewing_patient_id")
-        if viewing:
-            return viewing
 
        
-        assigned = list_assigned_patients(session["user_id"], role)
+        if viewing and viewing in assigned_ids:
+            return viewing
+
+        
         if assigned:
             first_id = assigned[0]["patient_id"]
             session["viewing_patient_id"] = first_id
             return first_id
+
+        
+        session.pop("viewing_patient_id", None)
         return None
 
     return None
@@ -202,7 +204,7 @@ def get_schedule_data(patient_id):
 def get_recent_events(patient_id, limit=200):
     rows = run_query(
         """
-        SELECT event_type, event_time, created_at
+        SELECT event_type, event_time, created_at, container_id
         FROM medication_events
         WHERE patient_id = %s
         ORDER BY created_at DESC
@@ -212,13 +214,32 @@ def get_recent_events(patient_id, limit=200):
     )
     events = []
     for row in rows:
+       
+        scheduled_time_obj = None
+        container_id = row[3]
+        if container_id and ":" in container_id:
+            
+            _, _, scheduled_part = container_id.partition(":")
+            scheduled_time_obj = parse_time_value(scheduled_part)
+
         events.append({
             "event_type": row[0],
             "event_time": format_time_value(row[1]),
             "event_time_obj": parse_time_value(row[1]),
+            "scheduled_time_obj": scheduled_time_obj,
             "created_at": row[2],
+            "container_id": container_id,
         })
     return events
+
+
+def _match_time(event):
+    """Return the time to match this event against the schedule.
+
+    Modern events (post AUTH-2A) have scheduled_time_obj set from
+    container_id. Legacy rows fall back to event_time_obj.
+    """
+    return event.get("scheduled_time_obj") or event["event_time_obj"]
 
 
 def get_last_taken(recent_events, schedule):
@@ -233,42 +254,32 @@ def get_last_taken(recent_events, schedule):
         }
 
     latest_taken = taken_events[0]
-    event_time_obj = latest_taken["event_time_obj"]
+    match_time = _match_time(latest_taken)
+    actual_time = latest_taken["event_time_obj"]
     event_time = latest_taken["event_time"]
 
     matched = next(
-        (m for m in schedule if m["time_obj"] == event_time_obj), None
+        (m for m in schedule if m["time_obj"] == match_time), None
     )
     if matched:
+       
+        status = "On time"
+        badge = "success"
+        if actual_time and match_time and actual_time > match_time:
+            
+            late_threshold = (
+                datetime.combine(datetime.today(), match_time)
+                + timedelta(minutes=30)
+            ).time()
+            if actual_time > late_threshold:
+                status = "Late"
+                badge = "warning"
         return {
             "name": matched["name"],
             "time": event_time,
             "dose": matched["dose"],
-            "status": "On time",
-            "badge_class": "success",
-        }
-
-    earlier = None
-    for med in schedule:
-        if med["time_obj"] and event_time_obj and med["time_obj"] < event_time_obj:
-            earlier = med
-    if earlier:
-        return {
-            "name": earlier["name"],
-            "time": event_time,
-            "dose": earlier["dose"],
-            "status": "Late",
-            "badge_class": "warning",
-        }
-
-    if schedule:
-        first = schedule[0]
-        return {
-            "name": first["name"],
-            "time": event_time,
-            "dose": first["dose"],
-            "status": "Too early",
-            "badge_class": "warning",
+            "status": status,
+            "badge_class": badge,
         }
 
     return {
@@ -285,29 +296,27 @@ def build_recent_activity(recent_events, schedule):
     for event in recent_events:
         event_type = event["event_type"]
         event_time = event["event_time"]
-        event_time_obj = event["event_time_obj"]
+        match_time = _match_time(event)
+        actual_time = event["event_time_obj"]
 
         matched = next(
-            (m for m in schedule if m["time_obj"] == event_time_obj), None
+            (m for m in schedule if m["time_obj"] == match_time), None
         )
-        earlier = None
-        later = None
-        for med in schedule:
-            if med["time_obj"] and event_time_obj:
-                if med["time_obj"] < event_time_obj:
-                    earlier = med
-                if med["time_obj"] > event_time_obj and later is None:
-                    later = med
 
         if event_type == "taken" and matched:
-            message = f"{matched['name']} taken at scheduled time"
+           
+            status_label = "at scheduled time"
             activity_type = "on-time"
-        elif event_type == "taken" and earlier:
-            message = f"{earlier['name']} taken late"
-            activity_type = "late"
-        elif event_type == "taken" and later:
-            message = f"{later['name']} taken too early"
-            activity_type = "early"
+            if actual_time and match_time and actual_time > match_time:
+                late_threshold = (
+                    datetime.combine(datetime.today(), match_time)
+                    + timedelta(minutes=30)
+                ).time()
+                if actual_time > late_threshold:
+                    status_label = "taken late"
+                    activity_type = "late"
+            message = f"{matched['name']} {status_label}"
+
         elif event_type == "suspicious":
             message = "Suspicious event - dosage too high"
             activity_type = "suspicious"
@@ -326,49 +335,117 @@ def build_recent_activity(recent_events, schedule):
     return activity
 
 
-def get_adherence_data(last_taken):
-    if last_taken["status"] == "On time":
-        return 100, f"{last_taken['name']} dose taken on time"
-    if last_taken["status"] == "Late":
-        return 0, "Latest dose was taken late"
-    if last_taken["status"] == "Too early":
-        return 0, "Latest dose was taken too early"
-    return 0, "No dose recorded"
+def get_adherence_data(schedule, recent_events):
+    """Compute today's adherence as a percentage and a short note.
+
+    A scheduled dose only counts as "adhered" if it was taken within
+    30 minutes of the scheduled time. Late doses are excluded from the
+    percentage (they're tracked separately via build_schedule_with_status).
+    """
+    if not schedule:
+        return 0, "No medications scheduled"
+
+    today = datetime.now().date()
+
+    on_time_taken = 0
+    for med in schedule:
+        for e in recent_events:
+            if e["event_type"] != "taken":
+                continue
+            if e["created_at"].date() != today:
+                continue
+            if _match_time(e) != med["time_obj"]:
+                continue
+            if _is_on_time(e, med["time_obj"]):
+                on_time_taken += 1
+                break
+
+    total = len(schedule)
+    pct = round((on_time_taken / total) * 100) if total else 0
+
+    if on_time_taken == 0:
+        note = "No on-time doses recorded today"
+    elif on_time_taken == total:
+        note = f"All {total} doses taken on time today"
+    else:
+        note = f"{on_time_taken} of {total} doses on time today"
+
+    return pct, note
 
 
 def get_next_due(schedule, recent_events):
-    taken_events = [e for e in recent_events if e["event_type"] == "taken"]
     if not schedule:
         return {"name": "No more doses today", "time": "--:--", "dose": "--"}
-    if not taken_events:
-        return {
-            "name": schedule[0]["name"],
-            "time": schedule[0]["time"],
-            "dose": schedule[0]["dose"],
-        }
 
-    latest_taken = taken_events[0]
-    event_time_obj = latest_taken["event_time_obj"]
+    today = datetime.now().date()
+
+   
+    taken_today = set()
+    for e in recent_events:
+        if e["event_type"] != "taken":
+            continue
+        if e["created_at"].date() != today:
+            continue
+        match_time = _match_time(e)
+        if match_time:
+            taken_today.add(match_time)
+
+    now = datetime.now().time()
+
+   
     for med in schedule:
-        if med["time_obj"] and event_time_obj and med["time_obj"] > event_time_obj:
-            return {"name": med["name"], "time": med["time"], "dose": med["dose"]}
+        if med["time_obj"] not in taken_today:
+            return {
+                "name": med["name"],
+                "time": med["time"],
+                "dose": med["dose"],
+            }
 
     return {"name": "No more doses today", "time": "--:--", "dose": "--"}
 
 
 def build_schedule_with_status(schedule, recent_events):
-    taken_times = {
-        e["event_time_obj"]
-        for e in recent_events
-        if e["event_type"] == "taken" and e["event_time_obj"] is not None
-    }
+    """Tag each scheduled dose for today as taken / late / upcoming / missed.
+
+    - Taken: dose was logged today, on time (within 30 min of scheduled).
+    - Late: dose was logged today but more than 30 min after scheduled.
+    - Upcoming: scheduled time hasn't passed yet, no dose recorded.
+    - Missed: scheduled time has passed and no dose recorded.
+    """
+    today = datetime.now().date()
+    now = datetime.now().time()
+
+    
+    taken_today = {}
+    for e in recent_events:
+        if e["event_type"] != "taken":
+            continue
+        if e["created_at"].date() != today:
+            continue
+        match_time = _match_time(e)
+        if match_time is not None:
+            taken_today[match_time] = e["event_time_obj"]
 
     updated = []
     for item in schedule:
-        if item["time_obj"] in taken_times:
-            status, tag_class = "Taken", "taken"
+        scheduled = item["time_obj"]
+
+        if scheduled in taken_today:
+            actual = taken_today[scheduled]
+            late_threshold = (
+                datetime.combine(datetime.today(), scheduled)
+                + timedelta(minutes=30)
+            ).time()
+            if actual and actual > late_threshold:
+                status, tag_class = "Late", "late"
+            else:
+                status, tag_class = "Taken", "taken"
+        elif scheduled and scheduled < now:
+            
+            status, tag_class = "Missed", "missed"
         else:
             status, tag_class = "Upcoming", "upcoming"
+
         updated.append({
             "name": item["name"],
             "time": item["time"],
@@ -388,7 +465,7 @@ def calculate_current_streak(patient_id):
 
     rows = run_query(
         """
-        SELECT event_time, created_at::date AS day
+        SELECT container_id, created_at::date AS day
         FROM medication_events
         WHERE patient_id = %s AND event_type = 'taken'
         """,
@@ -397,10 +474,14 @@ def calculate_current_streak(patient_id):
 
     taken_by_day = set()
     for row in rows:
-        t = parse_time_value(row[0])
+        container_id = row[0] or ""
         d = row[1]
-        if t is not None and d is not None:
-            taken_by_day.add((d, t))
+       
+        if ":" in container_id:
+            _, _, scheduled_part = container_id.partition(":")
+            t = parse_time_value(scheduled_part)
+            if t is not None and d is not None:
+                taken_by_day.add((d, t))
 
     today = datetime.now().date()
     streak = 0
@@ -435,7 +516,7 @@ def compute_morning_vs_evening_insight(patient_id):
 
     rows = run_query(
         """
-        SELECT event_time
+        SELECT container_id
         FROM medication_events
         WHERE patient_id = %s
           AND event_type = 'taken'
@@ -449,8 +530,14 @@ def compute_morning_vs_evening_insight(patient_id):
     morning_times = {m["time_obj"] for m in morning_meds}
     evening_times = {m["time_obj"] for m in evening_meds}
 
-    morning_taken = sum(1 for r in rows if parse_time_value(r[0]) in morning_times)
-    evening_taken = sum(1 for r in rows if parse_time_value(r[0]) in evening_times)
+    def _scheduled_from_container(container_id):
+        if not container_id or ":" not in container_id:
+            return None
+        _, _, scheduled_part = container_id.partition(":")
+        return parse_time_value(scheduled_part)
+
+    morning_taken = sum(1 for r in rows if _scheduled_from_container(r[0]) in morning_times)
+    evening_taken = sum(1 for r in rows if _scheduled_from_container(r[0]) in evening_times)
 
     morning_total = len(morning_meds) * 14
     evening_total = len(evening_meds) * 14
@@ -496,7 +583,7 @@ def compute_14_day_trend(patient_id):
 
     rows = run_query(
         """
-        SELECT event_time, created_at::date AS day
+        SELECT container_id, created_at::date AS day
         FROM medication_events
         WHERE patient_id = %s
           AND event_type = 'taken'
@@ -509,10 +596,13 @@ def compute_14_day_trend(patient_id):
 
     taken = set()
     for row in rows:
-        t = parse_time_value(row[0])
+        container_id = row[0] or ""
         d = row[1]
-        if t is not None and d is not None:
-            taken.add((d, t))
+        if ":" in container_id:
+            _, _, scheduled_part = container_id.partition(":")
+            t = parse_time_value(scheduled_part)
+            if t is not None and d is not None:
+                taken.add((d, t))
 
     doses_per_day = len(schedule)
     if doses_per_day == 0:
@@ -588,7 +678,7 @@ def compute_medication_breakdown_insight(medication_breakdown):
 
 def compute_day_stats(schedule_with_status):
     """Day stat counters — pulled out from inside the dedup loop bug."""
-    taken = upcoming = late = 0
+    taken = upcoming = late = missed = 0
     for item in schedule_with_status:
         if item["tag_class"] == "taken":
             taken += 1
@@ -596,10 +686,13 @@ def compute_day_stats(schedule_with_status):
             upcoming += 1
         elif item["tag_class"] == "late":
             late += 1
+        elif item["tag_class"] == "missed":
+            missed += 1
     return {
         "taken": taken,
         "upcoming": upcoming,
         "late": late,
+        "missed": missed,
         "total": len(schedule_with_status),
     }
 
@@ -663,6 +756,19 @@ def build_month_calendar():
 
 
 
+def _is_on_time(event, scheduled_time_obj, late_threshold_minutes=30):
+    """Return True if this event was logged within `late_threshold_minutes`
+    of the scheduled time. Late doses don't count toward adherence %."""
+    actual = event["event_time_obj"]
+    if actual is None or scheduled_time_obj is None:
+        return False
+    late_threshold = (
+        datetime.combine(datetime.today(), scheduled_time_obj)
+        + timedelta(minutes=late_threshold_minutes)
+    ).time()
+    return actual <= late_threshold
+
+
 def calculate_adherence_today(schedule, recent_events, medication_filter):
     today = datetime.now().date()
     result = {}
@@ -676,8 +782,9 @@ def calculate_adherence_today(schedule, recent_events, medication_filter):
         for event in recent_events:
             if (
                 event["event_type"] == "taken"
-                and event["event_time_obj"] == item["time_obj"]
+                and _match_time(event) == item["time_obj"]
                 and event["created_at"].date() == today
+                and _is_on_time(event, item["time_obj"])
             ):
                 result[name]["taken"] += 1
                 break
@@ -705,7 +812,9 @@ def calculate_adherence_weekly(schedule, recent_events, medication_filter):
         for event in recent_events:
             if event["event_type"] != "taken":
                 continue
-            if event["event_time_obj"] != item["time_obj"]:
+            if _match_time(event) != item["time_obj"]:
+                continue
+            if not _is_on_time(event, item["time_obj"]):
                 continue
             event_date = event["created_at"].date()
             if start_of_week <= event_date <= end_of_week:
@@ -738,7 +847,9 @@ def calculate_adherence_monthly(schedule, recent_events, medication_filter):
         for event in recent_events:
             if event["event_type"] != "taken":
                 continue
-            if event["event_time_obj"] != item["time_obj"]:
+            if _match_time(event) != item["time_obj"]:
+                continue
+            if not _is_on_time(event, item["time_obj"]):
                 continue
             event_date = event["created_at"].date()
             if start_of_month <= event_date < next_month:
@@ -749,7 +860,6 @@ def calculate_adherence_monthly(schedule, recent_events, medication_filter):
         labels.append(name)
         data.append(pct)
     return labels, data
-
 
 
 
@@ -771,7 +881,6 @@ def root_redirect():
 @app.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok"})
-
 
 
 @app.route("/event", methods=["POST"])
@@ -799,7 +908,6 @@ def receive_event():
     )
 
     return jsonify({"status": "event received"})
-
 
 
 @app.route("/log-dose", methods=["POST"])
@@ -842,8 +950,6 @@ def log_dose():
     })
 
 
-
-# patient dashboard
 @app.route("/patient/dashboard", methods=["GET"])
 @role_required("patient")
 def patient_dashboard():
@@ -854,7 +960,7 @@ def patient_dashboard():
 
     last_taken = get_last_taken(recent_events, schedule)
     recent_activity = build_recent_activity(recent_events, schedule)
-    adherence_rate, adherence_note = get_adherence_data(last_taken)
+    adherence_rate, adherence_note = get_adherence_data(schedule, recent_events)
     next_due = get_next_due(schedule, recent_events)
     schedule_with_status = build_schedule_with_status(schedule, recent_events)
 
@@ -910,12 +1016,19 @@ def patient_adherence():
     medications = [item["name"] for item in schedule]
 
     total_doses = len(schedule)
-    taken_times = {
-        e["event_time_obj"]
-        for e in recent_events
-        if e["event_type"] == "taken" and e["event_time_obj"] is not None
-    }
-    taken_doses = sum(1 for item in schedule if item["time_obj"] in taken_times)
+    today = datetime.now().date()
+    taken_doses = 0
+    for item in schedule:
+        for e in recent_events:
+            if e["event_type"] != "taken":
+                continue
+            if e["created_at"].date() != today:
+                continue
+            if _match_time(e) != item["time_obj"]:
+                continue
+            if _is_on_time(e, item["time_obj"]):
+                taken_doses += 1
+                break
     missed_doses = total_doses - taken_doses
     overall_adherence = round((taken_doses / total_doses) * 100) if total_doses else 0
 
@@ -943,8 +1056,6 @@ def patient_adherence():
     )
 
 
-
-# adherence data
 @app.route("/adherence-data", methods=["GET"])
 @login_required
 def adherence_data():
@@ -968,8 +1079,6 @@ def adherence_data():
     return jsonify({"labels": labels, "data": data})
 
 
-
-# patient wellbeing check in
 @app.route("/wellbeing", methods=["POST"])
 @role_required("patient")
 def save_wellbeing():
@@ -1000,8 +1109,6 @@ def save_wellbeing():
         return jsonify({"error": str(e)}), 500
 
 
-
-# note saving
 @app.route("/save-note", methods=["POST"])
 @role_required("caregiver", "doctor")
 def save_note():
@@ -1047,8 +1154,6 @@ def save_note():
         return jsonify({"error": str(e)}), 500
 
 
-
-# patient picker
 @app.route("/caregiver/select-patient/<int:patient_id>", methods=["POST", "GET"])
 @role_required("caregiver", "doctor")
 def caregiver_select_patient(patient_id):
@@ -1069,7 +1174,6 @@ def caregiver_select_patient(patient_id):
 
 
 
-# Caregiver pages
 def _caregiver_context():
     """Common context for every caregiver page (picker state + name)."""
     user_id = session["user_id"]
@@ -1148,12 +1252,19 @@ def caregiver_adherence():
 
     medications = [item["name"] for item in schedule]
     total_doses = len(schedule)
-    taken_times = {
-        e["event_time_obj"]
-        for e in recent_events
-        if e["event_type"] == "taken" and e["event_time_obj"] is not None
-    }
-    taken_doses = sum(1 for item in schedule if item["time_obj"] in taken_times)
+    today = datetime.now().date()
+    taken_doses = 0
+    for item in schedule:
+        for e in recent_events:
+            if e["event_type"] != "taken":
+                continue
+            if e["created_at"].date() != today:
+                continue
+            if _match_time(e) != item["time_obj"]:
+                continue
+            if _is_on_time(e, item["time_obj"]):
+                taken_doses += 1
+                break
     missed_doses = total_doses - taken_doses
     overall = round((taken_doses / total_doses) * 100) if total_doses else 0
 
@@ -1200,30 +1311,280 @@ def caregiver_notes_page():
     )
 
 
+
+ALERT_SEVERITY_RANK = {"high": 0, "medium": 1, "low": 2}
+
+
+def _generate_missed_dose_alerts(patient_id, schedule, recent_events):
+    """Today's scheduled doses where the time has passed >30 min ago and
+    no record exists. One alert per missed scheduled time."""
+    today = datetime.now().date()
+    now = datetime.now().time()
+
+    
+    taken_today = set()
+    for e in recent_events:
+        if e["event_type"] != "taken":
+            continue
+        if e["created_at"].date() != today:
+            continue
+        m = _match_time(e)
+        if m is not None:
+            taken_today.add(m)
+
+    alerts = []
+    for med in schedule:
+        scheduled = med["time_obj"]
+        if scheduled is None or scheduled in taken_today:
+            continue
+
+        
+        cutoff = (
+            datetime.combine(datetime.today(), scheduled)
+            + timedelta(minutes=30)
+        ).time()
+        if now <= cutoff:
+            continue  
+
+        alert_id = f"missed:{patient_id}:{scheduled.strftime('%H%M')}:{today.isoformat()}"
+        alerts.append({
+            "id": alert_id,
+            "severity": "high",
+            "type": "missed",
+            "title": f"{med['name']} missed",
+            "body": f"Scheduled for {med['time']} — no dose recorded.",
+            "when": today.strftime("%d %b %Y") + f" · scheduled {med['time']}",
+            "_sort_time": scheduled,
+        })
+    return alerts
+
+
+def _generate_late_pattern_alerts(patient_id, schedule, recent_events):
+    """A medication taken late on 3+ of the last 7 days = pattern."""
+    today = datetime.now().date()
+    week_start = today - timedelta(days=6)
+
+    
+    late_counts = {}
+    for e in recent_events:
+        if e["event_type"] != "taken":
+            continue
+        event_date = e["created_at"].date()
+        if event_date < week_start or event_date > today:
+            continue
+        match_time = _match_time(e)
+        if match_time is None:
+            continue
+        
+        med = next((m for m in schedule if m["time_obj"] == match_time), None)
+        if not med:
+            continue
+        # Was it late?
+        if not _is_on_time(e, match_time):
+            late_counts.setdefault(med["name"], set()).add(event_date)
+
+    alerts = []
+    for name, dates in late_counts.items():
+        if len(dates) < 3:
+            continue
+        alert_id = f"late_pattern:{patient_id}:{name.lower().replace(' ', '_')}"
+        alerts.append({
+            "id": alert_id,
+            "severity": "medium",
+            "type": "late_pattern",
+            "title": f"{name} consistently late",
+            "body": f"Taken late on {len(dates)} of the last 7 days. "
+                    "Worth checking if the timing or routine needs adjustment.",
+            "when": "Last 7 days",
+            "_sort_time": None,
+        })
+    return alerts
+
+
+def _generate_suspicious_event_alerts(patient_id, recent_events):
+    """Suspicious events from the IoT pillbox — dosage anomaly."""
+    alerts = []
+    for e in recent_events:
+        if e["event_type"] != "suspicious":
+            continue
+        
+        ts = e["created_at"]
+        alert_id = f"suspicious:{patient_id}:{ts.isoformat()}"
+        alerts.append({
+            "id": alert_id,
+            "severity": "high",
+            "type": "suspicious",
+            "title": "Unusual dosage detected",
+            "body": "The pillbox recorded an unexpected weight change — "
+                    "this may indicate a double dose or tampering.",
+            "when": ts.strftime("%d %b %Y, %H:%M"),
+            "_sort_time": None,
+        })
+    return alerts
+
+
+def _generate_wellbeing_alerts(patient_id):
+    """Patient logged 'Low'/'Very low' mood, or specific side effects, in last 24h."""
+    rows = run_query(
+        """
+        SELECT id, mood, energy, side_effects, created_at
+        FROM wellbeing_checkins
+        WHERE patient_id = %s
+          AND created_at >= NOW() - INTERVAL '24 hours'
+        ORDER BY created_at DESC
+        """,
+        (patient_id,),
+    )
+
+    concerning_moods = {"Low", "Very low"}
+    concerning_energy = {"Low", "Very low"}
+    concerning_side_effects = {"Nausea", "Dizziness", "Headache", "Fatigue"}
+
+    alerts = []
+    for row in rows:
+        wid, mood, energy, side_effects, created_at = row
+        problems = []
+        if mood in concerning_moods:
+            problems.append(f"mood reported as {mood.lower()}")
+        if energy in concerning_energy:
+            problems.append(f"energy reported as {energy.lower()}")
+        if side_effects in concerning_side_effects:
+            problems.append(f"side effect: {side_effects.lower()}")
+
+        if not problems:
+            continue
+
+        alert_id = f"wellbeing:{patient_id}:{wid}"
+        alerts.append({
+            "id": alert_id,
+            "severity": "medium",
+            "type": "wellbeing",
+            "title": "Wellbeing check-in flagged",
+            "body": "Patient reported: " + ", ".join(problems) + ".",
+            "when": created_at.strftime("%d %b %Y, %H:%M"),
+            "_sort_time": None,
+        })
+    return alerts
+
+
+def get_acknowledgements_for_patient(patient_id):
+    """Return {alert_id: {by_name, at}} for all alerts already acknowledged."""
+    rows = run_query(
+        """
+        SELECT a.alert_id, u.full_name, a.acknowledged_at
+        FROM alert_acknowledgements a
+        JOIN users u ON u.id = a.acknowledged_by
+        WHERE a.patient_id = %s
+        ORDER BY a.acknowledged_at DESC
+        """,
+        (patient_id,),
+    )
+    return {
+        row[0]: {"by_name": row[1], "at": row[2]}
+        for row in rows
+    }
+
+
+def generate_alerts_for_patient(patient_id):
+    """Run all alert generators and merge with acknowledgement data.
+
+    Returns a dict with three buckets: needs_attention, worth_reviewing,
+    acknowledged. Each alert is annotated with .acknowledgement if known.
+    """
+    schedule = get_schedule_data(patient_id)
+    recent_events = get_recent_events(patient_id, limit=500)
+
+    raw_alerts = []
+    raw_alerts.extend(_generate_missed_dose_alerts(patient_id, schedule, recent_events))
+    raw_alerts.extend(_generate_late_pattern_alerts(patient_id, schedule, recent_events))
+    raw_alerts.extend(_generate_suspicious_event_alerts(patient_id, recent_events))
+    raw_alerts.extend(_generate_wellbeing_alerts(patient_id))
+
+   
+    raw_alerts.sort(key=lambda a: (
+        ALERT_SEVERITY_RANK.get(a["severity"], 99),
+        a.get("_sort_time") or datetime.min.time(),
+    ))
+
+    acks = get_acknowledgements_for_patient(patient_id)
+
+    needs_attention = []
+    worth_reviewing = []
+    acknowledged = []
+
+    for alert in raw_alerts:
+        if alert["id"] in acks:
+            alert["acknowledgement"] = acks[alert["id"]]
+            acknowledged.append(alert)
+        elif alert["severity"] == "high":
+            needs_attention.append(alert)
+        else:
+            worth_reviewing.append(alert)
+
+    return {
+        "needs_attention": needs_attention,
+        "worth_reviewing": worth_reviewing,
+        "acknowledged": acknowledged,
+        "counts": {
+            "high_unacked": len(needs_attention),
+            "medium_unacked": len(worth_reviewing),
+            "acked_total": len(acknowledged),
+        },
+    }
+
+
 @app.route("/caregiver/alerts", methods=["GET"])
-@role_required("caregiver")
+@role_required("caregiver", "doctor")
 def caregiver_alerts():
     ctx = _caregiver_context()
     patient_id = ctx["active_patient_id"]
     if patient_id is None:
         return render_template("caregiver_no_patients.html", ctx=ctx)
 
-    schedule = get_schedule_data(patient_id)
-    recent_events = get_recent_events(patient_id)
-    activity = build_recent_activity(recent_events, schedule)
+    alerts_data = generate_alerts_for_patient(patient_id)
 
-    severity = {
-        "suspicious": 0,
-        "late": 1,
-        "early": 2,
-        "default": 3,
-        "on-time": 4,
-        "new": 5,
-    }
-    alerts = sorted(activity, key=lambda a: severity.get(a["type"], 99))
+    return render_template(
+        "caregiver_alerts.html",
+        ctx=ctx,
+        alerts_data=alerts_data,
+    )
 
-    return render_template("caregiver_alerts.html", ctx=ctx, alerts=alerts)
 
+@app.route("/caregiver/alerts/acknowledge", methods=["POST"])
+@role_required("caregiver", "doctor")
+def acknowledge_alert():
+    """Mark an alert as acknowledged by the current user."""
+    data = request.get_json() or {}
+    alert_id = (data.get("alert_id") or "").strip()
+    note = (data.get("note") or "").strip() or None
+
+    if not alert_id:
+        return jsonify({"error": "Missing alert_id"}), 400
+
+    patient_id = get_active_patient_id()
+    if patient_id is None:
+        return jsonify({"error": "No patient context"}), 400
+
+    if session["role"] == "caregiver":
+        if not assert_caregiver_can_view(session["user_id"], patient_id):
+            abort(403)
+    elif session["role"] == "doctor":
+        if not assert_doctor_can_view(session["user_id"], patient_id):
+            abort(403)
+
+    
+    run_query(
+        """
+        INSERT INTO alert_acknowledgements
+            (alert_id, patient_id, acknowledged_by, note)
+        VALUES (%s, %s, %s, %s)
+        ON CONFLICT (alert_id, acknowledged_by) DO NOTHING
+        """,
+        (alert_id, patient_id, session["user_id"], note),
+        commit=True,
+    )
+
+    return jsonify({"status": "acknowledged"})
 
 
 @app.route("/patient/care-team", methods=["GET"])
