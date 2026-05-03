@@ -165,7 +165,7 @@
 
     {% if activity %}
         {% for event in activity[:3] %}
-        <div class="alert-box">
+       <div class="alert-box {{ event.type }}">
             <strong>{{ event.message }}</strong>
             <p>{{ event.time }}</p>
         </div>
