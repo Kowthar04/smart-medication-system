@@ -20,42 +20,58 @@
 </h2>
 
             <nav>
-    <p class="nav-section-label">Today</p>
+    <p class="nav-section-label">Caregiver</p>
     <ul>
         <li>
-            <a href="{{ url_for('patient_dashboard') }}" class="sidebar-link active">
+            <a href="{{ url_for('caregiver_dashboard') }}" class="sidebar-link active">
                 <span class="sidebar-icon">⌂</span>
-                <span>Dashboard</span>
+                <span>Overview</span>
             </a>
         </li>
         <li>
-            <a href="{{ url_for('patient_schedule') }}" class="sidebar-link">
+            <a href="#" class="sidebar-link">
                 <span class="sidebar-icon">🕒</span>
                 <span>Schedule</span>
             </a>
         </li>
-    </ul>
-
-    <p class="nav-section-label">Insights</p>
-    <ul>
         <li>
-            <a href="{{ url_for('patient_adherence') }}" class="sidebar-link">
+            <a href="#" class="sidebar-link">
                 <span class="sidebar-icon">◔</span>
                 <span>Adherence</span>
             </a>
         </li>
-    </ul>
-
-    <p class="nav-section-label">People</p>
-    <ul>
         <li>
             <a href="#" class="sidebar-link">
-                <span class="sidebar-icon">👥</span>
-                <span>Care Team</span>
+                <span class="sidebar-icon">📝</span>
+                <span>Notes</span>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="sidebar-link">
+                <span class="sidebar-icon">!</span>
+                <span>Alerts</span>
+                <span class="nav-badge">3</span>
+            </a>
+        </li>
+    </ul>
+
+    <p class="nav-section-label">Patient</p>
+    <ul>
+        <li>
+            <a href="{{ url_for('patient_dashboard') }}" class="sidebar-link">
+                <span class="sidebar-icon">👤</span>
+                <span>Patient View</span>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="sidebar-link">
+                <span class="sidebar-icon">+</span>
+                <span>Add Patient</span>
             </a>
         </li>
     </ul>
 </nav>
+
         </aside>
 
         <div class="content-wrapper">
