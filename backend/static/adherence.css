@@ -250,3 +250,31 @@ body {
     font-weight: 700;
     color: var(--text);
 }
+
+/* Insights card */
+.adherence-insight-card {
+    background: linear-gradient(135deg, #1f2937, #111827);
+    color: var(--text-on-dark);
+    border-radius: var(--radius-xl);
+    padding: 22px;
+    box-shadow: var(--shadow-dark);
+}
+
+.adherence-insight-card .insight-label {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--primary-bright);
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.adherence-insight-card h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.adherence-insight-card p {
+    font-size: 13px;
+    opacity: 0.8;
+}
