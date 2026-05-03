@@ -1,9 +1,20 @@
+import os
+
 from flask import Flask, request, jsonify, render_template
 import psycopg2
 from datetime import datetime, time, timedelta
 
-app = Flask(__name__) 
+from auth import auth_bp
 
+app = Flask(__name__)
+app.secret_key = os.environ.get(
+    "MEDITRACK_SECRET_KEY",
+    "dev-only-not-for-production-replace-this-via-env",
+)
+app.register_blueprint(auth_bp)
+
+
+PATIENT_NAME = "Sarah"
 
 def get_db_connection():
     conn = psycopg2.connect(
@@ -11,7 +22,7 @@ def get_db_connection():
         user="kowtharabdiqadir",
         host="localhost",
     )
-    return conn  
+    return conn
 
 
 def run_query(query, params=(), fetchone=False, commit=False):
