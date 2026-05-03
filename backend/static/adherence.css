@@ -182,3 +182,71 @@ body {
     background: var(--primary);
     color: var(--text-on-dark);
 }
+
+.med-breakdown-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 22px;
+    box-shadow: var(--shadow-sm);
+}
+
+.breakdown-header {
+    margin-bottom: 18px;
+}
+
+.breakdown-header h3 {
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.breakdown-header p {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.breakdown-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.breakdown-row {
+    display: grid;
+    grid-template-columns: 220px 1fr 50px;
+    gap: 14px;
+    align-items: center;
+}
+
+.breakdown-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.breakdown-info strong {
+    font-size: 14px;
+}
+
+.breakdown-info span {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.breakdown-bar {
+    height: 10px;
+    background: var(--surface-alt);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.breakdown-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--primary-bright));
+    border-radius: var(--radius-full);
+}
+
+.breakdown-percent {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+}

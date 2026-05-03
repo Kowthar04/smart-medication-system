@@ -146,6 +146,30 @@
 
                 </div>
 
+                <div class="med-breakdown-card">
+    <div class="breakdown-header">
+        <h3>Medication breakdown</h3>
+        <p>Adherence by medication</p>
+    </div>
+
+    <div class="breakdown-list">
+        {% for medication in medications %}
+        <div class="breakdown-row">
+            <div class="breakdown-info">
+                <strong>{{ medication }}</strong>
+                <span>Current period</span>
+            </div>
+
+            <div class="breakdown-bar">
+                <div class="breakdown-fill" style="width: 70%;"></div>
+            </div>
+
+            <span class="breakdown-percent">70%</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
             </section>
         </div>
 
