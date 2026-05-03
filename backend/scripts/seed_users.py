@@ -63,7 +63,7 @@ def main():
     cur = conn.cursor()
 
     try:
-        password_hash = generate_password_hash(DEMO_PASSWORD)
+        password_hash = generate_password_hash(DEMO_PASSWORD, method="pbkdf2:sha256")
 
         print("Seeding demo accounts...")
         print()
