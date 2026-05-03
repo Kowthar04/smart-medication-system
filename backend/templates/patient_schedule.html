@@ -174,11 +174,20 @@
                 <div class="schedule-row" data-medication="{{ item.name }}">
                     <div class="time-label">{{ item.time }}</div>
 
-                    <div class="med-card {{ item.tag_class }}">
-                        <p class="med-card-title">{{ item.name }}</p>
-                        <p class="med-card-dose">{{ item.dose }}</p>
-                        <span class="med-card-status">{{ item.status }}</span>
-                    </div>
+                    <div class="med-card {{ item.tag_class }} med-{{ item.name|replace(' ', '-')|lower }}">
+
+    <p class="med-card-title">{{ item.name }}</p>
+    <p class="med-card-dose">{{ item.dose }}</p>
+
+    {% if item.tag_class == "upcoming" %}
+        <button class="mark-taken-btn" data-time="{{ item.time }}">
+            ✓ Mark taken
+        </button>
+    {% else %}
+        <span class="med-card-status">{{ item.status }}</span>
+    {% endif %}
+
+</div>
                 </div>
             {% endfor %}
         </div>
