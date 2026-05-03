@@ -172,3 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupMedicationFilter();
     fetchAdherenceData();
 });
+
+document.querySelectorAll(".breakdown-fill").forEach(el => {
+    el.style.width = el.dataset.width + "%";
+});

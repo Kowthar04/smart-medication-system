@@ -625,11 +625,26 @@ def patient_adherence():
         "missed_doses": missed_doses
     }
 
+    breakdown_labels, breakdown_values = calculate_adherence_today(
+    schedule,
+    recent_events,
+    "all"
+)
+
+    medication_breakdown = []
+
+    for index, label in enumerate(breakdown_labels):
+        medication_breakdown.append({
+            "name": label,
+            "percentage": breakdown_values[index]
+        })
+
     return render_template(
-        "patient_adherence.html",
-        medications=medications,
-        summary=summary
-    )
+    "patient_adherence.html",
+    medications=medications,
+    summary=summary,
+    medication_breakdown=medication_breakdown
+)
 
 def calculate_adherence(schedule, events):
     result = {}

@@ -149,27 +149,26 @@
                 <div class="med-breakdown-card">
     <div class="breakdown-header">
         <h3>Medication breakdown</h3>
-        <p>Adherence by medication</p>
+        <p>Today’s adherence by medication</p>
     </div>
 
     <div class="breakdown-list">
-        {% for medication in medications %}
+        {% for item in medication_breakdown %}
         <div class="breakdown-row">
             <div class="breakdown-info">
-                <strong>{{ medication }}</strong>
+                <strong>{{ item.name }}</strong>
                 <span>Current period</span>
             </div>
 
             <div class="breakdown-bar">
-                <div class="breakdown-fill" style="width: 70%;"></div>
+                <div class="breakdown-fill" data-width="{{ item.percentage }}"></div>
             </div>
 
-            <span class="breakdown-percent">70%</span>
+            <span class="breakdown-percent">{{ item.percentage }}%</span>
         </div>
         {% endfor %}
     </div>
 </div>
-
             </section>
         </div>
 
