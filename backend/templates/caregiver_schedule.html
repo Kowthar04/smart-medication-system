@@ -3,42 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medication Schedule</title>
+    <title>Schedule · Caregiver</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='schedule.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='caregiver.css') }}">
 </head>
-<body>
+<body class="caregiver-page">
     <div class="dashboard-container">
         <aside class="sidebar">
-            <div class="sidebar-top">
-                <h2 class="logo">
-                    <span class="logo-mark">M</span>
-                    <span>MediTrack</span>
-                </h2>
-                <nav>
-                    <p class="nav-section-label">Today</p>
-                    <ul>
-                        <li><a href="{{ url_for('patient_dashboard') }}" class="sidebar-link"><span class="sidebar-icon">⌂</span><span>Dashboard</span></a></li>
-                        <li><a href="{{ url_for('patient_schedule') }}" class="sidebar-link active"><span class="sidebar-icon">🕒</span><span>Schedule</span></a></li>
-                    </ul>
-                    <p class="nav-section-label">Insights</p>
-                    <ul>
-                        <li><a href="{{ url_for('patient_adherence') }}" class="sidebar-link"><span class="sidebar-icon">◔</span><span>Adherence</span></a></li>
-                    </ul>
-                    <p class="nav-section-label">People</p>
-                    <ul>
-                        <li><a href="#" class="sidebar-link"><span class="sidebar-icon">👥</span><span>Care Team</span></a></li>
-                    </ul>
-                </nav>
-            </div>
+            <h2 class="logo">
+                <span class="logo-mark">M</span>
+                <span>MediTrack</span>
+            </h2>
+
+            <nav>
+                <p class="nav-section-label">Caregiver</p>
+                <ul>
+                    <li><a href="{{ url_for('caregiver_dashboard') }}" class="sidebar-link"><span class="sidebar-icon">⌂</span><span>Overview</span></a></li>
+                    <li><a href="{{ url_for('caregiver_schedule') }}" class="sidebar-link active"><span class="sidebar-icon">🕒</span><span>Schedule</span></a></li>
+                    <li><a href="{{ url_for('caregiver_adherence') }}" class="sidebar-link"><span class="sidebar-icon">◔</span><span>Adherence</span></a></li>
+                    <li><a href="{{ url_for('caregiver_notes_page') }}" class="sidebar-link"><span class="sidebar-icon">📝</span><span>Notes</span></a></li>
+                    <li><a href="{{ url_for('caregiver_alerts') }}" class="sidebar-link"><span class="sidebar-icon">!</span><span>Alerts</span></a></li>
+                </ul>
+            </nav>
 
             <div class="sidebar-bottom">
-                <nav>
-                    <ul>
-                        <li><a href="#" class="sidebar-link"><span class="sidebar-icon">⚙</span><span>Settings</span></a></li>
-                        <li><a href="{{ url_for('auth.logout') }}" class="sidebar-link logout-link"><span class="sidebar-icon">⇦</span><span>Sign out</span></a></li>
-                    </ul>
-                </nav>
+                <a href="{{ url_for('auth.logout') }}" class="sidebar-link logout-link">
+                    <span class="sidebar-icon">⇦</span><span>Sign out</span>
+                </a>
             </div>
         </aside>
 
@@ -46,22 +38,40 @@
             <section class="main-panel">
                 <header class="top-bar">
                     <div>
-                        <h1>Medication Schedule</h1>
-                        <p>Track your doses, timings, and today's medication plan</p>
+                        <h1>{{ ctx.active_patient_name }}'s schedule</h1>
+                        <p>Today's doses, timings, and adherence</p>
                     </div>
                     <div class="profile-box"></div>
                 </header>
 
+                <div class="patient-picker">
+                    <div class="patient-avatar">{{ (ctx.active_patient_name or '?')[0] }}</div>
+                    <div class="patient-picker-info">
+                        <p class="picker-label">Currently monitoring</p>
+                        <h2>{{ ctx.active_patient_name or 'No patient selected' }}</h2>
+                        <span>{{ ctx.assigned_patients|length }} patient{{ '' if ctx.assigned_patients|length == 1 else 's' }} assigned to you</span>
+                    </div>
+                    <details class="picker-dropdown">
+                        <summary class="picker-button">Change patient ▾</summary>
+                        <div class="picker-menu">
+                            {% for p in ctx.assigned_patients %}
+                                <a href="{{ url_for('caregiver_select_patient', patient_id=p.patient_id) }}"
+                                   class="picker-menu-item {% if p.patient_id == ctx.active_patient_id %}selected{% endif %}">
+                                    {{ p.full_name }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </details>
+                </div>
+
                 <div class="schedule-content">
 
                     <div class="schedule-left-column">
-
                         <div class="schedule-calendar">
                             <div class="calendar-top">
                                 <h3>{{ schedule_data.calendar.month_name }}</h3>
-                                <p>Today's Schedule</p>
+                                <p>This month</p>
                             </div>
-
                             <div class="mini-calendar">
                                 <div class="mini-day-name">M</div>
                                 <div class="mini-day-name">T</div>
@@ -70,7 +80,6 @@
                                 <div class="mini-day-name">F</div>
                                 <div class="mini-day-name">S</div>
                                 <div class="mini-day-name">S</div>
-
                                 {% for day in schedule_data.calendar.days %}
                                     <div class="mini-day {% if day.is_empty %}empty{% endif %} {% if day.is_today %}active-day{% endif %}">
                                         {% if not day.is_empty %}
@@ -100,32 +109,15 @@
                                 {% endfor %}
                             </div>
                         </div>
-
                     </div>
 
                     <div class="schedule-board-area">
-
                         <div class="day-stats">
-                            <div class="day-stat">
-                                <span>{{ schedule_data.day_stats.taken }}</span>
-                                <p>Taken</p>
-                            </div>
-                            <div class="day-stat">
-                                <span>{{ schedule_data.day_stats.upcoming }}</span>
-                                <p>Upcoming</p>
-                            </div>
-                            <div class="day-stat">
-                                <span>{{ schedule_data.day_stats.late }}</span>
-                                <p>Late</p>
-                            </div>
-                            <div class="day-stat">
-                                <span>{{ schedule_data.day_stats.missed }}</span>
-                                <p>Missed</p>
-                            </div>
-                            <div class="day-stat">
-                                <span>{{ schedule_data.day_stats.total }}</span>
-                                <p>Total</p>
-                            </div>
+                            <div class="day-stat"><span>{{ schedule_data.day_stats.taken }}</span><p>Taken</p></div>
+                            <div class="day-stat"><span>{{ schedule_data.day_stats.upcoming }}</span><p>Upcoming</p></div>
+                            <div class="day-stat"><span>{{ schedule_data.day_stats.late }}</span><p>Late</p></div>
+                            <div class="day-stat"><span>{{ schedule_data.day_stats.missed }}</span><p>Missed</p></div>
+                            <div class="day-stat"><span>{{ schedule_data.day_stats.total }}</span><p>Total</p></div>
                         </div>
 
                         <div class="schedule-header">
@@ -143,8 +135,8 @@
                                         <p class="med-card-title">{{ item.name }}</p>
                                         <p class="med-card-dose">{{ item.dose }}</p>
                                         {% if item.tag_class == "upcoming" %}
-                                            <button class="mark-taken-btn" data-time="{{ item.time }}">
-                                                ✓ Mark taken
+                                            <button class="mark-taken-btn caregiver-log-btn" data-time="{{ item.time }}">
+                                                ✓ Log dose
                                             </button>
                                         {% else %}
                                             <span class="med-card-status">{{ item.status }}</span>
@@ -153,7 +145,6 @@
                                 </div>
                             {% endfor %}
                         </div>
-
                     </div>
 
                 </div>

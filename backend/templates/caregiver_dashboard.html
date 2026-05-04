@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caregiver Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='schedule.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='caregiver.css') }}">
+</head>
+
+<body class="caregiver-page">
+    <div class="dashboard-container">
+
+        <aside class="sidebar">
+            <h2 class="logo">
+                <span class="logo-mark">M</span>
+                <span>MediTrack</span>
+            </h2>
+
+            <nav>
+                <p class="nav-section-label">Caregiver</p>
+                <ul>
+                    <li><a href="{{ url_for('caregiver_dashboard') }}" class="sidebar-link active"><span class="sidebar-icon">⌂</span><span>Overview</span></a></li>
+                    <li><a href="{{ url_for('caregiver_schedule') }}" class="sidebar-link"><span class="sidebar-icon">🕒</span><span>Schedule</span></a></li>
+                    <li><a href="{{ url_for('caregiver_adherence') }}" class="sidebar-link"><span class="sidebar-icon">◔</span><span>Adherence</span></a></li>
+                    <li><a href="{{ url_for('caregiver_notes_page') }}" class="sidebar-link"><span class="sidebar-icon">📝</span><span>Notes</span></a></li>
+                    <li><a href="{{ url_for('caregiver_alerts') }}" class="sidebar-link"><span class="sidebar-icon">!</span><span>Alerts</span></a></li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <a href="{{ url_for('auth.logout') }}" class="sidebar-link logout-link">
+                    <span class="sidebar-icon">⇦</span><span>Sign out</span>
+                </a>
+            </div>
+        </aside>
+
+        <div class="content-wrapper">
+            <section class="main-panel">
+
+                <header class="top-bar">
+                    <div>
+                        <h1>Caregiver Dashboard</h1>
+                        <p>Hi, {{ ctx.caregiver_name }}{% if ctx.active_patient_name %} — currently monitoring {{ ctx.active_patient_name }}{% endif %}</p>
+                    </div>
+                </header>
+
+                {# Patient picker — real dropdown, scoped to assigned patients #}
+                <div class="patient-picker">
+                    <div class="patient-avatar">{{ (ctx.active_patient_name or '?')[0] }}</div>
+
+                    <div class="patient-picker-info">
+                        <p class="picker-label">Currently monitoring</p>
+                        <h2>{{ ctx.active_patient_name or 'No patient selected' }}</h2>
+                        <span>{{ ctx.assigned_patients|length }} patient{{ '' if ctx.assigned_patients|length == 1 else 's' }} assigned to you</span>
+                    </div>
+
+                    <details class="picker-dropdown">
+                        <summary class="picker-button">Change patient ▾</summary>
+                        <div class="picker-menu">
+                            {% for p in ctx.assigned_patients %}
+                                <a href="{{ url_for('caregiver_select_patient', patient_id=p.patient_id) }}"
+                                   class="picker-menu-item {% if p.patient_id == ctx.active_patient_id %}selected{% endif %}">
+                                    {{ p.full_name }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </details>
+                </div>
+
+                <div class="caregiver-content">
+
+                    <div class="caregiver-panel">
+                        <h3>Medication Schedule</h3>
+
+                        {% for item in schedule %}
+                        <div class="caregiver-item">
+                            <span>{{ item.time }}</span>
+                            <div>
+                                <strong>{{ item.name }}</strong>
+                                <p>{{ item.dose }}</p>
+                            </div>
+                            <div class="caregiver-actions">
+                                <span class="badge {{ item.tag_class }}">{{ item.status }}</span>
+
+                                {% if item.tag_class == "upcoming" %}
+                                    <button class="caregiver-log-btn" data-time="{{ item.time }}">Log dose</button>
+                                {% endif %}
+
+                                <button class="caregiver-note-btn">✎</button>
+                            </div>
+
+                            <div class="note-form">
+                                <textarea placeholder="Add a caregiver note about {{ item.name }}..."></textarea>
+                                <div class="note-tags">
+                                    <span class="tag-chip" data-tag="Mood">Mood</span>
+                                    <span class="tag-chip" data-tag="Pain">Pain</span>
+                                    <span class="tag-chip" data-tag="Side effect">Side effect</span>
+                                    <span class="tag-chip" data-tag="Appetite">Appetite</span>
+                                    <span class="tag-chip" data-tag="Sleep">Sleep</span>
+                                </div>
+                                <button class="save-note-btn" data-time="{{ item.time }}">Save note</button>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="caregiver-panel">
+                        <h3>Recent Notes</h3>
+
+                        {% if notes %}
+                            {% for note in notes %}
+                            <div class="note-item">
+                                {% if note.tag %}
+                                    <span class="note-item-tag">{{ note.tag }}</span>
+                                {% endif %}
+                                <p class="note-item-text">{{ note.text }}</p>
+                                <p class="note-item-meta">
+                                    {{ note.author_name }} · {{ note.created_at.strftime('%d %b, %H:%M') }}
+                                    {% if note.related_time %} · re: {{ note.related_time }} dose{% endif %}
+                                </p>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="empty-state">No notes yet. Use the ✎ button to add one.</p>
+                        {% endif %}
+                    </div>
+
+                </div>
+
+            </section>
+        </div>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='js/caregiver_dashboard.js') }}?v=2"></script>
+</body>
+</html>

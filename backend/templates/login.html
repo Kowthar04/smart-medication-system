@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign in · MediTrack</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+</head>
+<body class="login-page">
+ 
+    <main class="login-shell">
+ 
+        <div class="login-brand">
+            <h1 class="login-logo">
+                <span class="logo-mark">M</span>
+                <span>MediTrack</span>
+            </h1>
+            <p class="login-tagline">Medication adherence, supported.</p>
+        </div>
+ 
+        <div class="login-card">
+ 
+            <h2>Sign in</h2>
+            <p class="login-card-sub">Pick the role that matches your account.</p>
+ 
+            <div class="login-tabs" role="tablist">
+                <a href="{{ url_for('auth.login_with_tab', role='patient') }}"
+                   class="login-tab {% if active_tab == 'patient' %}active{% endif %}"
+                   role="tab"
+                   aria-selected="{{ 'true' if active_tab == 'patient' else 'false' }}">
+                    Patient
+                </a>
+                <a href="{{ url_for('auth.login_with_tab', role='caregiver') }}"
+                   class="login-tab {% if active_tab == 'caregiver' %}active{% endif %}"
+                   role="tab"
+                   aria-selected="{{ 'true' if active_tab == 'caregiver' else 'false' }}">
+                    Caregiver
+                </a>
+                <a href="{{ url_for('auth.login_with_tab', role='doctor') }}"
+                   class="login-tab {% if active_tab == 'doctor' %}active{% endif %}"
+                   role="tab"
+                   aria-selected="{{ 'true' if active_tab == 'doctor' else 'false' }}">
+                    Doctor
+                </a>
+            </div>
+ 
+            {% if error %}
+            <div class="login-error" role="alert">
+                {{ error }}
+            </div>
+            {% endif %}
+ 
+            <form action="{{ url_for('auth.login_submit') }}" method="POST" class="login-form" novalidate>
+ 
+                <input type="hidden" name="role" value="{{ active_tab }}">
+ 
+                <label class="login-field">
+                    <span class="login-label">Email</span>
+                    <input type="email" name="email" required autocomplete="email" autofocus>
+                </label>
+ 
+                <label class="login-field">
+                    <span class="login-label">Password</span>
+                    <input type="password" name="password" required autocomplete="current-password">
+                </label>
+ 
+                <button type="submit" class="login-submit">
+                    Sign in as
+                    {%- if active_tab == 'patient' %} patient
+                    {%- elif active_tab == 'caregiver' %} caregiver
+                    {%- else %} doctor
+                    {% endif -%}
+                </button>
+ 
+            </form>
+ 
+            <div class="demo-creds">
+                <div class="demo-creds-head">
+                    <span class="demo-creds-tag">Demo</span>
+                    <span class="demo-creds-title">Account credentials</span>
+                </div>
+ 
+                <p class="demo-creds-hint">
+                    Click a row to fill the form, or copy manually. Password is the same for all three accounts.
+                </p>
+ 
+                <div class="demo-creds-list">
+                    <button type="button" class="demo-cred-row" data-email="patient@meditrack.demo" data-tab="patient">
+                        <span class="demo-cred-role">Patient</span>
+                        <span class="demo-cred-email">patient@meditrack.demo</span>
+                    </button>
+ 
+                    <button type="button" class="demo-cred-row" data-email="caregiver@meditrack.demo" data-tab="caregiver">
+                        <span class="demo-cred-role">Caregiver</span>
+                        <span class="demo-cred-email">caregiver@meditrack.demo</span>
+                    </button>
+ 
+                    <button type="button" class="demo-cred-row" data-email="doctor@meditrack.demo" data-tab="doctor">
+                        <span class="demo-cred-role">Doctor</span>
+                        <span class="demo-cred-email">doctor@meditrack.demo</span>
+                    </button>
+                </div>
+ 
+                <p class="demo-creds-password">
+                    Password: <code>demo1234</code>
+                </p>
+            </div>
+ 
+        </div>
+ 
+    </main>
+ 
+    <script>
+        
+        document.querySelectorAll(".demo-cred-row").forEach(function (row) {
+            row.addEventListener("click", function () {
+                var targetTab = row.dataset.tab;
+                var currentTab = "{{ active_tab }}";
+ 
+                if (targetTab === currentTab) {
+                    var emailInput = document.querySelector('input[name="email"]');
+                    var passwordInput = document.querySelector('input[name="password"]');
+                    if (emailInput) {
+                        emailInput.value = row.dataset.email;
+                    }
+                    if (passwordInput) {
+                        passwordInput.value = "demo1234";
+                        passwordInput.focus();
+                    }
+                } else {
+                   
+                    var url = "{{ url_for('auth.login_with_tab', role='REPLACE_ME') }}".replace("REPLACE_ME", targetTab);
+                    window.location.href = url + "?email=" + encodeURIComponent(row.dataset.email);
+                }
+            });
+        });
+ 
+        
+        (function () {
+            var params = new URLSearchParams(window.location.search);
+            var prefillEmail = params.get("email");
+            if (prefillEmail) {
+                var emailInput = document.querySelector('input[name="email"]');
+                var passwordInput = document.querySelector('input[name="password"]');
+                if (emailInput) {
+                    emailInput.value = prefillEmail;
+                }
+                if (passwordInput) {
+                    passwordInput.value = "demo1234";
+                    passwordInput.focus();
+                }
+            }
+        })();
+    </script>
+ 
+</body>
+</html>

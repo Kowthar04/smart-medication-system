@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alerts · Caregiver</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='schedule.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='caregiver.css') }}">
+</head>
+<body class="caregiver-page">
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <h2 class="logo">
+                <span class="logo-mark">M</span>
+                <span>MediTrack</span>
+            </h2>
+            <nav>
+                <p class="nav-section-label">Caregiver</p>
+                <ul>
+                    <li><a href="{{ url_for('caregiver_dashboard') }}" class="sidebar-link"><span class="sidebar-icon">⌂</span><span>Overview</span></a></li>
+                    <li><a href="{{ url_for('caregiver_schedule') }}" class="sidebar-link"><span class="sidebar-icon">🕒</span><span>Schedule</span></a></li>
+                    <li><a href="{{ url_for('caregiver_adherence') }}" class="sidebar-link"><span class="sidebar-icon">◔</span><span>Adherence</span></a></li>
+                    <li><a href="{{ url_for('caregiver_notes_page') }}" class="sidebar-link"><span class="sidebar-icon">📝</span><span>Notes</span></a></li>
+                    <li><a href="{{ url_for('caregiver_alerts') }}" class="sidebar-link active"><span class="sidebar-icon">!</span><span>Alerts</span></a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-bottom">
+                <a href="{{ url_for('auth.logout') }}" class="sidebar-link logout-link">
+                    <span class="sidebar-icon">⇦</span><span>Sign out</span>
+                </a>
+            </div>
+        </aside>
+
+        <div class="content-wrapper">
+            <section class="main-panel">
+                <header class="top-bar">
+                    <div>
+                        <h1>Alerts</h1>
+                        <p>Issues that need your attention for {{ ctx.active_patient_name }}</p>
+                    </div>
+                </header>
+
+                <div class="patient-picker">
+                    <div class="patient-avatar">{{ (ctx.active_patient_name or '?')[0] }}</div>
+                    <div class="patient-picker-info">
+                        <p class="picker-label">Currently monitoring</p>
+                        <h2>{{ ctx.active_patient_name or 'No patient selected' }}</h2>
+                        <span>{{ ctx.assigned_patients|length }} patient{{ '' if ctx.assigned_patients|length == 1 else 's' }} assigned to you</span>
+                    </div>
+                    <details class="picker-dropdown">
+                        <summary class="picker-button">Change patient ▾</summary>
+                        <div class="picker-menu">
+                            {% for p in ctx.assigned_patients %}
+                                <a href="{{ url_for('caregiver_select_patient', patient_id=p.patient_id) }}"
+                                   class="picker-menu-item {% if p.patient_id == ctx.active_patient_id %}selected{% endif %}">
+                                    {{ p.full_name }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </details>
+                </div>
+
+                <div class="alerts-summary">
+                    <div class="alert-chip alert-chip-high">
+                        <span class="alert-chip-num">{{ alerts_data.counts.high_unacked }}</span>
+                        <span class="alert-chip-label">Need attention</span>
+                    </div>
+                    <div class="alert-chip alert-chip-medium">
+                        <span class="alert-chip-num">{{ alerts_data.counts.medium_unacked }}</span>
+                        <span class="alert-chip-label">Worth reviewing</span>
+                    </div>
+                    <div class="alert-chip alert-chip-acked">
+                        <span class="alert-chip-num">{{ alerts_data.counts.acked_total }}</span>
+                        <span class="alert-chip-label">Acknowledged</span>
+                    </div>
+                </div>
+
+                <div class="alerts-section">
+                    <div class="alerts-section-head">
+                        <h3>Needs attention now</h3>
+                        <span class="alerts-section-count">{{ alerts_data.needs_attention|length }}</span>
+                    </div>
+
+                    {% if alerts_data.needs_attention %}
+                        {% for alert in alerts_data.needs_attention %}
+                            <article class="alert-card alert-{{ alert.severity }}" data-alert-id="{{ alert.id }}">
+                                <div class="alert-icon">
+                                    {%- if alert.type == 'missed' -%}!{%- elif alert.type == 'suspicious' -%}⚠{%- else -%}!{%- endif -%}
+                                </div>
+                                <div class="alert-body">
+                                    <div class="alert-meta">
+                                        <span class="alert-severity-tag tag-high">High</span>
+                                        <span class="alert-when">{{ alert.when }}</span>
+                                    </div>
+                                    <h4 class="alert-title">{{ alert.title }}</h4>
+                                    <p class="alert-text">{{ alert.body }}</p>
+                                </div>
+                                <div class="alert-actions">
+                                    <button class="alert-ack-btn" data-alert-id="{{ alert.id }}">
+                                        Acknowledge
+                                    </button>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    {% else %}
+                        <div class="alerts-empty">
+                            <strong>All clear.</strong>
+                            <p>No high-priority alerts right now.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="alerts-section">
+                    <div class="alerts-section-head">
+                        <h3>Worth reviewing</h3>
+                        <span class="alerts-section-count">{{ alerts_data.worth_reviewing|length }}</span>
+                    </div>
+
+                    {% if alerts_data.worth_reviewing %}
+                        {% for alert in alerts_data.worth_reviewing %}
+                            <article class="alert-card alert-{{ alert.severity }}" data-alert-id="{{ alert.id }}">
+                                <div class="alert-icon">
+                                    {%- if alert.type == 'late_pattern' -%}↻{%- elif alert.type == 'wellbeing' -%}♥{%- else -%}!{%- endif -%}
+                                </div>
+                                <div class="alert-body">
+                                    <div class="alert-meta">
+                                        <span class="alert-severity-tag tag-medium">Medium</span>
+                                        <span class="alert-when">{{ alert.when }}</span>
+                                    </div>
+                                    <h4 class="alert-title">{{ alert.title }}</h4>
+                                    <p class="alert-text">{{ alert.body }}</p>
+                                </div>
+                                <div class="alert-actions">
+                                    <button class="alert-ack-btn" data-alert-id="{{ alert.id }}">
+                                        Acknowledge
+                                    </button>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    {% else %}
+                        <div class="alerts-empty">
+                            <strong>Nothing to review.</strong>
+                            <p>No medium-priority items pending.</p>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <details class="alerts-section alerts-section-collapsible">
+                    <summary class="alerts-section-head">
+                        <h3>Acknowledged</h3>
+                        <span class="alerts-section-count">{{ alerts_data.acknowledged|length }}</span>
+                    </summary>
+
+                    {% if alerts_data.acknowledged %}
+                        {% for alert in alerts_data.acknowledged %}
+                            <article class="alert-card alert-acked">
+                                <div class="alert-icon">✓</div>
+                                <div class="alert-body">
+                                    <div class="alert-meta">
+                                        <span class="alert-severity-tag tag-{{ alert.severity }}">{{ alert.severity|capitalize }}</span>
+                                        <span class="alert-when">{{ alert.when }}</span>
+                                    </div>
+                                    <h4 class="alert-title">{{ alert.title }}</h4>
+                                    <p class="alert-text">{{ alert.body }}</p>
+                                    <p class="alert-ack-stamp">
+                                        Acknowledged by {{ alert.acknowledgement.by_name }}
+                                        on {{ alert.acknowledgement.at.strftime('%d %b, %H:%M') }}
+                                    </p>
+                                </div>
+                            </article>
+                        {% endfor %}
+                    {% else %}
+                        <div class="alerts-empty">
+                            <p>No alerts have been acknowledged yet.</p>
+                        </div>
+                    {% endif %}
+                </details>
+
+            </section>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        document.querySelectorAll(".alert-ack-btn").forEach(function (btn) {
+            btn.addEventListener("click", async function () {
+                btn.disabled = true;
+                btn.textContent = "Acknowledging...";
+
+                try {
+                    var res = await fetch("/caregiver/alerts/acknowledge", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ alert_id: btn.dataset.alertId }),
+                    });
+                    if (!res.ok) throw new Error("Failed");
+                    btn.textContent = "✓ Acknowledged";
+                    setTimeout(function () { window.location.reload(); }, 500);
+                } catch (e) {
+                    btn.disabled = false;
+                    btn.textContent = "Acknowledge";
+                    alert("Could not acknowledge — please try again.");
+                }
+            });
+        });
+    })();
+    </script>
+</body>
+</html>

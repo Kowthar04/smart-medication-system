@@ -1,20 +1,13 @@
-/* Base */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
+html,
 body {
-    font-family: Arial, sans-serif;
-    background: #edf3ff;
-    color: #1f2937;
+    min-height: 100%;
+    overflow-x: hidden;
 }
 
 /* Layout */
 .dashboard-container {
     display: flex;
-    height: 100vh;
+    min-height: 100vh;
     padding: 16px;
     gap: 16px;
 }
@@ -22,78 +15,46 @@ body {
 .content-wrapper {
     flex: 1;
     max-width: 1200px;
-    margin: 0 auto;
+    width: 100%;
+    margin: 10px auto 0;
+    min-width: 0;
 }
 
 .main-panel {
     display: flex;
     flex-direction: column;
     gap: 20px;
-}
-
-/* Sidebar */
-.sidebar {
-    width: 210px;
-    background: white;
-    border-radius: 24px;
-    padding: 28px 18px;
-    display: flex;
-    flex-direction: column;
+    padding-bottom: 24px;
 }
 
 /* Top bar */
 .top-bar {
-    background: #f4f8ff;
-    border-radius: 22px;
+    background: var(--surface);
+    border-radius: var(--radius-xl);
     padding: 28px 30px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-/* Card */
-.adherence-card {
-    background: linear-gradient(to bottom, #ffffff, #f8faff);
-    border-radius: 20px;
-    padding: 20px;
+.top-bar h1 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 6px;
 }
 
-/* Header */
-.adherence-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.top-bar p {
+    font-size: 14px;
+    color: var(--text-muted);
 }
 
-/* Chart placeholder */
-.chart-placeholder {
-    height: 340px;
-    padding: 10px 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6b7280;
-}
-
-/* Tabs */
-.time-tabs {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.time-tab {
-    border: none;
-    background: #eef4ff;
-    padding: 8px 14px;
-    border-radius: 10px;
-    cursor: pointer;
-}
-
-.time-tab.active {
-    background: #355ad8;
-    color: white;
+.profile-box {
+    width: 72px;
+    height: 72px;
+    background: var(--primary);
+    border-radius: 50%;
+    box-shadow: var(--shadow-xs);
 }
 
 /* Summary stats */
@@ -104,10 +65,11 @@ body {
 }
 
 .stat-card {
-    background: linear-gradient(to bottom, #ffffff, #f8faff);
-    border-radius: 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
     padding: 18px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--shadow-sm);
     display: flex;
     align-items: center;
     gap: 14px;
@@ -116,7 +78,7 @@ body {
 .stat-icon {
     width: 48px;
     height: 48px;
-    border-radius: 14px;
+    border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -126,18 +88,18 @@ body {
 }
 
 .adherence-icon {
-    background: #eaf1ff;
-    color: #355ad8;
+    background: var(--primary-light);
+    color: var(--primary);
 }
 
 .taken-icon {
-    background: #dcfce7;
-    color: #166534;
+    background: var(--success-bg);
+    color: var(--success-text);
 }
 
 .missed-icon {
-    background: #fee2e2;
-    color: #991b1b;
+    background: var(--danger-bg);
+    color: var(--danger-text);
 }
 
 .stat-text {
@@ -147,12 +109,172 @@ body {
 
 .stat-label {
     font-size: 13px;
-    color: #6b7280;
+    color: var(--text-muted);
     margin-bottom: 4px;
 }
 
 .stat-value {
     font-size: 28px;
+    font-weight: 800;
+    color: var(--text);
+}
+
+/* Chart card */
+.adherence-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 22px;
+    box-shadow: var(--shadow-sm);
+}
+
+.adherence-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.adherence-header h3 {
+    font-size: 18px;
+}
+
+.med-filter {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    padding: 8px 12px;
+    border-radius: var(--radius-full);
+    outline: none;
+}
+
+.chart-placeholder {
+    height: 340px;
+    padding: 10px 0;
+    color: var(--text-muted);
+}
+
+/* Tabs */
+.time-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 12px;
+    background: var(--surface-alt);
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 5px;
+    border-radius: var(--radius-full);
+}
+
+.time-tab {
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    padding: 8px 14px;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.time-tab.active {
+    background: var(--primary);
+    color: var(--text-on-dark);
+}
+
+.med-breakdown-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 22px;
+    box-shadow: var(--shadow-sm);
+}
+
+.breakdown-header {
+    margin-bottom: 18px;
+}
+
+.breakdown-header h3 {
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.breakdown-header p {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.breakdown-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.breakdown-row {
+    display: grid;
+    grid-template-columns: 220px 1fr 50px;
+    gap: 14px;
+    align-items: center;
+}
+
+.breakdown-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.breakdown-info strong {
+    font-size: 14px;
+}
+
+.breakdown-info span {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.breakdown-bar {
+    height: 10px;
+    background: var(--surface-alt);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.breakdown-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--primary-bright));
+    border-radius: var(--radius-full);
+}
+
+.breakdown-percent {
+    font-size: 13px;
     font-weight: 700;
-    color: #1f2937;
+    color: var(--text);
+}
+
+/* Insights card */
+.adherence-insight-card {
+    background: linear-gradient(135deg, #1f2937, #111827);
+    color: var(--text-on-dark);
+    border-radius: var(--radius-xl);
+    padding: 22px;
+    box-shadow: var(--shadow-dark);
+}
+
+.adherence-insight-card .insight-label {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--primary-bright);
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.adherence-insight-card h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+}
+
+.adherence-insight-card p {
+    font-size: 13px;
+    opacity: 0.8;
 }
