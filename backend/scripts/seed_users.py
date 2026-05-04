@@ -7,10 +7,7 @@ DB_CONFIG = {
     "user": "kowtharabdiqadir",
     "host": "localhost",
 }
-
-
 DEMO_PASSWORD = "demo1234"
-
 DEMO_USERS = [
     {
         "email": "patient@meditrack.demo",
@@ -28,8 +25,6 @@ DEMO_USERS = [
         "role": "doctor",
     },
 ]
-
-
 def upsert_user(cur, email, password_hash, full_name, role):
     """Create the user if it doesn't exist, or refresh password+name if it does."""
     cur.execute(
@@ -44,8 +39,6 @@ def upsert_user(cur, email, password_hash, full_name, role):
         (email, password_hash, full_name, role),
     )
     return cur.fetchone()[0]
-
-
 def ensure_patient_record(cur, user_id):
     """Create the matching patients row for a patient user."""
     cur.execute(
@@ -56,18 +49,13 @@ def ensure_patient_record(cur, user_id):
         """,
         (user_id,),
     )
-
-
 def main():
     conn = psycopg2.connect(**DB_CONFIG)
     cur = conn.cursor()
-
     try:
         password_hash = generate_password_hash(DEMO_PASSWORD, method="pbkdf2:sha256")
-
         print("Seeding demo accounts...")
         print()
-
         for u in DEMO_USERS:
             user_id = upsert_user(
                 cur,
@@ -76,21 +64,15 @@ def main():
                 full_name=u["full_name"],
                 role=u["role"],
             )
-
             if u["role"] == "patient":
                 ensure_patient_record(cur, user_id)
-
             print(f"  [{u['role']:9s}] {u['email']:35s}  {u['full_name']}")
-
         conn.commit()
-
         print()
         print(f"Done. All accounts use password: {DEMO_PASSWORD}")
 
     finally:
         cur.close()
         conn.close()
-
-
 if __name__ == "__main__":
     main()

@@ -11,9 +11,7 @@ DB_CONFIG = {
 def main():
     conn = psycopg2.connect(**DB_CONFIG)
     cur = conn.cursor()
-
     try:
-        
         cur.execute("SELECT id FROM users WHERE email = 'patient@meditrack.demo'")
         row = cur.fetchone()
         patient_user_id = row[0] if row else None
@@ -29,20 +27,16 @@ def main():
         if not patient_user_id:
             print("ERROR: patient@meditrack.demo doesn't exist. Run seed_users.py first.")
             return
-
         cur.execute(
             "SELECT id FROM patients WHERE user_id = %s",
             (patient_user_id,),
         )
         row = cur.fetchone()
         patient_clinical_id = row[0] if row else None
-
         if not patient_clinical_id:
             print("ERROR: patient row missing in `patients` table.")
             print("Run scripts/seed_users.py — it creates the patient record.")
             return
-
-        
         if caregiver_user_id:
             cur.execute(
                 """
@@ -55,8 +49,6 @@ def main():
             print(f"  caregiver -> patient assignment ensured")
         else:
             print("  no caregiver demo account (skipping)")
-
-        
         if doctor_user_id:
             cur.execute(
                 """
@@ -69,23 +61,17 @@ def main():
             print(f"  doctor -> patient assignment ensured")
         else:
             print("  no doctor demo account (skipping)")
-
         conn.commit()
-
         # Verify.
         cur.execute("SELECT COUNT(*) FROM caregiver_patient")
         cg_count = cur.fetchone()[0]
         cur.execute("SELECT COUNT(*) FROM doctor_patient")
         dr_count = cur.fetchone()[0]
-
         print()
         print(f"caregiver_patient rows: {cg_count}")
         print(f"doctor_patient rows:    {dr_count}")
-
     finally:
         cur.close()
         conn.close()
-
-
 if __name__ == "__main__":
     main()

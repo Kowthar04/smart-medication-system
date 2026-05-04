@@ -16,11 +16,9 @@ filterInputs.forEach(input => {
         });
     });
 });
-
 document.querySelectorAll(".mark-taken-btn").forEach(button => {
     button.addEventListener("click", async () => {
         const time = button.dataset.time;
-
         try {
             const res = await fetch("/log-dose", {
                 method: "POST",
@@ -29,12 +27,9 @@ document.querySelectorAll(".mark-taken-btn").forEach(button => {
                 },
                 body: JSON.stringify({ time })
             });
-
             if (!res.ok) throw new Error();
-
             // reload page to update UI
             location.reload();
-
         } catch (err) {
             alert("Failed to log dose");
         }

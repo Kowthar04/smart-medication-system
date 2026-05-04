@@ -1250,6 +1250,10 @@ def caregiver_adherence():
     schedule = get_schedule_data(patient_id)
     recent_events = get_recent_events(patient_id, limit=200)
 
+    schedule = get_schedule_data(patient_id)
+    print(f"[DEBUG] caregiver_dashboard: patient_id={patient_id}, schedule={schedule}", flush=True)
+    print(f"[DEBUG] session={dict(session)}", flush=True)
+
     medications = [item["name"] for item in schedule]
     total_doses = len(schedule)
     today = datetime.now().date()

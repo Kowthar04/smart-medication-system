@@ -1,12 +1,10 @@
 const steps = document.querySelectorAll(".checkin-step");
-
 const toStep2 = document.getElementById("to-step-2");
 const backToStep1 = document.getElementById("back-to-step-1");
 const toStep3 = document.getElementById("to-step-3");
 const backToStep2 = document.getElementById("back-to-step-2");
 const saveCheckin = document.getElementById("save-checkin");
 const editCheckin = document.getElementById("edit-checkin");
-
 const summaryMood = document.getElementById("summary-mood");
 const summaryEnergy = document.getElementById("summary-energy");
 const summarySideEffects = document.getElementById("summary-side-effects");
@@ -17,7 +15,6 @@ const checkinData = {
     energy: null,
     side_effects: null
 };
-
 function showStep(stepClass) {
     steps.forEach(step => step.classList.remove("active-step"));
     const nextStep = document.querySelector(stepClass);
@@ -25,7 +22,6 @@ function showStep(stepClass) {
         nextStep.classList.add("active-step");
     }
 }
-
 function updateCurrentTime() {
     const now = new Date();
     if (currentTimeEl) {
@@ -35,7 +31,6 @@ function updateCurrentTime() {
         });
     }
 }
-
 function setupOptionGroups() {
     const optionGroups = document.querySelectorAll(".checkin-options");
     optionGroups.forEach(group => {
@@ -56,7 +51,6 @@ function setupOptionGroups() {
         });
     });
 }
-
 async function saveWellbeingCheckin() {
     if (!checkinData.mood || !checkinData.energy || !checkinData.side_effects) {
         alert("Please complete all steps before saving.");
@@ -82,7 +76,6 @@ async function saveWellbeingCheckin() {
         alert("There was a problem saving the check-in.");
     }
 }
-
 if (toStep2) toStep2.addEventListener("click", () => showStep(".step-2"));
 if (backToStep1) backToStep1.addEventListener("click", () => showStep(".step-1"));
 if (toStep3) toStep3.addEventListener("click", () => showStep(".step-3"));
@@ -120,7 +113,6 @@ async function logDoseTaken() {
         alert("There was a problem logging this dose.");
     }
 }
-
 if (logDoseBtn) logDoseBtn.addEventListener("click", logDoseTaken);
 if (snoozeBtn) {
     snoozeBtn.addEventListener("click", () => {
@@ -128,7 +120,6 @@ if (snoozeBtn) {
         snoozeBtn.disabled = true;
     });
 }
-
 const countdownEl = document.getElementById("hero-countdown");
 const countdownTimeEl = document.getElementById("countdown-time");
 const countdownLabel = document.getElementById("countdown-label");
@@ -160,12 +151,10 @@ function updateCountdown() {
     const h = Math.floor(diff / (1000 * 60 * 60));
     const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     const s = Math.floor((diff % (1000 * 60)) / 1000);
-
     countdownTimeEl.textContent =
         `${String(h).padStart(2, "0")}:` +
         `${String(m).padStart(2, "0")}:` +
         `${String(s).padStart(2, "0")}`;
 }
-
 setInterval(updateCountdown, 1000);
 updateCountdown();

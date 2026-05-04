@@ -24,7 +24,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     });
-
     // Note button toggles inline form
     document.querySelectorAll(".caregiver-note-btn").forEach(button => {
         button.addEventListener("click", () => {
@@ -33,7 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (form) form.classList.toggle("active");
         });
     });
-
     // Tag chip selection (per form)
     document.querySelectorAll(".note-form").forEach(form => {
         const chips = form.querySelectorAll(".tag-chip");
@@ -48,7 +46,6 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         });
     });
-
     // Save note (text + tag + dose time)
     document.querySelectorAll(".save-note-btn").forEach(button => {
         button.addEventListener("click", async () => {
@@ -63,7 +60,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const selectedChip = form.querySelector(".tag-chip.selected");
             const selectedTag = selectedChip ? selectedChip.dataset.tag : null;
             const relatedTime = button.dataset.time || null;
-
             try {
                 const response = await fetch("/save-note", {
                     method: "POST",
