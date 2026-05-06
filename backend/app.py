@@ -874,7 +874,7 @@ def root_redirect():
     if role == "caregiver":
         return redirect(url_for("caregiver_dashboard"))
     if role == "doctor":
-        return redirect(url_for("auth.doctor_placeholder"))
+        return redirect(url_for("auth.doctor_dashboard"))
     return redirect(url_for("auth.login"))
 
 
@@ -1186,6 +1186,19 @@ def _caregiver_context():
         "active_patient_id": active_patient_id,
         "active_patient_name": active_patient_name,
         "caregiver_name": session.get("full_name", "Caregiver"),
+    }
+
+def _doctor_context():
+    """Common context for doctor pages (picker state + doctor name)."""
+    user_id = session["user_id"]
+    assigned = list_assigned_patients(user_id, "doctor")
+    active_patient_id = get_active_patient_id()
+    active_patient_name = get_patient_display_name(active_patient_id) if active_patient_id else None
+    return {
+        "assigned_patients": assigned,
+        "active_patient_id": active_patient_id,
+        "active_patient_name": active_patient_name,
+        "doctor_name": session.get("full_name", "Doctor"),
     }
 
 
@@ -1588,6 +1601,26 @@ def acknowledge_alert():
 
     return jsonify({"status": "acknowledged"})
 
+@app.route("/doctor", methods=["GET"])
+@role_required("doctor")
+def doctor_dashboard():
+    ctx = _doctor_context()
+    if ctx["active_patient_id"] is None:
+        return render_template("caregiver_no_patients.html", ctx=ctx)
+    return render_template("doctor_dashboard.html", ctx=ctx)
+
+@app.route("/doctor/select-patient/<int:patient_id>", methods=["POST", "GET"])
+@role_required("doctor")
+def doctor_select_patient(patient_id):
+    if not assert_doctor_can_view(session["user_id"], patient_id):
+        abort(403)
+
+    session["viewing_patient_id"] = patient_id
+    referrer = request.referrer
+    if referrer and url_for("doctor_dashboard") in referrer:
+        return redirect(referrer)
+    return redirect(url_for("doctor_dashboard"))
+
 
 @app.route("/patient/care-team", methods=["GET"])
 @role_required("patient")
@@ -1599,6 +1632,8 @@ def patient_care_team():
 @role_required("patient")
 def patient_settings():
     return render_template("patient_settings.html")
+
+
 
 
 if __name__ == "__main__":

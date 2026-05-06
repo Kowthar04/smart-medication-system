@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='doctor.css') }}">
+</head>
+<body class="doctor-page">
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <h2 class="logo">
+                <span class="logo-mark">M</span>
+                <span>MediTrack</span>
+            </h2>
+
+            <nav>
+                <p class="nav-section-label">Doctor</p>
+                <ul>
+                    <li><a href="{{ url_for('doctor_dashboard') }}" class="sidebar-link active"><span class="sidebar-icon">⌂</span><span>Overview</span></a></li>
+                    <li><a href="#" class="sidebar-link"><span class="sidebar-icon">🕒</span><span>Schedule</span></a></li>
+                    <li><a href="#" class="sidebar-link"><span class="sidebar-icon">📊</span><span>Reports</span></a></li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <a href="{{ url_for('auth.logout') }}" class="sidebar-link logout-link">
+                    <span class="sidebar-icon">⇦</span><span>Sign out</span>
+                </a>
+            </div>
+        </aside>
+
+        <div class="content-wrapper">
+            <section class="main-panel">
+                <header class="top-bar">
+                    <div>
+                        <h1>Doctor Dashboard</h1>
+                        <p>Hi, {{ ctx.doctor_name }}{% if ctx.active_patient_name %} — reviewing {{ ctx.active_patient_name }}{% endif %}</p>
+                    </div>
+                </header>
+
+                <div class="patient-picker">
+                    <div class="patient-avatar">{{ (ctx.active_patient_name or '?')[0] }}</div>
+
+                    <div class="patient-picker-info">
+                        <p class="picker-label">Current patient</p>
+                        <h2>{{ ctx.active_patient_name or 'No patient selected' }}</h2>
+                        <span>{{ ctx.assigned_patients|length }} patient{{ '' if ctx.assigned_patients|length == 1 else 's' }} assigned to you</span>
+                    </div>
+
+                    <details class="picker-dropdown">
+                        <summary class="picker-button">Change patient ▾</summary>
+                        <div class="picker-menu">
+                            {% for p in ctx.assigned_patients %}
+                                <a href="{{ url_for('doctor_select_patient', patient_id=p.patient_id) }}"
+                                   class="picker-menu-item {% if p.patient_id == ctx.active_patient_id %}selected{% endif %}">
+                                    {{ p.full_name }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    </details>
+                </div>
+
+                <div class="doctor-placeholder-grid">
+                    <article class="doctor-card">
+                        <h3>Patient Summary</h3>
+                        <p></p>
+                    </article>
+                    <article class="doctor-card">
+                        <h3>Stats</h3>
+                        <p></p>
+                    </article>
+                    <article class="doctor-card doctor-card-wide">
+                        <h3></h3>
+                        <p></p>
+                    </article>
+                    <article class="doctor-card">
+                        <h3>Treatment Effectiveness</h3>
+                        <p></p>
+                    </article>
+                    <article class="doctor-card">
+                        <h3>Reports</h3>
+                        <p></p>
+                    </article>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='Js/doctor_dashboard.js') }}"></script>
+</body>
+</html>
