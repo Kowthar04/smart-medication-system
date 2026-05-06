@@ -45,7 +45,7 @@
 
                     <div class="patient-picker-info">
                         <p class="picker-label">Current patient</p>
-                        <h2>{{ ctx.active_patient_name or 'No patient selected' }}</h2>
+                        <h2>{{ ctx.active_patient_name or "No patient selected" }}</h2>
                         <span>{{ ctx.assigned_patients|length }} patient{{ '' if ctx.assigned_patients|length == 1 else 's' }} assigned to you</span>
                     </div>
 
@@ -62,27 +62,46 @@
                     </details>
                 </div>
 
+                
+                <section class="doctor-summary-card">
+                    <div class="summary-avatar">
+                        {{ (patient_summary.full_name or "?")[0] }}
+                    </div>
+
+                    <div class="summary-main">
+                        <div class="summary-title-row">
+                            <h2>{{ patient_summary.full_name }}</h2>
+                            {% if patient_summary.age %}
+                                <span class="summary-meta">Age {{ patient_summary.age }}</span>
+                            {% else %}
+                                <span class="summary-meta">Age —</span>
+                            {% endif %}
+                            <span class="summary-meta">{{ patient_summary.patient_code }}</span>
+                        </div>
+
+                        <div class="summary-tags">
+                            {% if patient_summary.condition_tags %}
+                                {% for tag in patient_summary.condition_tags %}
+                                    <span class="condition-tag">{{ tag }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="condition-tag muted">No condition tags</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="summary-actions">
+                        <button type="button" class="summary-btn secondary">Message</button>
+                        <button type="button" class="summary-btn primary">New prescription</button>
+                    </div>
+                </section>
+
+                
                 <div class="doctor-placeholder-grid">
-                    <article class="doctor-card">
-                        <h3>Patient Summary</h3>
-                        <p></p>
-                    </article>
-                    <article class="doctor-card">
-                        <h3>Stats</h3>
-                        <p></p>
-                    </article>
-                    <article class="doctor-card doctor-card-wide">
-                        <h3></h3>
-                        <p></p>
-                    </article>
-                    <article class="doctor-card">
-                        <h3>Treatment Effectiveness</h3>
-                        <p></p>
-                    </article>
-                    <article class="doctor-card">
-                        <h3>Reports</h3>
-                        <p></p>
-                    </article>
+                    <article class="doctor-card"><h3>Stats</h3><p></p></article>
+                    <article class="doctor-card doctor-card-wide"><h3>Adherence vs Side Effects</h3><p></p></article>
+                    <article class="doctor-card"><h3>Treatment Effectiveness</h3><p></p></article>
+                    <article class="doctor-card"><h3>Reports</h3><p></p></article>
                 </div>
             </section>
         </div>
