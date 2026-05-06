@@ -1607,11 +1607,15 @@ def doctor_dashboard():
     ctx = _doctor_context()
     if ctx["active_patient_id"] is None:
         return render_template("caregiver_no_patients.html", ctx=ctx)
+
     patient_summary = get_patient_summary(ctx["active_patient_id"])
+    doctor_stats = get_doctor_stats_30d(ctx["active_patient_id"])
+
     return render_template(
         "doctor_dashboard.html",
         ctx=ctx,
         patient_summary=patient_summary,
+        doctor_stats=doctor_stats,
     )
 
 def _doctor_context():
@@ -1689,6 +1693,82 @@ def get_patient_summary(patient_id):
         "patient_code": f"PT-{patient_id:04d}",
         "condition_tags": condition_tags,
     }
+
+def get_doctor_stats_30d(patient_id):
+    """Return doctor stat cards for the last 30 days."""
+    if patient_id is None:
+        return {
+            "adherence_30d_pct": 0,
+            "active_medications_count": 0,
+            "side_effects_30d_count": 0,
+            "last_checkin_label": "No check-ins",
+        }
+
+   
+    meds_row = run_query(
+        """
+        SELECT COUNT(*)
+        FROM medication_schedules
+        WHERE patient_id = %s
+        """,
+        (patient_id,),
+        fetchone=True,
+    )
+    active_medications_count = int(meds_row[0] or 0)
+
+   
+    taken_row = run_query(
+        """
+        SELECT COUNT(*)
+        FROM medication_events
+        WHERE patient_id = %s
+          AND event_type = 'taken'
+          AND created_at >= NOW() - INTERVAL '30 days'
+        """,
+        (patient_id,),
+        fetchone=True,
+    )
+    taken_count_30d = int(taken_row[0] or 0)
+
+    
+    expected_30d = active_medications_count * 30
+    adherence_30d_pct = round((taken_count_30d / expected_30d) * 100) if expected_30d else 0
+    adherence_30d_pct = max(0, min(100, adherence_30d_pct))
+
+   
+    side_fx_row = run_query(
+        """
+        SELECT COUNT(*)
+        FROM wellbeing_checkins
+        WHERE patient_id = %s
+          AND created_at >= NOW() - INTERVAL '30 days'
+          AND side_effects IS NOT NULL
+          AND TRIM(side_effects) <> ''
+        """,
+        (patient_id,),
+        fetchone=True,
+    )
+    side_effects_30d_count = int(side_fx_row[0] or 0)
+
+    last_checkin_row = run_query(
+        """
+        SELECT MAX(created_at)
+        FROM wellbeing_checkins
+        WHERE patient_id = %s
+        """,
+        (patient_id,),
+        fetchone=True,
+    )
+    last_checkin_at = last_checkin_row[0] if last_checkin_row else None
+    last_checkin_label = last_checkin_at.strftime("%d %b %Y, %H:%M") if last_checkin_at else "No check-ins"
+
+    return {
+        "adherence_30d_pct": adherence_30d_pct,
+        "active_medications_count": active_medications_count,
+        "side_effects_30d_count": side_effects_30d_count,
+        "last_checkin_label": last_checkin_label,
+    }
+
 
 
 @app.route("/patient/care-team", methods=["GET"])

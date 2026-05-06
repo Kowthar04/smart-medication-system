@@ -98,7 +98,27 @@
 
                 
                 <div class="doctor-placeholder-grid">
-                    <article class="doctor-card"><h3>Stats</h3><p></p></article>
+                    <article class="doctor-card doctor-stats-card">
+                        <h3>30-Day Snapshot</h3>
+                        <div class="doctor-stats-grid">
+                            <div class="doctor-stat">
+                                <p class="doctor-stat-label">30-day adherence</p>
+                                <p class="doctor-stat-value">{{ doctor_stats.adherence_30d_pct }}%</p>
+                            </div>
+                            <div class="doctor-stat">
+                                <p class="doctor-stat-label">Active medications</p>
+                                <p class="doctor-stat-value">{{ doctor_stats.active_medications_count }}</p>
+                            </div>
+                            <div class="doctor-stat">
+                                <p class="doctor-stat-label">Side effects (30d)</p>
+                                <p class="doctor-stat-value">{{ doctor_stats.side_effects_30d_count }}</p>
+                            </div>
+                            <div class="doctor-stat">
+                                <p class="doctor-stat-label">Last check-in</p>
+                                <p class="doctor-stat-value doctor-stat-value-small">{{ doctor_stats.last_checkin_label }}</p>
+                            </div>
+                        </div>
+                    </article>
                     <article class="doctor-card doctor-card-wide"><h3>Adherence vs Side Effects</h3><p></p></article>
                     <article class="doctor-card"><h3>Treatment Effectiveness</h3><p></p></article>
                     <article class="doctor-card"><h3>Reports</h3><p></p></article>
