@@ -1613,6 +1613,8 @@ def doctor_dashboard():
     doctor_stats = get_doctor_stats_30d(patient_id)
     medication_rows = get_doctor_medications(patient_id)
     effectiveness_rows = get_treatment_effectiveness(patient_id)
+    side_effect_frequency = get_doctor_side_effect_frequency_30d(patient_id)
+    wellbeing_trend = get_doctor_wellbeing_trend_14d(patient_id)
 
     return render_template(
         "doctor_dashboard.html",
@@ -1621,6 +1623,8 @@ def doctor_dashboard():
         doctor_stats=doctor_stats,
         medication_rows=medication_rows,
         effectiveness_rows=effectiveness_rows,
+        side_effect_frequency=side_effect_frequency,
+        wellbeing_trend=wellbeing_trend,
     )
 
 def _doctor_context():
@@ -2095,6 +2099,97 @@ def get_treatment_effectiveness(patient_id):
 
     return out
 
+def get_doctor_side_effect_frequency_30d(patient_id, limit=6):
+    """Top reported side effects in last 30 days."""
+    rows = run_query(
+        """
+        SELECT TRIM(side_effects) AS symptom, COUNT(*) AS cnt
+        FROM wellbeing_checkins
+        WHERE patient_id = %s
+          AND created_at >= NOW() - INTERVAL '30 days'
+          AND side_effects IS NOT NULL
+          AND TRIM(side_effects) <> ''
+        GROUP BY TRIM(side_effects)
+        ORDER BY cnt DESC, symptom ASC
+        LIMIT %s
+        """,
+        (patient_id, limit),
+    )
+
+    if not rows:
+        return []
+
+    max_count = max(int(r[1]) for r in rows) or 1
+    out = []
+    for symptom, count in rows:
+        count = int(count)
+        out.append({
+            "symptom": symptom,
+            "count": count,
+            "width_pct": round((count / max_count) * 100),
+        })
+    return out
+
+
+def _mood_to_score(mood):
+    mapping = {
+        "Very low": 1,
+        "Low": 2,
+        "Okay": 3,
+        "Good": 4,
+        "Very good": 5,
+    }
+    return mapping.get((mood or "").strip(), 0)
+
+
+def _score_to_class(score):
+    if score <= 1:
+        return "mood-very-low"
+    if score == 2:
+        return "mood-low"
+    if score == 3:
+        return "mood-okay"
+    if score == 4:
+        return "mood-good"
+    return "mood-very-good"
+
+
+def get_doctor_wellbeing_trend_14d(patient_id):
+    """One mood row per day over last 14 days."""
+    today = datetime.now().date()
+    start_day = today - timedelta(days=13)
+
+    rows = run_query(
+        """
+        SELECT created_at::date AS day, mood
+        FROM wellbeing_checkins
+        WHERE patient_id = %s
+          AND created_at >= %s
+        ORDER BY created_at DESC
+        """,
+        (patient_id, start_day),
+    )
+
+    
+    
+    by_day = {}
+    for day, mood in rows:
+        if day not in by_day:
+            by_day[day] = mood
+
+    out = []
+    for i in range(13, -1, -1):
+        day = today - timedelta(days=i)
+        mood = by_day.get(day)
+        score = _mood_to_score(mood)
+        out.append({
+            "day_label": day.strftime("%d %b"),
+            "mood": mood or "No check-in",
+            "score": score,                    # 0..5
+            "left_pct": 0 if score == 0 else (score - 1) * 25,  # 0,25,50,75,100
+            "mood_class": _score_to_class(score) if score > 0 else "mood-none",
+        })
+    return out
 
 @app.route("/patient/settings", methods=["GET"])
 @role_required("patient")
