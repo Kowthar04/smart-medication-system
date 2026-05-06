@@ -97,7 +97,7 @@ def _default_landing_for_role(role):
     if role == "caregiver":
         return url_for("caregiver_dashboard")
     if role == "doctor":
-        return url_for("auth.doctor_placeholder")
+        return url_for("doctor_dashboard")
     return url_for("auth.login")
 
 
@@ -184,7 +184,7 @@ def doctor_placeholder():
     if "user_id" not in session:
         return redirect(url_for("auth.login"))
     return render_template(
-        "doctor_placeholder.html",
+        "doctor_dashboard.html",
         full_name=session.get("full_name", "Doctor"),
     )
 
