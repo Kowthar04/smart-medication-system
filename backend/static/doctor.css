@@ -281,3 +281,121 @@
         flex-direction: column;
     }
 }
+
+.doctor-subtle {
+    margin-top: -0.2rem;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.doctor-med-form {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 0.8fr auto;
+    gap: 0.6rem;
+    margin-bottom: 0.9rem;
+}
+
+.doctor-med-form input {
+    border: 1px solid #dbe3ef;
+    border-radius: 10px;
+    padding: 0.55rem 0.65rem;
+    font: inherit;
+}
+
+.doctor-med-table {
+    border: 1px solid #e8edf5;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.doctor-med-head,
+.doctor-med-row {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 0.8fr 1fr;
+    gap: 0.6rem;
+    align-items: center;
+    padding: 0.7rem 0.8rem;
+}
+
+.doctor-med-head {
+    background: #f8fbff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #475569;
+}
+
+.doctor-med-row {
+    border-top: 1px solid #eef3fa;
+}
+
+.doctor-med-actions {
+    display: flex;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+}
+
+.doctor-effectiveness-list {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.doctor-effect-row {
+    display: grid;
+    grid-template-columns: 1.5fr 0.9fr auto;
+    gap: 0.8rem;
+    align-items: center;
+    border: 1px solid #e8edf5;
+    border-radius: 12px;
+    padding: 0.7rem 0.8rem;
+    background: #fbfdff;
+}
+
+.doctor-effect-main strong {
+    display: block;
+}
+
+.doctor-effect-main p {
+    margin: 0.25rem 0 0;
+    color: #334155;
+    font-size: 0.9rem;
+}
+
+.doctor-effect-adherence {
+    display: inline-block;
+    margin-top: 0.2rem;
+    font-size: 0.8rem;
+    color: #475569;
+}
+
+.doctor-effect-spark-wrap {
+    height: 42px;
+    min-width: 120px;
+}
+
+.doctor-trend-improving { color: #15803d; font-weight: 700; }
+.doctor-trend-stable { color: #475569; font-weight: 700; }
+.doctor-trend-concerning { color: #b91c1c; font-weight: 700; }
+
+.doctor-empty {
+    margin: 0.7rem 0;
+    color: #64748b;
+}
+
+@media (max-width: 980px) {
+    .doctor-med-form {
+        grid-template-columns: 1fr;
+    }
+
+    .doctor-med-head,
+    .doctor-med-row {
+        grid-template-columns: 1fr;
+    }
+
+    .doctor-effect-row {
+        grid-template-columns: 1fr;
+    }
+
+    .doctor-effect-spark-wrap {
+        width: 100%;
+    }
+}

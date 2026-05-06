@@ -1608,14 +1608,19 @@ def doctor_dashboard():
     if ctx["active_patient_id"] is None:
         return render_template("caregiver_no_patients.html", ctx=ctx)
 
-    patient_summary = get_patient_summary(ctx["active_patient_id"])
-    doctor_stats = get_doctor_stats_30d(ctx["active_patient_id"])
+    patient_id = ctx["active_patient_id"]
+    patient_summary = get_patient_summary(patient_id)
+    doctor_stats = get_doctor_stats_30d(patient_id)
+    medication_rows = get_doctor_medications(patient_id)
+    effectiveness_rows = get_treatment_effectiveness(patient_id)
 
     return render_template(
         "doctor_dashboard.html",
         ctx=ctx,
         patient_summary=patient_summary,
         doctor_stats=doctor_stats,
+        medication_rows=medication_rows,
+        effectiveness_rows=effectiveness_rows,
     )
 
 def _doctor_context():
@@ -1630,6 +1635,85 @@ def _doctor_context():
         "doctor_name": session.get("full_name", "Doctor"),
     }
 
+@app.route("/doctor/medications", methods=["POST"])
+@role_required("doctor")
+def doctor_add_medication():
+    patient_id = get_active_patient_id()
+    if patient_id is None:
+        return jsonify({"error": "No patient selected"}), 400
+    if not assert_doctor_can_view(session["user_id"], patient_id):
+        abort(403)
+
+    data = request.get_json() or {}
+    name = (data.get("name") or "").strip()
+    dose = (data.get("dose") or "").strip()
+    scheduled_time = parse_time_value((data.get("time") or "").strip())
+
+    if not name or not dose or scheduled_time is None:
+        return jsonify({"error": "name, dose, and valid time are required"}), 400
+
+    run_query(
+        """
+        INSERT INTO medication_schedules (patient_id, medication_name, dose, scheduled_time)
+        VALUES (%s, %s, %s, %s)
+        """,
+        (patient_id, name, dose, scheduled_time),
+        commit=True,
+    )
+    return jsonify({"status": "created"}), 201
+
+
+@app.route("/doctor/medications/<int:schedule_id>", methods=["POST"])
+@role_required("doctor")
+def doctor_edit_medication(schedule_id):
+    patient_id = get_active_patient_id()
+    if patient_id is None:
+        return jsonify({"error": "No patient selected"}), 400
+    if not assert_doctor_can_view(session["user_id"], patient_id):
+        abort(403)
+
+    data = request.get_json() or {}
+    name = (data.get("name") or "").strip()
+    dose = (data.get("dose") or "").strip()
+    scheduled_time = parse_time_value((data.get("time") or "").strip())
+
+    if not name or not dose or scheduled_time is None:
+        return jsonify({"error": "name, dose, and valid time are required"}), 400
+
+    run_query(
+        """
+        UPDATE medication_schedules
+        SET medication_name = %s,
+            dose = %s,
+            scheduled_time = %s
+        WHERE id = %s
+          AND patient_id = %s
+        """,
+        (name, dose, scheduled_time, schedule_id, patient_id),
+        commit=True,
+    )
+    return jsonify({"status": "updated"})
+
+
+@app.route("/doctor/medications/<int:schedule_id>/delete", methods=["POST"])
+@role_required("doctor")
+def doctor_delete_medication(schedule_id):
+    patient_id = get_active_patient_id()
+    if patient_id is None:
+        return jsonify({"error": "No patient selected"}), 400
+    if not assert_doctor_can_view(session["user_id"], patient_id):
+        abort(403)
+
+    run_query(
+        """
+        DELETE FROM medication_schedules
+        WHERE id = %s
+          AND patient_id = %s
+        """,
+        (schedule_id, patient_id),
+        commit=True,
+    )
+    return jsonify({"status": "deleted"})
 
 @app.route("/doctor/select-patient/<int:patient_id>", methods=["POST", "GET"])
 @role_required("doctor")
@@ -1896,6 +1980,120 @@ def doctor_adherence_sideeffects_data():
 @role_required("patient")
 def patient_care_team():
     return render_template("patient_care_team.html")
+
+def get_doctor_medications(patient_id):
+    """Return medication rows for doctor schedule management."""
+    rows = run_query(
+        """
+        SELECT id, medication_name, dose, scheduled_time
+        FROM medication_schedules
+        WHERE patient_id = %s
+        ORDER BY scheduled_time ASC, medication_name ASC
+        """,
+        (patient_id,),
+    )
+
+    meds = []
+    for row in rows:
+        meds.append({
+            "id": row[0],
+            "name": row[1],
+            "dose": row[2],
+            "time": format_time_value(row[3]),
+            "time_obj": parse_time_value(row[3]),
+        })
+    return meds
+
+
+def get_treatment_effectiveness(patient_id):
+    """
+    One row per medication with:
+    - adherence %
+    - mocked clinical outcome text
+    - tiny sparkline points
+    - trend direction
+    """
+    meds = get_doctor_medications(patient_id)
+    if not meds:
+        return []
+
+    today = datetime.now().date()
+    start_day = today - timedelta(days=13)
+
+    
+    rows = run_query(
+        """
+        SELECT container_id, event_time, created_at::date AS day
+        FROM medication_events
+        WHERE patient_id = %s
+          AND event_type = 'taken'
+          AND created_at >= %s
+        """,
+        (patient_id, start_day),
+    )
+
+    taken_slots = set()
+    for row in rows:
+        container_id = row[0] or ""
+        event_time = parse_time_value(row[1])
+        day = row[2]
+
+        scheduled = None
+        if ":" in container_id:
+            _, _, scheduled_part = container_id.partition(":")
+            scheduled = parse_time_value(scheduled_part)
+        if scheduled is None:
+            scheduled = event_time
+
+        if day and scheduled:
+            taken_slots.add((day, scheduled))
+
+    
+    outcome_catalog = [
+        ("BP stable at 122/78 avg", "improving"),
+        ("HbA1c trending down slowly", "stable"),
+        ("Night symptoms increasing", "concerning"),
+        ("Pain episodes less frequent", "improving"),
+        ("Energy levels unchanged", "stable"),
+    ]
+
+    out = []
+    for idx, med in enumerate(meds):
+        med_time = med["time_obj"]
+        if med_time is None:
+            adherence_pct = 0
+            daily_pct = [0] * 14
+        else:
+            daily_pct = []
+            for offset in range(13, -1, -1):
+                d = today - timedelta(days=offset)
+                daily_pct.append(100 if (d, med_time) in taken_slots else 0)
+
+            adherence_pct = round(sum(daily_pct) / len(daily_pct)) if daily_pct else 0
+
+        
+        smoothed = []
+        for i, v in enumerate(daily_pct):
+            prev_v = daily_pct[i - 1] if i > 0 else v
+            next_v = daily_pct[i + 1] if i < len(daily_pct) - 1 else v
+            smoothed.append(round((prev_v + v + next_v) / 3))
+
+        outcome_text, trend = outcome_catalog[idx % len(outcome_catalog)]
+
+       
+        if adherence_pct < 55:
+            trend = "concerning"
+            outcome_text = "Outcome variability likely linked to low adherence"
+
+        out.append({
+            "medication_name": med["name"],
+            "adherence_pct": adherence_pct,
+            "outcome_text": outcome_text,
+            "sparkline_points": smoothed,
+            "trend": trend,  
+        })
+
+    return out
 
 
 @app.route("/patient/settings", methods=["GET"])

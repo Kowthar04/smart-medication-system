@@ -135,8 +135,79 @@
                                 <canvas id="doctorAdherenceSideEffectsChart"></canvas>
                             </div>
                         </article>
-                    <article class="doctor-card"><h3>Treatment Effectiveness</h3><p></p></article>
-                    <article class="doctor-card"><h3>Reports</h3><p></p></article>
+                <article class="doctor-card doctor-card-wide">
+                    <h3>Medication Schedule Management</h3>
+
+                    <form id="doctorAddMedicationForm" class="doctor-med-form">
+                        <input type="text" id="newMedName" placeholder="Medication name" required>
+                        <input type="text" id="newMedDose" placeholder="Dose (e.g., 5mg)" required>
+                        <input type="time" id="newMedTime" required>
+                        <button type="submit" class="summary-btn primary">Add medication</button>
+                    </form>
+
+                    <div class="doctor-med-table">
+                        <div class="doctor-med-head">
+                            <span>Medication</span>
+                            <span>Dose</span>
+                            <span>Time</span>
+                            <span>Actions</span>
+                        </div>
+
+                        {% if medication_rows %}
+                            {% for med in medication_rows %}
+                                <div class="doctor-med-row"
+                                    data-schedule-id="{{ med.id }}"
+                                    data-name="{{ med.name }}"
+                                    data-dose="{{ med.dose }}"
+                                    data-time="{{ med.time }}">
+                                    <span>{{ med.name }}</span>
+                                    <span>{{ med.dose }}</span>
+                                    <span>{{ med.time }}</span>
+                                    <span class="doctor-med-actions">
+                                        <button type="button" class="summary-btn secondary doctor-edit-med-btn">Edit</button>
+                                        <button type="button" class="summary-btn secondary doctor-delete-med-btn">Delete</button>
+                                    </span>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="doctor-empty">No active medications for this patient.</p>
+                        {% endif %}
+                    </div>
+                </article>
+
+                <article class="doctor-card doctor-card-wide">
+                    <h3>Treatment Effectiveness</h3>
+                    <p class="doctor-subtle">
+                        Clinical outcome is interpreted together with adherence behavior.
+                    </p>
+
+                    <div class="doctor-effectiveness-list">
+                        {% if effectiveness_rows %}
+                            {% for row in effectiveness_rows %}
+                                <div class="doctor-effect-row">
+                                    <div class="doctor-effect-main">
+                                        <strong>{{ row.medication_name }}</strong>
+                                        <span class="doctor-effect-adherence">{{ row.adherence_pct }}% adherence</span>
+                                        <p>{{ row.outcome_text }}</p>
+                                    </div>
+
+                                    <div class="doctor-effect-spark-wrap">
+                                        <canvas class="doctor-sparkline"
+                                                data-points="{{ row.sparkline_points|join(',') }}"></canvas>
+                                    </div>
+
+                                    <div class="doctor-effect-trend doctor-trend-{{ row.trend }}">
+                                        {% if row.trend == "improving" %}↗ improving{% endif %}
+                                        {% if row.trend == "stable" %}→ stable{% endif %}
+                                        {% if row.trend == "concerning" %}↘ concerning{% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="doctor-empty">No treatment effectiveness rows yet.</p>
+                        {% endif %}
+                    </div>
+                </article>
                 </div>
             </section>
         </div>
