@@ -1612,9 +1612,11 @@ def doctor_dashboard():
     patient_summary = get_patient_summary(patient_id)
     doctor_stats = get_doctor_stats_30d(patient_id)
     medication_rows = get_doctor_medications(patient_id)
-    effectiveness_rows = get_treatment_effectiveness(patient_id)
+    adherence_trend_rows = get_per_medication_adherence_trend(patient_id)
     side_effect_frequency = get_doctor_side_effect_frequency_30d(patient_id)
     wellbeing_trend = get_doctor_wellbeing_trend_14d(patient_id)
+    recent_notes = get_recent_caregiver_notes(patient_id, limit=5)
+    recent_wellbeing = get_recent_wellbeing_checkins(patient_id, limit=5)
 
     return render_template(
         "doctor_dashboard.html",
@@ -1622,9 +1624,11 @@ def doctor_dashboard():
         patient_summary=patient_summary,
         doctor_stats=doctor_stats,
         medication_rows=medication_rows,
-        effectiveness_rows=effectiveness_rows,
+        adherence_trend_rows=adherence_trend_rows,
         side_effect_frequency=side_effect_frequency,
         wellbeing_trend=wellbeing_trend,
+        recent_notes=recent_notes,
+        recent_wellbeing=recent_wellbeing,
     )
 
 def _doctor_context():
@@ -2009,13 +2013,18 @@ def get_doctor_medications(patient_id):
     return meds
 
 
-def get_treatment_effectiveness(patient_id):
+def get_per_medication_adherence_trend(patient_id):
     """
-    One row per medication with:
-    - adherence %
-    - mocked clinical outcome text
-    - tiny sparkline points
-    - trend direction
+    One row per medication, with:
+    - the real 14-day adherence % for that medication's scheduled time
+    - a 14-point sparkline (smoothed) of taken/not-taken
+    - a trend label (improving / stable / concerning) computed from the
+      sparkline trajectory itself — not from any fabricated catalogue.
+
+    This intentionally does NOT include a free-text "outcome" sentence,
+    because the system does not capture clinical outcomes (BP, HbA1c,
+    symptom scores) — only adherence behaviour. Surfacing fabricated
+    clinical narrative would misrepresent what the system measures.
     """
     meds = get_doctor_medications(patient_id)
     if not meds:
@@ -2024,7 +2033,6 @@ def get_treatment_effectiveness(patient_id):
     today = datetime.now().date()
     start_day = today - timedelta(days=13)
 
-    
     rows = run_query(
         """
         SELECT container_id, event_time, created_at::date AS day
@@ -2052,17 +2060,8 @@ def get_treatment_effectiveness(patient_id):
         if day and scheduled:
             taken_slots.add((day, scheduled))
 
-    
-    outcome_catalog = [
-        ("BP stable at 122/78 avg", "improving"),
-        ("HbA1c trending down slowly", "stable"),
-        ("Night symptoms increasing", "concerning"),
-        ("Pain episodes less frequent", "improving"),
-        ("Energy levels unchanged", "stable"),
-    ]
-
     out = []
-    for idx, med in enumerate(meds):
+    for med in meds:
         med_time = med["time_obj"]
         if med_time is None:
             adherence_pct = 0
@@ -2082,19 +2081,29 @@ def get_treatment_effectiveness(patient_id):
             next_v = daily_pct[i + 1] if i < len(daily_pct) - 1 else v
             smoothed.append(round((prev_v + v + next_v) / 3))
 
-        outcome_text, trend = outcome_catalog[idx % len(outcome_catalog)]
-
        
-        if adherence_pct < 55:
+        first_half = smoothed[:7]
+        second_half = smoothed[7:]
+        first_avg = sum(first_half) / len(first_half) if first_half else 0
+        second_avg = sum(second_half) / len(second_half) if second_half else 0
+        delta = second_avg - first_avg
+
+        if delta > 10:
+            trend = "improving"
+        elif delta < -10:
             trend = "concerning"
-            outcome_text = "Outcome variability likely linked to low adherence"
+        else:
+            trend = "stable"
+
+    
+        if adherence_pct < 40:
+            trend = "concerning"
 
         out.append({
             "medication_name": med["name"],
             "adherence_pct": adherence_pct,
-            "outcome_text": outcome_text,
             "sparkline_points": smoothed,
-            "trend": trend,  
+            "trend": trend,
         })
 
     return out
@@ -2195,6 +2204,110 @@ def get_doctor_wellbeing_trend_14d(patient_id):
 @role_required("patient")
 def patient_settings():
     return render_template("patient_settings.html")
+
+
+def get_recent_caregiver_notes(patient_id, limit=5):
+    """Most recent caregiver notes for this patient."""
+    rows = run_query(
+        """
+        SELECT n.id, n.note_text, n.tag, n.related_time, n.created_at,
+               u.full_name AS author_name
+        FROM caregiver_notes n
+        JOIN users u ON u.id = n.author_id
+        WHERE n.patient_id = %s
+        ORDER BY n.created_at DESC
+        LIMIT %s
+        """,
+        (patient_id, limit),
+    )
+    return [
+        {
+            "id": r[0],
+            "text": r[1],
+            "tag": r[2],
+            "related_time": r[3],
+            "created_at": r[4],
+            "author_name": r[5],
+        }
+        for r in rows
+    ]
+
+
+def get_recent_wellbeing_checkins(patient_id, limit=5):
+    """Most recent self-reported wellbeing check-ins by the patient."""
+    rows = run_query(
+        """
+        SELECT id, mood, energy, side_effects, created_at
+        FROM wellbeing_checkins
+        WHERE patient_id = %s
+        ORDER BY created_at DESC
+        LIMIT %s
+        """,
+        (patient_id, limit),
+    )
+    return [
+        {
+            "id": r[0],
+            "mood": r[1],
+            "energy": r[2],
+            "side_effects": r[3],
+            "created_at": r[4],
+        }
+        for r in rows
+    ]
+
+
+@app.route("/doctor/notes/all", methods=["GET"])
+@role_required("doctor")
+def doctor_notes_all():
+    """Returns all caregiver notes for the active patient as JSON."""
+    patient_id = get_active_patient_id()
+    if patient_id is None:
+        return jsonify({"notes": []})
+
+    if not assert_doctor_can_view(session["user_id"], patient_id):
+        abort(403)
+
+    notes = get_recent_caregiver_notes(patient_id, limit=200)
+    return jsonify({
+        "notes": [
+            {
+                "id": n["id"],
+                "text": n["text"],
+                "tag": n["tag"],
+                "related_time": n["related_time"],
+                "author_name": n["author_name"],
+                "created_at": n["created_at"].strftime("%d %b %Y, %H:%M"),
+            }
+            for n in notes
+        ]
+    })
+
+
+@app.route("/doctor/wellbeing/all", methods=["GET"])
+@role_required("doctor")
+def doctor_wellbeing_all():
+    """Returns all wellbeing check-ins for the active patient as JSON."""
+    patient_id = get_active_patient_id()
+    if patient_id is None:
+        return jsonify({"checkins": []})
+
+    if not assert_doctor_can_view(session["user_id"], patient_id):
+        abort(403)
+
+    checkins = get_recent_wellbeing_checkins(patient_id, limit=200)
+    return jsonify({
+        "checkins": [
+            {
+                "id": c["id"],
+                "mood": c["mood"],
+                "energy": c["energy"],
+                "side_effects": c["side_effects"],
+                "created_at": c["created_at"].strftime("%d %b %Y, %H:%M"),
+            }
+            for c in checkins
+        ]
+    })
 
 
 

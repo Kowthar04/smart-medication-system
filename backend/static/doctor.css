@@ -1,14 +1,3 @@
-/* ==========================================================================
-   Doctor dashboard — consolidated single-page layout
-   ==========================================================================
-   This is a deliberately single-page dashboard. Doctors do not navigate
-   between Schedule / Reports / Overview — everything for the active
-   patient is on one page so clinical context isn't fragmented across
-   clicks. Cards are sequenced top-to-bottom from "who is this patient"
-   to "what should I do about them".
-   ========================================================================== */
-
-/* ---- Page shell ---- */
 
 .doctor-page .dashboard-container {
     display: flex;
@@ -69,48 +58,92 @@
     }
 }
 
-/* ---- Patient picker ---- */
-
-.patient-picker {
-    display: flex;
+.patient-card {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 1.2rem;
     align-items: center;
-    gap: 1rem;
     background: #ffffff;
     border: 1px solid #e8edf5;
-    border-radius: 14px;
-    padding: 1rem 1.2rem;
+    border-radius: 16px;
+    padding: 1.2rem 1.4rem;
 }
 
-.patient-avatar {
-    width: 44px;
-    height: 44px;
+.patient-card-avatar {
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
-    background: #1f2a44;
+    background: linear-gradient(135deg, #1f2a44 0%, #2d3f68 100%);
     color: #fff;
     display: grid;
     place-items: center;
+    font-size: 1.15rem;
     font-weight: 700;
     flex-shrink: 0;
 }
 
-.patient-picker-info {
-    flex: 1;
+.patient-card-main {
     min-width: 0;
 }
 
-.patient-picker-info h2 {
-    margin: 0;
-    font-size: 1.05rem;
-}
-
-.picker-label {
-    margin: 0;
-    font-size: 0.78rem;
+.patient-card-label {
+    margin: 0 0 0.2rem;
+    font-size: 0.74rem;
     color: #6b7280;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
     font-weight: 600;
 }
+
+.patient-card-title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.patient-card-title-row h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: #0f172a;
+}
+
+.patient-card-meta {
+    font-size: 0.78rem;
+    padding: 0.22rem 0.55rem;
+    border-radius: 999px;
+    background: #f3f6fb;
+    color: #475569;
+    font-weight: 500;
+}
+
+.patient-card-tags {
+    margin-top: 0.55rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.condition-tag {
+    font-size: 0.78rem;
+    padding: 0.22rem 0.6rem;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #3b5fe0;
+    font-weight: 500;
+}
+
+.condition-tag.muted {
+    background: #f3f6fb;
+    color: #94a3b8;
+}
+
+.patient-card-assigned {
+    margin: 0.6rem 0 0;
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
 
 .picker-dropdown {
     position: relative;
@@ -121,9 +154,15 @@
     list-style: none;
     font-weight: 600;
     color: #3b5fe0;
-    padding: 0.5rem 0.8rem;
-    border-radius: 8px;
+    padding: 0.55rem 0.9rem;
+    border-radius: 10px;
     background: #f3f6fb;
+    font-size: 0.9rem;
+    border: 1px solid #e6ecf6;
+}
+
+.picker-dropdown summary:hover {
+    background: #e6ecf6;
 }
 
 .picker-dropdown summary::-webkit-details-marker {
@@ -156,117 +195,16 @@
     background: #f3f6fb;
 }
 
-/* ---- Patient summary card (the dark hero card) ---- */
-
-.doctor-summary-card {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 1.1rem;
-    align-items: center;
-    background: linear-gradient(135deg, #1f2a44 0%, #2d3f68 100%);
-    color: #ffffff;
-    border-radius: 16px;
-    padding: 1.2rem 1.4rem;
-    box-shadow: 0 4px 14px rgba(31, 42, 68, 0.18);
-}
-
-.summary-avatar {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    display: grid;
-    place-items: center;
-    background: rgba(255, 255, 255, 0.18);
-    font-size: 1.15rem;
-    font-weight: 700;
-}
-
-.summary-title-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.55rem;
-}
-
-.summary-title-row h2 {
-    margin: 0;
-    font-size: 1.2rem;
-}
-
-.summary-meta {
-    font-size: 0.82rem;
-    padding: 0.2rem 0.55rem;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.16);
-}
-
-.summary-tags {
-    margin-top: 0.55rem;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-}
-
-.condition-tag {
-    font-size: 0.78rem;
-    padding: 0.22rem 0.55rem;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.15);
-}
-
-.condition-tag.muted {
-    opacity: 0.7;
-}
-
-.summary-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.summary-btn {
-    border: 0;
-    border-radius: 10px;
-    padding: 0.55rem 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 0.88rem;
-    transition: transform 0.05s ease, opacity 0.15s ease;
-}
-
-.summary-btn:active {
-    transform: translateY(1px);
-}
-
-.summary-btn.secondary {
-    background: rgba(255, 255, 255, 0.16);
-    color: #fff;
-}
-
-.summary-btn.secondary:hover {
-    background: rgba(255, 255, 255, 0.24);
-}
-
-.summary-btn.primary {
-    background: #ffffff;
-    color: #1f2a44;
-}
-
-.summary-btn.primary:hover {
-    opacity: 0.92;
-}
-
-@media (max-width: 900px) {
-    .doctor-summary-card {
+@media (max-width: 760px) {
+    .patient-card {
         grid-template-columns: 1fr;
-        align-items: start;
     }
 
-    .summary-actions {
-        width: 100%;
+    .picker-dropdown {
+        justify-self: start;
     }
 }
 
-/* ---- Section grid (the rest of the cards stack vertically by default) ---- */
 
 .doctor-placeholder-grid {
     display: flex;
@@ -291,7 +229,6 @@
     width: 100%;
 }
 
-/* ---- 30-day snapshot stat tiles ---- */
 
 .doctor-stats-grid {
     display: grid;
@@ -308,7 +245,7 @@
 
 .doctor-stat-label {
     margin: 0;
-    font-size: 0.76rem;
+    font-size: 0.74rem;
     color: #64748b;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -340,7 +277,6 @@
     }
 }
 
-/* ---- Adherence vs side-effects chart ---- */
 
 .doctor-chart-card {
     padding: 1.2rem;
@@ -401,7 +337,159 @@
     }
 }
 
-/* ---- Medication schedule management ---- */
+
+.doctor-context-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.doctor-card-head-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.doctor-card-head-row h3 {
+    margin: 0;
+}
+
+.doctor-link-btn {
+    background: none;
+    border: 0;
+    color: #3b5fe0;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.3rem 0.5rem;
+    border-radius: 8px;
+}
+
+.doctor-link-btn:hover {
+    background: #f3f6fb;
+}
+
+.doctor-context-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+.doctor-context-item {
+    border: 1px solid #eef3fa;
+    border-radius: 10px;
+    padding: 0.7rem 0.85rem;
+    background: #fbfdff;
+}
+
+.doctor-context-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+}
+
+.doctor-context-tag {
+    font-size: 0.75rem;
+    padding: 0.18rem 0.55rem;
+    border-radius: 999px;
+    background: #eef2ff;
+    color: #3b5fe0;
+    font-weight: 600;
+}
+
+.doctor-context-time {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.doctor-context-text {
+    margin: 0 0 0.35rem;
+    font-size: 0.92rem;
+    color: #1f2937;
+    line-height: 1.4;
+}
+
+.doctor-context-meta {
+    margin: 0;
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+@media (max-width: 900px) {
+    .doctor-context-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+.doctor-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+}
+
+.doctor-modal[hidden] {
+    display: none;
+}
+
+.doctor-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.5);
+}
+
+.doctor-modal-panel {
+    position: relative;
+    background: #ffffff;
+    border-radius: 16px;
+    width: min(640px, 92vw);
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 12px 36px rgba(15, 23, 42, 0.25);
+    overflow: hidden;
+}
+
+.doctor-modal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid #eef3fa;
+}
+
+.doctor-modal-head h3 {
+    margin: 0;
+    font-size: 1.05rem;
+}
+
+.doctor-modal-close {
+    background: none;
+    border: 0;
+    font-size: 1.6rem;
+    line-height: 1;
+    color: #64748b;
+    cursor: pointer;
+    padding: 0 0.4rem;
+}
+
+.doctor-modal-close:hover {
+    color: #1f2937;
+}
+
+.doctor-modal-body {
+    padding: 1rem 1.2rem;
+    overflow-y: auto;
+}
+
 
 .doctor-subtle {
     margin: -0.4rem 0 0.9rem;
@@ -484,14 +572,18 @@
     flex-wrap: wrap;
 }
 
-.doctor-med-actions .summary-btn {
+.summary-btn {
+    border: 0;
+    border-radius: 10px;
+    padding: 0.4rem 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.82rem;
     background: #f3f6fb;
     color: #1f2a44;
-    padding: 0.4rem 0.75rem;
-    font-size: 0.82rem;
 }
 
-.doctor-med-actions .summary-btn:hover {
+.summary-btn:hover {
     background: #e6ecf6;
 }
 
@@ -523,7 +615,6 @@
     }
 }
 
-/* ---- Treatment effectiveness ---- */
 
 .doctor-effectiveness-list {
     display: grid;
@@ -545,12 +636,6 @@
     display: block;
     font-size: 0.98rem;
     margin-bottom: 0.1rem;
-}
-
-.doctor-effect-main p {
-    margin: 0.3rem 0 0;
-    color: #475569;
-    font-size: 0.88rem;
 }
 
 .doctor-effect-adherence {
