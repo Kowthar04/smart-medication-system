@@ -228,3 +228,56 @@
         grid-template-columns: 1fr;
     }
 }
+
+.doctor-chart-card {
+    padding: 1rem;
+}
+
+.doctor-chart-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+}
+
+.doctor-chart-header h3 {
+    margin: 0 0 0.2rem;
+}
+
+.doctor-chart-header p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.doctor-chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    font-size: 0.82rem;
+    color: #475569;
+}
+
+.dot {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    margin-right: 0.3rem;
+    vertical-align: middle;
+}
+
+.dot-line { background: #3b5fe0; }
+.dot-mild { background: #facc15; }
+.dot-moderate { background: #ef4444; }
+
+.doctor-chart-wrap {
+    height: 320px;
+}
+
+@media (max-width: 900px) {
+    .doctor-chart-header {
+        flex-direction: column;
+    }
+}

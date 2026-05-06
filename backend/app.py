@@ -1769,7 +1769,128 @@ def get_doctor_stats_30d(patient_id):
         "last_checkin_label": last_checkin_label,
     }
 
+def _doctor_side_effect_severity(side_effect_text):
+    """Map side effect text to mild/moderate for chart coloring."""
+    text = (side_effect_text or "").strip().lower()
+    if not text:
+        return "mild"
 
+    moderate_keywords = {
+        "dizziness", "faint", "blurred", "palpitations",
+        "chest pain", "shortness of breath", "vomiting", "severe",
+    }
+    if any(k in text for k in moderate_keywords):
+        return "moderate"
+    return "mild"
+
+
+def _guess_medication_for_side_effect(side_effect_text, schedule):
+    """Best-effort mapping from side-effect text to a medication name."""
+    text = (side_effect_text or "").lower()
+    for med in schedule:
+        name = (med.get("name") or "").lower()
+        if name and name in text:
+            return med["name"]
+    return "Overall regimen"
+
+
+def build_doctor_adherence_side_effects_30d(patient_id):
+    """Return labels, daily adherence %, and side-effect event dots for E4 chart."""
+    schedule = get_schedule_data(patient_id)
+    doses_per_day = len(schedule)
+    today = datetime.now().date()
+    start_day = today - timedelta(days=29)
+
+    
+    day_list = [start_day + timedelta(days=i) for i in range(30)]
+    labels = [d.strftime("%d %b") for d in day_list]
+    day_key = {d: d.strftime("%d %b") for d in day_list}
+
+    
+    taken_rows = run_query(
+        """
+        SELECT container_id, event_time, created_at::date AS day
+        FROM medication_events
+        WHERE patient_id = %s
+          AND event_type = 'taken'
+          AND created_at >= %s
+        """,
+        (patient_id, start_day),
+    )
+
+    
+    taken_slots = set()
+    for row in taken_rows:
+        container_id = row[0] or ""
+        event_time = parse_time_value(row[1])
+        day = row[2]
+        scheduled = None
+        if ":" in container_id:
+            _, _, scheduled_part = container_id.partition(":")
+            scheduled = parse_time_value(scheduled_part)
+        if scheduled is None:
+            scheduled = event_time
+        if day and scheduled:
+            taken_slots.add((day, scheduled))
+
+    
+    adherence = []
+    adherence_by_day = {}
+    for d in day_list:
+        if doses_per_day == 0:
+            pct = 0
+        else:
+            taken_today = sum(1 for med in schedule if (d, med["time_obj"]) in taken_slots)
+            pct = round((taken_today / doses_per_day) * 100)
+        adherence.append(pct)
+        adherence_by_day[d] = pct
+
+    
+    checkin_rows = run_query(
+        """
+        SELECT side_effects, created_at::date
+        FROM wellbeing_checkins
+        WHERE patient_id = %s
+          AND created_at >= %s
+          AND side_effects IS NOT NULL
+          AND TRIM(side_effects) <> ''
+        ORDER BY created_at ASC
+        """,
+        (patient_id, start_day),
+    )
+
+    events = []
+    for side_effects, day in checkin_rows:
+        if day not in adherence_by_day:
+            continue
+        severity = _doctor_side_effect_severity(side_effects)
+        medication = _guess_medication_for_side_effect(side_effects, schedule)
+        events.append({
+            "date": day_key[day],
+            "adherence": adherence_by_day[day],
+            "severity": severity,
+            "symptom": side_effects,
+            "medication": medication,
+        })
+
+    return {
+        "labels": labels,
+        "adherence": adherence,
+        "events": events,
+    }
+
+@app.route("/doctor/adherence-sideeffects-data", methods=["GET"])
+@role_required("doctor")
+def doctor_adherence_sideeffects_data():
+    patient_id = get_active_patient_id()
+    if patient_id is None:
+        return jsonify({"labels": [], "adherence": [], "events": []})
+
+    if not assert_doctor_can_view(session["user_id"], patient_id):
+        abort(403)
+
+    payload = build_doctor_adherence_side_effects_30d(patient_id)
+    return jsonify(payload)
 
 @app.route("/patient/care-team", methods=["GET"])
 @role_required("patient")

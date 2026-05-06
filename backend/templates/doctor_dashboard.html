@@ -119,14 +119,29 @@
                             </div>
                         </div>
                     </article>
-                    <article class="doctor-card doctor-card-wide"><h3>Adherence vs Side Effects</h3><p></p></article>
+                    <article class="doctor-card doctor-card-wide doctor-chart-card">
+                            <div class="doctor-chart-header">
+                                <div>
+                                    <h3>Adherence vs Side Effects</h3>
+                                    <p>Daily adherence over 30 days with side-effect events overlaid.</p>
+                                </div>
+                                <div class="doctor-chart-legend">
+                                    <span><i class="dot dot-line"></i> Adherence</span>
+                                    <span><i class="dot dot-mild"></i> Mild side effect</span>
+                                    <span><i class="dot dot-moderate"></i> Moderate side effect</span>
+                                </div>
+                            </div>
+                            <div class="doctor-chart-wrap">
+                                <canvas id="doctorAdherenceSideEffectsChart"></canvas>
+                            </div>
+                        </article>
                     <article class="doctor-card"><h3>Treatment Effectiveness</h3><p></p></article>
                     <article class="doctor-card"><h3>Reports</h3><p></p></article>
                 </div>
             </section>
         </div>
     </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="{{ url_for('static', filename='Js/doctor_dashboard.js') }}"></script>
 </body>
 </html>
