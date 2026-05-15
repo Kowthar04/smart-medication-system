@@ -2309,8 +2309,29 @@ def doctor_wellbeing_all():
         ]
     })
 
+@app.route("/iot/log-dose", methods=["POST"])
+def iot_log_dose():
+    data = request.get_json() or {}
 
+    patient_id = data.get("patient_id")
+    container_id = data.get("container_id")
+    event_type = data.get("event_type", "taken")
+
+    if not patient_id or not container_id:
+        return jsonify({"error": "Missing patient_id or container_id"}), 400
+
+    run_query(
+        """
+        INSERT INTO medication_events
+            (patient_id, event_type, event_time, container_id, weight_change)
+        VALUES (%s, %s, NOW(), %s, %s)
+        """,
+        (patient_id, event_type, container_id, None),
+        commit=True,
+    )
+
+    return jsonify({"success": True})
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5001, debug=True)
