@@ -11,15 +11,20 @@ from auth import auth_bp, login_required, role_required
 
 app = Flask(__name__)
 
+# Secret key for signing session cookies
 app.secret_key = os.environ.get(
     "MEDITRACK_SECRET_KEY",
     "dev-only-not-for-production-replace-this-via-env",
 )
 app.register_blueprint(auth_bp)
 
+# In-memory store mapping bearer tokens to user dicts 
 API_TOKENS = {}
 
+#database helpers
+
 def get_db_connection():
+    # Opens a new psycopg2 connection to the local db
     conn = psycopg2.connect(
         dbname="smart_medication_db",
         user="kowtharabdiqadir",
@@ -29,6 +34,7 @@ def get_db_connection():
 
 
 def run_query(query, params=(), fetchone=False, commit=False):
+    # handles SELECT (fetchone or fetchall) and INSERT/UPDATE/DELETE (commit)
     conn = get_db_connection()
     cur = conn.cursor()
     try:
@@ -46,7 +52,10 @@ def run_query(query, params=(), fetchone=False, commit=False):
         conn.close()
 
 
+# Time
+
 def format_time_value(value):
+    # Returns a "HH:MM" string from a time object, string or None
     if value is None:
         return "--:--"
     if isinstance(value, str):
@@ -55,6 +64,7 @@ def format_time_value(value):
 
 
 def parse_time_value(value):
+    # "HH:MM" , "HH:MM:SS" string into time obj or returns None on failure
     if value is None:
         return None
     if isinstance(value, time):
@@ -68,7 +78,11 @@ def parse_time_value(value):
     return None
 
 
+
 def get_active_patient_id():
+    # which patient is active based on logged-in role.
+    # Patients always see themselves, caregivers/doctors see whoever they've selected
+    # (defaulting to the first in their assigned list if nothing is stored in session).
     role = session.get("role")
 
     if role == "patient":
@@ -80,17 +94,17 @@ def get_active_patient_id():
 
         viewing = session.get("viewing_patient_id")
 
-       
+        # Use the stored selection only if it's still a valid assignment
         if viewing and viewing in assigned_ids:
             return viewing
 
-        
+        # Auto-select the first patient and remember it
         if assigned:
             first_id = assigned[0]["patient_id"]
             session["viewing_patient_id"] = first_id
             return first_id
 
-        
+        # No patients assigned
         session.pop("viewing_patient_id", None)
         return None
 
@@ -124,7 +138,7 @@ def list_assigned_patients(user_id, role):
 
 
 def get_patient_display_name(patient_id):
-    """Return the patient's full_name, or 'Unknown' if no row."""
+    # Looks up and returns the patient's full name from the users table
     if patient_id is None:
         return "Unknown"
     row = run_query(
@@ -140,13 +154,10 @@ def get_patient_display_name(patient_id):
     return row[0] if row else "Unknown"
 
 
-def assert_caregiver_can_view(caregiver_user_id, patient_id):
-    """Verify the caregiver is actually assigned to this patient.
+# Authorization checks
 
-    Defends against URL tampering — without this, a caregiver could
-    set viewing_patient_id to any number via cookie editing and see
-    other patients' data.
-    """
+def assert_caregiver_can_view(caregiver_user_id, patient_id):
+    # Returns True if the caregiver has an assignment row for this patient
     row = run_query(
         """
         SELECT 1
@@ -173,12 +184,16 @@ def assert_doctor_can_view(doctor_user_id, patient_id):
     return row is not None
 
 def is_prn_medication(med):
+    # Checks whether a medication is PRN based on its name or dose text
     name = (med.get("name") or "").lower()
     dose = (med.get("dose") or "").lower()
     return "prn" in name or "when needed" in dose or "as needed" in dose
 
 
+
 def get_schedule_data(patient_id):
+    # Pulls all scheduled medications for a patient
+    # PRN meds get "As needed" for their time and no time_obj.
     rows = run_query(
         """
         SELECT medication_name, scheduled_time, dose
@@ -201,6 +216,8 @@ def get_schedule_data(patient_id):
 
 
 def get_recent_events(patient_id, limit=200, today_only=False):
+    # Fetches medication events for a patient.
+    # Optionally restricted to today. Also extracts the originally-scheduled time from container_id.
     if today_only:
         rows = run_query(
             """
@@ -230,6 +247,7 @@ def get_recent_events(patient_id, limit=200, today_only=False):
         scheduled_time_obj = None
         container_id = row[3]
 
+        # container_id format is "source:HH:MM" 
         if container_id and ":" in container_id:
             _, _, scheduled_part = container_id.partition(":")
             scheduled_time_obj = parse_time_value(scheduled_part)
@@ -247,15 +265,16 @@ def get_recent_events(patient_id, limit=200, today_only=False):
 
 
 def _match_time(event):
-    """Return the time to match this event against the schedule.
-
-    Modern events (post AUTH-2A) have scheduled_time_obj set from
-    container_id. Legacy rows fall back to event_time_obj.
-    """
+    # Returns the best available time to match against a schedule slot:
+    # prefers the decoded scheduled time from container_id, falls back to actual event time
     return event.get("scheduled_time_obj") or event["event_time_obj"]
 
 
+# --- Dashboard summary builders ---
+
 def get_last_taken(recent_events, schedule):
+    # Finds the most recent "taken" event and matches it to a scheduled medication.
+    # Returns name, time, dose and a badge indicating on-time vs late.
     taken_events = [e for e in recent_events if e["event_type"] == "taken"]
     if not taken_events:
         return {
@@ -275,11 +294,10 @@ def get_last_taken(recent_events, schedule):
         (m for m in schedule if m["time_obj"] == match_time), None
     )
     if matched:
-       
+        # Mark as late if taken more than 30 minutes after the scheduled time
         status = "On time"
         badge = "success"
         if actual_time and match_time and actual_time > match_time:
-            
             late_threshold = (
                 datetime.combine(datetime.today(), match_time)
                 + timedelta(minutes=30)
@@ -305,6 +323,7 @@ def get_last_taken(recent_events, schedule):
 
 
 def build_recent_activity(recent_events, schedule):
+    # Converts raw events into activity feed entries with a type label
     activity = []
 
     for event in recent_events:
@@ -363,12 +382,8 @@ def build_recent_activity(recent_events, schedule):
     return activity
 
 def get_adherence_data(schedule, recent_events):
-    """Compute today's adherence as a percentage and a short note.
-
-    PRN medications are excluded from adherence percentage calculations.
-    A scheduled dose only counts as adhered if taken within 30 minutes.
-    """
-
+    # Calculates today's on-time adherence as a percentage and a short summary note.
+    # Only counts scheduled (non-PRN) meds taken within 30 minutes of their scheduled time.
     scheduled_meds = [
         med for med in schedule
         if med["time_obj"] is not None
@@ -415,12 +430,14 @@ def get_adherence_data(schedule, recent_events):
 
 
 def get_next_due(schedule, recent_events):
+    # Walks through today's schedule and returns the next medication not yet taken.
+    # Returns "No more doses today" if everything has been logged.
     if not schedule:
         return {"name": "No more doses today", "time": "--:--", "dose": "--"}
 
     today = datetime.now().date()
 
-   
+    # Build a set of scheduled times that have already been taken today
     taken_today = set()
     for e in recent_events:
         if e["event_type"] != "taken":
@@ -433,7 +450,7 @@ def get_next_due(schedule, recent_events):
 
     now = datetime.now().time()
 
-   
+    # Return the first scheduled med whose time hasn't been logged yet
     for med in schedule:
         if med["time_obj"] is None:
             continue
@@ -448,9 +465,12 @@ def get_next_due(schedule, recent_events):
 
 
 def build_schedule_with_status(schedule, recent_events):
+    # Annotates each scheduled medication with its current status:
+    # Taken, Late, Missed, Upcoming, or (for PRN) how many times taken today
     today = datetime.now().date()
     now = datetime.now().time()
 
+    # Map scheduled time to actual logged time for all taken events
     taken_today = {}
     for e in recent_events:
         if e["event_type"] != "taken":
@@ -467,7 +487,7 @@ def build_schedule_with_status(schedule, recent_events):
     for item in schedule:
         scheduled = item["time_obj"]
 
-        # PRN / As-needed medication
+        # PRN counts how many times taken today
         if scheduled is None:
             prn_taken_today = sum(
                 1 
@@ -520,7 +540,8 @@ def build_schedule_with_status(schedule, recent_events):
     return updated
 
 def calculate_current_streak(patient_id):
-    """Consecutive days where every scheduled dose for this patient was taken."""
+    # Counts how many consecutive days (going back from yesterday) the patient
+    # took every scheduled dose. Today is skipped if not all doses are in yet.
     schedule = get_schedule_data(patient_id)
     if not schedule:
         return 0
@@ -538,7 +559,7 @@ def calculate_current_streak(patient_id):
     for row in rows:
         container_id = row[0] or ""
         d = row[1]
-       
+        # Only count events where we can decode the scheduled time from container_id
         if ":" in container_id:
             _, _, scheduled_part = container_id.partition(":")
             t = parse_time_value(scheduled_part)
@@ -554,7 +575,7 @@ def calculate_current_streak(patient_id):
             (cursor_day, m["time_obj"]) in taken_by_day for m in schedule
         )
         if not all_taken_today:
-            
+            # Skip today if incomplete — streak is still alive
             if cursor_day == today:
                 cursor_day -= timedelta(days=1)
                 continue
@@ -565,8 +586,11 @@ def calculate_current_streak(patient_id):
     return streak
 
 
+
 def compute_morning_vs_evening_insight(patient_id):
-    """Return an insight dict, or None if there isn't enough data yet."""
+    # Compares the morning vs the evening adherence over the last 14 days
+    # Returns an insight if there's a notable difference (>=15 points),
+    # or a card if both are >=90%.
     schedule = get_schedule_data(patient_id)
     if not schedule:
         return None
@@ -635,7 +659,8 @@ def compute_morning_vs_evening_insight(patient_id):
 
 
 def compute_14_day_trend(patient_id):
-    """Returns SVG polyline points + delta vs prior 14 days, or None."""
+    # Calculates 14-day adherence trend and a sparkline.
+    # Also compares to the prior 14-day window 
     schedule = get_schedule_data(patient_id)
     if not schedule:
         return None
@@ -670,6 +695,7 @@ def compute_14_day_trend(patient_id):
     if doses_per_day == 0:
         return None
 
+    # Current 14-day window (most recent)
     daily_pct = []
     for offset in range(window_days - 1, -1, -1):
         day = today - timedelta(days=offset)
@@ -678,6 +704,7 @@ def compute_14_day_trend(patient_id):
         )
         daily_pct.append(round((taken_today / doses_per_day) * 100))
 
+    # Previous 14-day window (for comparison)
     prior = []
     for offset in range(window_days * 2 - 1, window_days - 1, -1):
         day = today - timedelta(days=offset)
@@ -697,6 +724,7 @@ def compute_14_day_trend(patient_id):
     else:
         delta_class = "flat"
 
+    
     width, height = 260, 90
     points = []
     last_index = max(len(daily_pct) - 1, 1)
@@ -715,7 +743,9 @@ def compute_14_day_trend(patient_id):
 
 
 def compute_medication_breakdown_insight(medication_breakdown, patient_name=None):
-    """Pick the most interesting per-medication insight, or None."""
+    # highlights best and worst performers
+    # if the gap is (>=20 pp), generates a personalised message for
+    # caregiver/doctor views when patient_name is provided.
     if not medication_breakdown or len(medication_breakdown) < 2:
         return None
 
@@ -776,6 +806,8 @@ def compute_medication_breakdown_insight(medication_breakdown, patient_name=None
 
 
 def compute_day_stats(schedule_with_status):
+    # Tallies taken/upcoming/late/missed counts 
+    # PRN meds handled separately 
     taken = upcoming = late = missed = 0
 
     for item in schedule_with_status:
@@ -810,6 +842,7 @@ def compute_day_stats(schedule_with_status):
 
 
 def get_recent_notes(patient_id, limit=20):
+    # Fetches the most recent caregiver/doctor notes for a patient
     rows = run_query(
         """
         SELECT n.id, n.note_text, n.tag, n.related_time, n.created_at, u.full_name
@@ -835,7 +868,8 @@ def get_recent_notes(patient_id, limit=20):
 
 
 def build_month_calendar(patient_id):
-
+    # Builds a calendar grid for the current month.
+    # Each day gets a dot class: taken-dot (all doses), partial-dot, missed-dot (none), or today-dot.
     today = datetime.now().date()
 
     first_day = today.replace(day=1)
@@ -853,7 +887,7 @@ def build_month_calendar(patient_id):
         )
 
     days_in_month = (next_month - first_day).days
-    start_offset = first_day.weekday()
+    start_offset = first_day.weekday()  # Monday = 0
 
     schedule = get_schedule_data(patient_id)
 
@@ -875,6 +909,7 @@ def build_month_calendar(patient_id):
         (patient_id, first_day, next_month),
     )
 
+    # Group taken scheduled times by calendar day
     taken_by_day = {}
 
     for container_id, event_day in rows:
@@ -896,6 +931,7 @@ def build_month_calendar(patient_id):
 
     calendar_days = []
 
+    # Pad the grid with empty cells for days before the 1st
     for _ in range(start_offset):
         calendar_days.append({
             "day": "",
@@ -942,7 +978,6 @@ def build_month_calendar(patient_id):
     }
 
 
-
 def _is_on_time(event, scheduled_time_obj, late_threshold_minutes=30):
     """Return True if this event was logged within `late_threshold_minutes`
     of the scheduled time. Late doses don't count toward adherence %."""
@@ -956,7 +991,11 @@ def _is_on_time(event, scheduled_time_obj, late_threshold_minutes=30):
     return actual <= late_threshold
 
 
+# --- Adherence calculation (by period) ---
+
 def calculate_adherence_today(schedule, recent_events, medication_filter):
+    # Returns per-medication adherence % for today only.
+    # medication_filter can be all or a specific medication name.
     today = datetime.now().date()
     result = {}
     for item in schedule:
@@ -985,6 +1024,8 @@ def calculate_adherence_today(schedule, recent_events, medication_filter):
 
 
 def calculate_adherence_weekly(schedule, recent_events, medication_filter):
+    # Returns per-medication adherence % for the current calendar week (Mon–Sun).
+    # Total expected doses = 7 per scheduled medication.
     today = datetime.now().date()
     start_of_week = today - timedelta(days=today.weekday())
     end_of_week = start_of_week + timedelta(days=6)
@@ -1015,6 +1056,8 @@ def calculate_adherence_weekly(schedule, recent_events, medication_filter):
 
 
 def calculate_adherence_monthly(schedule, recent_events, medication_filter):
+    # Returns per-medication adherence % for the current calendar month.
+    # Total expected doses = days_in_month per scheduled medication.
     today = datetime.now().date()
     start_of_month = today.replace(day=1)
     if today.month == 12:
@@ -1049,6 +1092,8 @@ def calculate_adherence_monthly(schedule, recent_events, medication_filter):
     return labels, data
 
 def get_caregiver_dashboard_alert(patient_id):
+    # Determines the most important alert banner to show on the caregiver dashboard.
+    # unacknowledged missed dose > due right now > upcoming next dose.
     schedule = get_schedule_data(patient_id)
     recent_events = get_recent_events(patient_id, limit=500)
     alerts_data = generate_alerts_for_patient(patient_id)
@@ -1083,7 +1128,7 @@ def get_caregiver_dashboard_alert(patient_id):
         scheduled_dt = datetime.combine(today, scheduled)
         due_until = scheduled_dt + timedelta(minutes=15)
 
-        # Due now: from scheduled time until 15 minutes after
+        # "Due now" window: from the scheduled time up to 15 minutes after
         if scheduled_dt <= now_dt <= due_until:
             return {
                 "type": "due",
@@ -1093,7 +1138,7 @@ def get_caregiver_dashboard_alert(patient_id):
                 "link": url_for("caregiver_alerts"),
             }
 
-        #Upcoming: only if no missed/due alert
+        # Upcoming: only shown if there's nothing more urgent
         if scheduled > now_time:
             return {
                 "type": "upcoming",
@@ -1105,7 +1150,11 @@ def get_caregiver_dashboard_alert(patient_id):
 
     return None
 
+# Mobile API auth 
+
 def mobile_token_required(*allowed_roles):
+    # Decorator that validates a Bearer token from the Authorization header
+    # and checks that the user's role is in the allowed set.
     def decorator(f):
         @wraps(f)
         def decorated(*args, **kwargs):
@@ -1130,6 +1179,9 @@ def mobile_token_required(*allowed_roles):
         return decorated
     return decorator
 
+
+#  Routes 
+
 @app.route("/", methods=["GET"])
 def root_redirect():
     """Default landing — bounce to login or each role's dashboard."""
@@ -1147,11 +1199,13 @@ def root_redirect():
 
 @app.route("/health", methods=["GET"])
 def health():
+   
     return jsonify({"status": "ok"})
 
 
 @app.route("/event", methods=["POST"])
 def receive_event():
+    # records a raw medication event from IoT device
     data = request.get_json()
     if not data:
         return jsonify({"error": "No data provided"}), 400
@@ -1180,6 +1234,8 @@ def receive_event():
 @app.route("/log-dose", methods=["POST"])
 @login_required
 def log_dose():
+    # Manual "mark as taken" from the web dashboard (patient or caregiver).
+    # Writes a "taken" event with the current time and a container_id encoding the scheduled time.
     data = request.get_json()
     if not data:
         return jsonify({"error": "No data provided"}), 400
@@ -1192,7 +1248,7 @@ def log_dose():
     if patient_id is None:
         return jsonify({"error": "No patient context"}), 400
 
-    
+    # Verify caregiver is allowed to log for this patient
     if session.get("role") == "caregiver":
         if not assert_caregiver_can_view(session["user_id"], patient_id):
             abort(403)
@@ -1220,9 +1276,12 @@ def log_dose():
     })
 
 
+# Patient routes
+
 @app.route("/patient/dashboard", methods=["GET"])
 @role_required("patient")
 def patient_dashboard():
+    # Assembles all data needed for the patient's main dashboard and renders it
     patient_id = session["patient_id"]
 
     schedule = get_schedule_data(patient_id)
@@ -1256,6 +1315,8 @@ def patient_dashboard():
 @app.route("/patient/schedule", methods=["GET"])
 @role_required("patient")
 def patient_schedule():
+    # Renders the patient's full daily schedule with status tags, a monthly calendar,
+    # and a day-level stats summary
     patient_id = session["patient_id"]
     schedule = get_schedule_data(patient_id)
     recent_events = get_recent_events(patient_id, today_only=True)
@@ -1279,6 +1340,8 @@ def patient_schedule():
 @app.route("/patient/adherence", methods=["GET"])
 @role_required("patient")
 def patient_adherence():
+    # Renders the patient adherence page with overall stats, per-med breakdown,
+    # and highlightts strongest/weakest medication routine
     patient_id = session["patient_id"]
     schedule = get_schedule_data(patient_id)
     recent_events = get_recent_events(patient_id, today_only=True)
@@ -1333,6 +1396,8 @@ def patient_adherence():
 @app.route("/adherence-data", methods=["GET"])
 @login_required
 def adherence_data():
+    # JSON endpoint to returns labels and percentages
+    # for the requested period (daily/weekly/monthly) and medication filter
     period = request.args.get("period", "daily")
     medication = request.args.get("medication", "all")
 
@@ -1356,6 +1421,7 @@ def adherence_data():
 @app.route("/wellbeing", methods=["POST"])
 @role_required("patient")
 def save_wellbeing():
+    # Saves a patient's self-reported wellbeing check-in (mood, energy, side effects)
     try:
         data = request.get_json()
         if not data:
@@ -1386,6 +1452,8 @@ def save_wellbeing():
 @app.route("/save-note", methods=["POST"])
 @role_required("caregiver", "doctor")
 def save_note():
+    # Saves a caregiver or doctor note for the currently active patient.
+    # Validates the tag against an allowed list and checks assignment before writing.
     try:
         data = request.get_json()
         if not data:
@@ -1428,9 +1496,12 @@ def save_note():
         return jsonify({"error": str(e)}), 500
 
 
+# Caregiver routes
+
 @app.route("/caregiver/select-patient/<int:patient_id>", methods=["POST", "GET"])
 @role_required("caregiver")
 def caregiver_select_patient(patient_id):
+    # Switches the active patient for a caregiver session after verifying the assignment
     role = session["role"]
     if role == "caregiver":
         ok = assert_caregiver_can_view(session["user_id"], patient_id)
@@ -1445,7 +1516,6 @@ def caregiver_select_patient(patient_id):
     if referrer and url_for("caregiver_dashboard") in referrer:
         return redirect(referrer)
     return redirect(url_for("caregiver_dashboard"))
-
 
 
 def _caregiver_context():
@@ -1479,6 +1549,8 @@ def _doctor_context():
 @app.route("/caregiver/dashboard", methods=["GET"])
 @role_required("caregiver")
 def caregiver_dashboard():
+    # Caregiver main dashboard shows today's schedule, recent activity, notes,
+    # and the priority alert for the selected patient
     ctx = _caregiver_context()
     patient_id = ctx["active_patient_id"]
 
@@ -1505,6 +1577,7 @@ def caregiver_dashboard():
 @app.route("/caregiver/schedule", methods=["GET"])
 @role_required("caregiver")
 def caregiver_schedule():
+    # Caregiver schedule view is the same layout as the patient schedule but for a selected patient
     ctx = _caregiver_context()
     patient_id = ctx["active_patient_id"]
     if patient_id is None:
@@ -1531,6 +1604,8 @@ def caregiver_schedule():
 @app.route("/caregiver/adherence", methods=["GET"])
 @role_required("caregiver")
 def caregiver_adherence():
+    # Caregiver adherence view which mirrors the patient adherence page but with
+    # personalised insight copy that includes the patient's name
     ctx = _caregiver_context()
     patient_id = ctx["active_patient_id"]
     if patient_id is None:
@@ -1539,8 +1614,6 @@ def caregiver_adherence():
     schedule = get_schedule_data(patient_id)
     recent_events = get_recent_events(patient_id, limit=200)
 
-    
-    
     medications = [item["name"] for item in schedule]
     scheduled_meds = [item for item in schedule if item["time_obj"] is not None]
     total_doses = len(scheduled_meds)
@@ -1591,6 +1664,7 @@ def caregiver_adherence():
 @app.route("/caregiver/notes", methods=["GET"])
 @role_required("caregiver")
 def caregiver_notes_page():
+    # Renders the caregiver notes page with the full note history and annotated schedule
     ctx = _caregiver_context()
     patient_id = ctx["active_patient_id"]
     if patient_id is None:
@@ -1609,7 +1683,9 @@ def caregiver_notes_page():
     )
 
 
+# Alert generation 
 
+# used to sort alerts: high to medium to low
 ALERT_SEVERITY_RANK = {"high": 0, "medium": 1, "low": 2}
 
 
@@ -1619,7 +1695,7 @@ def _generate_missed_dose_alerts(patient_id, schedule, recent_events):
     today = datetime.now().date()
     now = datetime.now().time()
 
-    
+    # Collect the scheduled times that have already been taken today
     taken_today = set()
     for e in recent_events:
         if e["event_type"] != "taken":
@@ -1636,13 +1712,13 @@ def _generate_missed_dose_alerts(patient_id, schedule, recent_events):
         if scheduled is None or scheduled in taken_today:
             continue
 
-        
+        # Only flag as missed once 30 minutes after the scheduled time
         cutoff = (
             datetime.combine(datetime.today(), scheduled)
             + timedelta(minutes=30)
         ).time()
         if now <= cutoff:
-            continue  
+            continue
 
         alert_id = f"missed:{patient_id}:{scheduled.strftime('%H%M')}:{today.isoformat()}"
         alerts.append({
@@ -1662,7 +1738,7 @@ def _generate_late_pattern_alerts(patient_id, schedule, recent_events):
     today = datetime.now().date()
     week_start = today - timedelta(days=6)
 
-    
+    # Count the number of distinct days each medication was taken late
     late_counts = {}
     for e in recent_events:
         if e["event_type"] != "taken":
@@ -1673,11 +1749,9 @@ def _generate_late_pattern_alerts(patient_id, schedule, recent_events):
         match_time = _match_time(e)
         if match_time is None:
             continue
-        
         med = next((m for m in schedule if m["time_obj"] == match_time), None)
         if not med:
             continue
-        # Was it late?
         if not _is_on_time(e, match_time):
             late_counts.setdefault(med["name"], set()).add(event_date)
 
@@ -1705,7 +1779,6 @@ def _generate_suspicious_event_alerts(patient_id, recent_events):
     for e in recent_events:
         if e["event_type"] != "suspicious":
             continue
-        
         ts = e["created_at"]
         alert_id = f"suspicious:{patient_id}:{ts.isoformat()}"
         alerts.append({
@@ -1798,7 +1871,7 @@ def generate_alerts_for_patient(patient_id):
     raw_alerts.extend(_generate_suspicious_event_alerts(patient_id, recent_events))
     raw_alerts.extend(_generate_wellbeing_alerts(patient_id))
 
-   
+    # Sort by severity first, then by scheduled time within the same severity
     raw_alerts.sort(key=lambda a: (
         ALERT_SEVERITY_RANK.get(a["severity"], 99),
         a.get("_sort_time") or datetime.min.time(),
@@ -1834,6 +1907,7 @@ def generate_alerts_for_patient(patient_id):
 @app.route("/caregiver/alerts", methods=["GET"])
 @role_required("caregiver", "doctor")
 def caregiver_alerts():
+    # Renders the alerts page with all generated alerts by severity / acknowledged
     ctx = _caregiver_context()
     patient_id = ctx["active_patient_id"]
     if patient_id is None:
@@ -1870,7 +1944,7 @@ def acknowledge_alert():
         if not assert_doctor_can_view(session["user_id"], patient_id):
             abort(403)
 
-    
+    # prevents duplicate acknowledgements from the same user
     run_query(
         """
         INSERT INTO alert_acknowledgements
@@ -1884,9 +1958,13 @@ def acknowledge_alert():
 
     return jsonify({"status": "acknowledged"})
 
+
+
 @app.route("/doctor", methods=["GET"])
 @role_required("doctor")
 def doctor_dashboard():
+    # Assembles the full doctor dashboard: patient summary, 30-day stats,
+    # medication list, adherence trends, side effects, wellbeing data and recent notes
     ctx = _doctor_context()
     if ctx["active_patient_id"] is None:
         return render_template("caregiver_no_patients.html", ctx=ctx)
@@ -1917,6 +1995,7 @@ def doctor_dashboard():
 @app.route("/doctor/medications", methods=["POST"])
 @role_required("doctor")
 def doctor_add_medication():
+    # Adds a new medication to the active patient's schedule (doctor only)
     patient_id = get_active_patient_id()
     if patient_id is None:
         return jsonify({"error": "No patient selected"}), 400
@@ -1945,6 +2024,7 @@ def doctor_add_medication():
 @app.route("/doctor/medications/<int:schedule_id>", methods=["POST"])
 @role_required("doctor")
 def doctor_edit_medication(schedule_id):
+    # Updates an existing medication schedule entry by ID 
     patient_id = get_active_patient_id()
     if patient_id is None:
         return jsonify({"error": "No patient selected"}), 400
@@ -1977,6 +2057,8 @@ def doctor_edit_medication(schedule_id):
 @app.route("/doctor/medications/<int:schedule_id>/delete", methods=["POST"])
 @role_required("doctor")
 def doctor_delete_medication(schedule_id):
+    # Removes a medication from the patient's schedule 
+    # The patient_id check ensures doctors can't delete other patients' meds.
     patient_id = get_active_patient_id()
     if patient_id is None:
         return jsonify({"error": "No patient selected"}), 400
@@ -1997,6 +2079,7 @@ def doctor_delete_medication(schedule_id):
 @app.route("/doctor/select-patient/<int:patient_id>", methods=["POST", "GET"])
 @role_required("doctor")
 def doctor_select_patient(patient_id):
+    # Switches the active patient for a doctor session after verifying assignment
     if not assert_doctor_can_view(session["user_id"], patient_id):
         abort(403)
 
@@ -2024,7 +2107,6 @@ def get_patient_summary(patient_id):
             "condition_tags": [],
         }
 
-    
     row = run_query(
         """
         SELECT p.id, u.full_name
@@ -2046,9 +2128,9 @@ def get_patient_summary(patient_id):
 
     _, full_name = row
 
-    
+    # Age and condition are hardcoded 
     age = None
-    condition_tags = ["Hypertension", "Type 2 Diabetes"]  
+    condition_tags = ["Hypertension", "Type 2 Diabetes"]
 
     return {
         "full_name": full_name,
@@ -2058,6 +2140,8 @@ def get_patient_summary(patient_id):
     }
 
 def get_doctor_stats_30d(patient_id):
+    # Calculates four headline stats for the doctor dashboard:
+    # 30-day adherence %, active medication count, side effect reports and last check-in time
     if patient_id is None:
         return {
             "adherence_30d_pct": 0,
@@ -2066,6 +2150,7 @@ def get_doctor_stats_30d(patient_id):
             "last_checkin_label": "No check-ins",
         }
 
+    # Count only scheduled medications for adherence calculation
     scheduled_meds_row = run_query(
     """
     SELECT COUNT(*)
@@ -2092,6 +2177,7 @@ def get_doctor_stats_30d(patient_id):
     )
     total_medications_count = int(all_meds_row[0] or 0)
 
+    # Exclude PRN events from the adherence
     taken_row = run_query(
     """
     SELECT COUNT(*)
@@ -2177,12 +2263,10 @@ def build_doctor_adherence_side_effects_30d(patient_id):
     today = datetime.now().date()
     start_day = today - timedelta(days=29)
 
-    
     day_list = [start_day + timedelta(days=i) for i in range(30)]
     labels = [d.strftime("%d %b") for d in day_list]
     day_key = {d: d.strftime("%d %b") for d in day_list}
 
-    
     taken_rows = run_query(
         """
         SELECT container_id, event_time, created_at::date AS day
@@ -2194,7 +2278,7 @@ def build_doctor_adherence_side_effects_30d(patient_id):
         (patient_id, start_day),
     )
 
-    
+    # Build a set of (date, scheduled_time) tuples for taken events
     taken_slots = set()
     for row in taken_rows:
         container_id = row[0] or ""
@@ -2209,7 +2293,7 @@ def build_doctor_adherence_side_effects_30d(patient_id):
         if day and scheduled:
             taken_slots.add((day, scheduled))
 
-    
+    # Calculate daily adherence % for each of the 30 days
     adherence = []
     adherence_by_day = {}
     for d in day_list:
@@ -2221,7 +2305,6 @@ def build_doctor_adherence_side_effects_30d(patient_id):
         adherence.append(pct)
         adherence_by_day[d] = pct
 
-    
     checkin_rows = run_query(
         """
         SELECT side_effects, created_at::date
@@ -2235,6 +2318,7 @@ def build_doctor_adherence_side_effects_30d(patient_id):
         (patient_id, start_day),
     )
 
+    # Build event dots for the chart at the corresponding adherence point
     events = []
     for side_effects, day in checkin_rows:
         if day not in adherence_by_day:
@@ -2258,6 +2342,7 @@ def build_doctor_adherence_side_effects_30d(patient_id):
 @app.route("/doctor/adherence-sideeffects-data", methods=["GET"])
 @role_required("doctor")
 def doctor_adherence_sideeffects_data():
+    # JSON endpoint for the doctor's combined adherence + side-effects chart data
     patient_id = get_active_patient_id()
     if patient_id is None:
         return jsonify({"labels": [], "adherence": [], "events": []})
@@ -2268,10 +2353,6 @@ def doctor_adherence_sideeffects_data():
     payload = build_doctor_adherence_side_effects_30d(patient_id)
     return jsonify(payload)
 
-@app.route("/patient/care-team", methods=["GET"])
-@role_required("patient")
-def patient_care_team():
-    return render_template("patient_care_team.html")
 
 def get_doctor_medications(patient_id):
     """Return medication rows for doctor schedule management."""
@@ -2298,6 +2379,9 @@ def get_doctor_medications(patient_id):
 
 
 def get_per_medication_adherence_trend(patient_id):
+    # For each medication, computes a 14-day adherence % and sparkline.
+    # Also determines a trend label (improving / stable / concerning) by comparing
+    # the first and second halves of the window.
     meds = get_doctor_medications(patient_id)
     if not meds:
         return []
@@ -2338,6 +2422,7 @@ def get_per_medication_adherence_trend(patient_id):
     for med in meds:
         med_time = med["time_obj"]
 
+        # PRN medications don't have a fixed schedule, so it skips trend calculation
         if med_time is None or is_prn_medication(med):
             out.append({
                 "medication_name": med["name"],
@@ -2347,6 +2432,7 @@ def get_per_medication_adherence_trend(patient_id):
             })
             continue
 
+        # 1 = taken, 0 = missed for each of the last 14 days
         daily_pct = []
         for offset in range(13, -1, -1):
             d = today - timedelta(days=offset)
@@ -2354,6 +2440,7 @@ def get_per_medication_adherence_trend(patient_id):
 
         adherence_pct = round(sum(daily_pct) / len(daily_pct)) if daily_pct else 0
 
+        # 
         smoothed = []
         for i, v in enumerate(daily_pct):
             prev_v = daily_pct[i - 1] if i > 0 else v
@@ -2373,6 +2460,7 @@ def get_per_medication_adherence_trend(patient_id):
         else:
             trend = "stable"
 
+        # mark as concerning if overall adherence is below 40%
         if adherence_pct < 40:
             trend = "concerning"
 
@@ -2405,6 +2493,7 @@ def get_doctor_side_effect_frequency_30d(patient_id, limit=6):
     if not rows:
         return []
 
+    # Normalise bar widths relative to the most frequently reported symptom
     max_count = max(int(r[1]) for r in rows) or 1
     out = []
     for symptom, count in rows:
@@ -2418,6 +2507,7 @@ def get_doctor_side_effect_frequency_30d(patient_id, limit=6):
 
 
 def _mood_to_score(mood):
+    # Converts a mood label to a numeric score (1–5) for chart 
     mapping = {
         "Very low": 1,
         "Low": 2,
@@ -2429,6 +2519,7 @@ def _mood_to_score(mood):
 
 
 def _score_to_class(score):
+    # Maps a mood score to a CSS class for colour coding
     if score <= 1:
         return "mood-very-low"
     if score == 2:
@@ -2441,7 +2532,8 @@ def _score_to_class(score):
 
 
 def get_doctor_wellbeing_trend_14d(patient_id):
-    """One mood row per day over last 14 days."""
+    # Returns one mood entry per day for the last 14 days.
+    # Uses only the most recent check-in per day if multiple were submitted.
     today = datetime.now().date()
     start_day = today - timedelta(days=13)
 
@@ -2456,8 +2548,7 @@ def get_doctor_wellbeing_trend_14d(patient_id):
         (patient_id, start_day),
     )
 
-    
-    
+    # Keep only the most recent mood entry per day
     by_day = {}
     for day, mood in rows:
         if day not in by_day:
@@ -2477,10 +2568,6 @@ def get_doctor_wellbeing_trend_14d(patient_id):
         })
     return out
 
-@app.route("/patient/settings", methods=["GET"])
-@role_required("patient")
-def patient_settings():
-    return render_template("patient_settings.html")
 
 
 def get_recent_caregiver_notes(patient_id, limit=5):
@@ -2586,8 +2673,12 @@ def doctor_wellbeing_all():
         ]
     })
 
+
+
 @app.route("/iot/log-dose", methods=["POST"])
 def iot_log_dose():
+    # taken (>= 30g removed), suspicious (>300g removed or unexpected gain),
+    # or lid_open_no_dose (change within ±30g).
     data = request.get_json() or {}
 
     patient_id = data.get("patient_id")
@@ -2600,7 +2691,6 @@ def iot_log_dose():
     if not patient_id:
         return jsonify({"error": "Missing patient_id"}), 400
 
-    
     if weight_change is None:
         weight_change = data.get("weight_change", 0)
 
@@ -2631,8 +2721,13 @@ def iot_log_dose():
         "weight_change": weight_change,
     })
 
+
+# mobile API routes
+
 @app.route("/api/mobile/login", methods=["POST"])
 def mobile_login():
+    # Authenticates a mobile user, generates a bearer token and stores user info in API_TOKENS.
+    # Only patients and caregivers are allowed through
     data = request.get_json() or {}
 
     email = (data.get("email") or "").strip().lower()
@@ -2703,6 +2798,7 @@ def mobile_login():
 @app.route("/api/mobile/patient/home", methods=["GET"])
 @mobile_token_required("patient")
 def mobile_patient_home():
+    # Mobile home screen adherence rate, next due and annotated schedule
     user = request.mobile_user
     patient_id = user["patient_id"]
 
@@ -2725,6 +2821,7 @@ def mobile_patient_home():
 @app.route("/api/mobile/patient/schedule", methods=["GET"])
 @mobile_token_required("patient")
 def mobile_patient_schedule():
+    # Returns the patient's full schedule for the mobile schedule screen
     user = request.mobile_user
     patient_id = user["patient_id"]
 
@@ -2740,6 +2837,8 @@ def mobile_patient_schedule():
 @app.route("/api/mobile/log-dose", methods=["POST"])
 @mobile_token_required("patient", "caregiver")
 def mobile_log_dose():
+    # Mobile dose logging, patients can log for themselves but caregivers must 
+    #  pass the assignment check before the event is written.
     user = request.mobile_user
     data = request.get_json() or {}
 
@@ -2782,6 +2881,7 @@ def mobile_log_dose():
 @app.route("/api/mobile/caregiver/patients", methods=["GET"])
 @mobile_token_required("caregiver")
 def mobile_caregiver_patients():
+    # Returns the list of patients assigned to the caregiver
     user = request.mobile_user
 
     patients = list_assigned_patients(user["user_id"], "caregiver")
@@ -2794,6 +2894,7 @@ def mobile_caregiver_patients():
 @app.route("/api/mobile/caregiver/patient/<int:patient_id>/home", methods=["GET"])
 @mobile_token_required("caregiver")
 def mobile_caregiver_patient_home(patient_id):
+    # Mobile caregiver home for a specific patient — schedule, adherence and recent notes
     user = request.mobile_user
 
     if not assert_caregiver_can_view(user["user_id"], patient_id):
@@ -2828,6 +2929,7 @@ def mobile_caregiver_patient_home(patient_id):
 @app.route("/api/mobile/caregiver/patient/<int:patient_id>/notes", methods=["POST"])
 @mobile_token_required("caregiver")
 def mobile_caregiver_add_note(patient_id):
+    # Adds a caregiver note from the mobile app
     user = request.mobile_user
 
     if not assert_caregiver_can_view(user["user_id"], patient_id):
@@ -2865,6 +2967,7 @@ def mobile_caregiver_add_note(patient_id):
 @app.route("/api/mobile/wellbeing", methods=["POST"])
 @mobile_token_required("patient")
 def mobile_save_wellbeing():
+    # Saves a wellbeing check-in submitted from the mobile app
     data = request.get_json() or {}
 
     mood = data.get("mood")
