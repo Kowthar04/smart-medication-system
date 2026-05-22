@@ -69,13 +69,6 @@ def parse_time_value(value):
 
 
 def get_active_patient_id():
-    """Return the patient_id the current request should operate on.
-
-    For patients: their own patient_id.
-    For caregivers/doctors: whichever patient they've selected via the
-    picker (session["viewing_patient_id"]). If that's stale or missing,
-    we re-pick the first assigned patient.
-    """
     role = session.get("role")
 
     if role == "patient":
@@ -2607,7 +2600,7 @@ def iot_log_dose():
     if not patient_id:
         return jsonify({"error": "Missing patient_id"}), 400
 
-    # Legacy fallback: if no weight data, treat as taken
+    
     if weight_change is None:
         weight_change = data.get("weight_change", 0)
 
