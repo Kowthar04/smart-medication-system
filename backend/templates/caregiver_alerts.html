@@ -165,7 +165,13 @@
                                     <p class="alert-text">{{ alert.body }}</p>
                                     <p class="alert-ack-stamp">
                                         Acknowledged by {{ alert.acknowledgement.by_name }}
-                                        on {{ alert.acknowledgement.at.strftime('%d %b, %H:%M') }}
+                                        on {% if alert.acknowledgement.at %}
+                                {% if alert.acknowledgement.at.strftime is defined %}
+                                    {{ alert.acknowledgement.at.strftime('%d %b, %H:%M') }}
+                                {% else %}
+                                    {{ alert.acknowledgement.at }}
+                                {% endif %}
+                            {% endif %}
                                     </p>
                                 </div>
                             </article>

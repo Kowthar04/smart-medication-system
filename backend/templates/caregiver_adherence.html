@@ -4,144 +4,239 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adherence · Caregiver</title>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='schedule.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='adherence.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='caregiver.css') }}">
 </head>
+
 <body class="caregiver-page">
-    <div class="dashboard-container">
-        <aside class="sidebar">
-            <h2 class="logo">
-                <span class="logo-mark">M</span>
-                <span>MediTrack</span>
-            </h2>
-            <nav>
-                <p class="nav-section-label">Caregiver</p>
-                <ul>
-                    <li><a href="{{ url_for('caregiver_dashboard') }}" class="sidebar-link"><span class="sidebar-icon">⌂</span><span>Overview</span></a></li>
-                    <li><a href="{{ url_for('caregiver_schedule') }}" class="sidebar-link"><span class="sidebar-icon">🕒</span><span>Schedule</span></a></li>
-                    <li><a href="{{ url_for('caregiver_adherence') }}" class="sidebar-link active"><span class="sidebar-icon">◔</span><span>Adherence</span></a></li>
-                    <li><a href="{{ url_for('caregiver_notes_page') }}" class="sidebar-link"><span class="sidebar-icon">📝</span><span>Notes</span></a></li>
-                    <li><a href="{{ url_for('caregiver_alerts') }}" class="sidebar-link"><span class="sidebar-icon">!</span><span>Alerts</span></a></li>
-                </ul>
-            </nav>
-            <div class="sidebar-bottom">
-                <a href="{{ url_for('auth.logout') }}" class="sidebar-link logout-link">
-                    <span class="sidebar-icon">⇦</span><span>Sign out</span>
-                </a>
-            </div>
-        </aside>
+<div class="dashboard-container">
 
-        <div class="content-wrapper">
-            <section class="main-panel">
+    <aside class="sidebar">
+        <h2 class="logo">
+            <span class="logo-mark">M</span>
+            <span>MediTrack</span>
+        </h2>
 
-                <header class="top-bar">
-                    <div>
-                        <h1>{{ ctx.active_patient_name }}'s adherence</h1>
-                        <p>Track adherence over time</p>
-                    </div>
-                    <div class="profile-box"></div>
-                </header>
+        <nav>
+            <p class="nav-section-label">Caregiver</p>
+            <ul>
+                <li>
+                    <a href="{{ url_for('caregiver_dashboard') }}" class="sidebar-link">
+                        <span class="sidebar-icon">⌂</span><span>Overview</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('caregiver_schedule') }}" class="sidebar-link">
+                        <span class="sidebar-icon">🕒</span><span>Schedule</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('caregiver_adherence') }}" class="sidebar-link active">
+                        <span class="sidebar-icon">◔</span><span>Adherence</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('caregiver_notes_page') }}" class="sidebar-link">
+                        <span class="sidebar-icon">📝</span><span>Notes</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('caregiver_alerts') }}" class="sidebar-link">
+                        <span class="sidebar-icon">!</span><span>Alerts</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
 
-                <div class="patient-picker">
-                    <div class="patient-avatar">{{ (ctx.active_patient_name or '?')[0] }}</div>
-                    <div class="patient-picker-info">
-                        <p class="picker-label">Currently monitoring</p>
-                        <h2>{{ ctx.active_patient_name or 'No patient selected' }}</h2>
-                        <span>{{ ctx.assigned_patients|length }} patient{{ '' if ctx.assigned_patients|length == 1 else 's' }} assigned to you</span>
-                    </div>
-                    <details class="picker-dropdown">
-                        <summary class="picker-button">Change patient ▾</summary>
-                        <div class="picker-menu">
-                            {% for p in ctx.assigned_patients %}
-                                <a href="{{ url_for('caregiver_select_patient', patient_id=p.patient_id) }}"
-                                   class="picker-menu-item {% if p.patient_id == ctx.active_patient_id %}selected{% endif %}">
-                                    {{ p.full_name }}
-                                </a>
-                            {% endfor %}
-                        </div>
-                    </details>
+        <div class="sidebar-bottom">
+            <a href="{{ url_for('auth.logout') }}" class="sidebar-link logout-link">
+                <span class="sidebar-icon">⇦</span><span>Sign out</span>
+            </a>
+        </div>
+    </aside>
+
+    <div class="content-wrapper">
+        <section class="main-panel">
+
+            <header class="top-bar">
+                <div>
+                    <h1>{{ ctx.active_patient_name }}'s adherence</h1>
+                    <p>Clear medication progress for the selected patient</p>
+                </div>
+                <div class="profile-box">
+                    {{ (session.get('full_name', 'Patient'))[0] }}
+                </div>
+            </header>
+
+            <div class="patient-picker">
+                <div class="patient-avatar">
+                    {{ (ctx.active_patient_name or '?')[0] }}
                 </div>
 
-                <div class="adherence-stats">
-                    <div class="stat-card">
-                        <div class="stat-icon adherence-icon">◔</div>
-                        <div class="stat-text">
-                            <p class="stat-label">Overall Adherence</p>
-                            <h2 class="stat-value">{{ summary.overall_adherence }}%</h2>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon taken-icon">✓</div>
-                        <div class="stat-text">
-                            <p class="stat-label">Doses Taken</p>
-                            <h2 class="stat-value">{{ summary.doses_taken }}</h2>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon missed-icon">!</div>
-                        <div class="stat-text">
-                            <p class="stat-label">Missed Doses</p>
-                            <h2 class="stat-value">{{ summary.missed_doses }}</h2>
-                        </div>
-                    </div>
+                <div class="patient-picker-info">
+                    <p class="picker-label">Currently monitoring</p>
+                    <h2>{{ ctx.active_patient_name or 'No patient selected' }}</h2>
+                    <span>
+                        {{ ctx.assigned_patients|length }}
+                        patient{{ '' if ctx.assigned_patients|length == 1 else 's' }}
+                        assigned to you
+                    </span>
                 </div>
 
-                <div class="adherence-card">
-                    <div class="adherence-header">
-                        <h3>Medication Adherence</h3>
-                        <select class="med-filter" id="medicationFilter">
-                            <option value="all">All Medications</option>
-                            {% for medication in medications %}
-                                <option value="{{ medication }}">{{ medication }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="chart-placeholder">
-                        <canvas id="adherenceChart"></canvas>
-                    </div>
-                    <div class="time-tabs">
-                        <button class="time-tab active" data-period="daily">Today</button>
-                        <button class="time-tab" data-period="weekly">This Week</button>
-                        <button class="time-tab" data-period="monthly">This Month</button>
-                    </div>
-                </div>
+                <details class="picker-dropdown">
+                    <summary class="picker-button">Change patient ▾</summary>
 
-                <div class="med-breakdown-card">
-                    <div class="breakdown-header">
-                        <h3>Medication breakdown</h3>
-                        <p>Today's adherence by medication</p>
-                    </div>
-                    <div class="breakdown-list">
-                        {% for item in medication_breakdown %}
-                        <div class="breakdown-row">
-                            <div class="breakdown-info">
-                                <strong>{{ item.name }}</strong>
-                                <span>Current period</span>
-                            </div>
-                            <div class="breakdown-bar">
-                                <div class="breakdown-fill" data-width="{{ item.percentage }}"></div>
-                            </div>
-                            <span class="breakdown-percent">{{ item.percentage }}%</span>
-                        </div>
+                    <div class="picker-menu">
+                        {% for p in ctx.assigned_patients %}
+                            <a href="{{ url_for('caregiver_select_patient', patient_id=p.patient_id) }}"
+                               class="picker-menu-item {% if p.patient_id == ctx.active_patient_id %}selected{% endif %}">
+                                {{ p.full_name }}
+                            </a>
                         {% endfor %}
                     </div>
+                </details>
+            </div>
+
+            <div class="adherence-stats">
+                <div class="stat-card stat-card-primary">
+                    <div class="stat-icon adherence-icon">◔</div>
+                    <div class="stat-text">
+                        <p class="stat-label">Overall adherence</p>
+                        <h2 class="stat-value">{{ summary.overall_adherence }}%</h2>
+                        <span class="stat-helper">Target is 80%</span>
+                    </div>
                 </div>
 
-                {% if insight %}
-                <div class="adherence-insight-card">
-                    <div class="insight-label">{{ insight.label }}</div>
-                    <h3>{{ insight.headline }}</h3>
-                    <p>{{ insight.body }}</p>
+                <div class="stat-card">
+                    <div class="stat-icon taken-icon">✓</div>
+                    <div class="stat-text">
+                        <p class="stat-label">Doses taken</p>
+                        <h2 class="stat-value">{{ summary.doses_taken }}</h2>
+                        <span class="stat-helper">Recorded on time</span>
+                    </div>
                 </div>
-                {% endif %}
 
-            </section>
-        </div>
+                <div class="stat-card">
+                    <div class="stat-icon missed-icon">!</div>
+                    <div class="stat-text">
+                        <p class="stat-label">Missed doses</p>
+                        <h2 class="stat-value">{{ summary.missed_doses }}</h2>
+                        <span class="stat-helper">Needs attention</span>
+                    </div>
+                </div>
+            </div>
+
+            {% if summary.total_doses == 0 %}
+            <div class="prn-info-card">
+                <div>
+                    <p class="chart-kicker">PRN medication</p>
+                    <h3>{{ ctx.active_patient_name }} has no fixed medication schedule.</h3>
+                    <p>
+                        PRN medication can be logged whenever it is taken, so it is not included in adherence scoring.
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="adherence-card">
+                <div class="adherence-header">
+                    <div>
+                        <h3>Medication adherence trend</h3>
+                        <p>
+                            Green dots are good days. Yellow and red dots show where support may be needed.
+                        </p>
+                    </div>
+
+                    <select class="med-filter" id="medicationFilter">
+                        <option value="all">All Medications</option>
+                        {% for medication in medications %}
+                            <option value="{{ medication }}">{{ medication }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="chart-summary">
+                    <div>
+                        <p class="chart-kicker">Current view</p>
+
+                        <h2>
+                            {{ ctx.active_patient_name }} has {{ summary.overall_adherence }}% adherence.
+                        </h2>
+
+                        <p>
+                            {{ summary.doses_taken }} doses were taken on time and
+                            {{ summary.missed_doses }} were missed.
+                            The target line is <strong>80%</strong>.
+                        </p>
+                    </div>
+
+                    <div class="target-pill {% if summary.overall_adherence >= 80 %}on-track{% else %}needs-attention{% endif %}">
+                        {% if summary.overall_adherence >= 80 %}
+                            On track
+                        {% else %}
+                            Needs support
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="chart-placeholder">
+                    <canvas id="adherenceChart"></canvas>
+                </div>
+
+                <div class="chart-legend">
+                    <span><i class="legend-dot good"></i> Good: 80%+</span>
+                    <span><i class="legend-dot okay"></i> Watch: 60–79%</span>
+                    <span><i class="legend-dot low"></i> Low: below 60%</span>
+                    <span><i class="legend-line"></i> Target: 80%</span>
+                </div>
+
+                <div class="time-tabs">
+                    <button class="time-tab active" data-period="daily">Today</button>
+                    <button class="time-tab" data-period="weekly">This Week</button>
+                    <button class="time-tab" data-period="monthly">This Month</button>
+                </div>
+            </div>
+
+            <div class="med-breakdown-card">
+                <div class="breakdown-header">
+                    <h3>Medication breakdown</h3>
+                    <p>Simple progress by medication</p>
+                </div>
+
+                <div class="breakdown-list">
+                    {% for item in medication_breakdown %}
+                    <div class="breakdown-row">
+                        <div class="breakdown-info">
+                            <strong>{{ item.name }}</strong>
+                            <span>Current period</span>
+                        </div>
+
+                        <div class="breakdown-bar">
+                            <div class="breakdown-fill" data-width="{{ item.percentage }}"></div>
+                        </div>
+
+                        <span class="breakdown-percent">{{ item.percentage }}%</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if insight %}
+            <div class="adherence-insight-card">
+                <div class="insight-label">{{ insight.label }}</div>
+                <h3>{{ insight.headline }}</h3>
+                <p>{{ insight.body }}</p>
+            </div>
+            {% endif %}
+
+        </section>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="{{ url_for('static', filename='js/adherence.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/adherence.js') }}"></script>
 </body>
 </html>

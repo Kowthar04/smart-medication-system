@@ -56,6 +56,8 @@
                         <span>{{ ctx.assigned_patients|length }} patient{{ '' if ctx.assigned_patients|length == 1 else 's' }} assigned to you</span>
                     </div>
 
+                    
+                    
                     <details class="picker-dropdown">
                         <summary class="picker-button">Change patient ▾</summary>
                         <div class="picker-menu">
@@ -67,6 +69,25 @@
                             {% endfor %}
                         </div>
                     </details>
+
+                    {% if dashboard_alert %}
+                <div class="dashboard-alert-banner dashboard-alert-{{ dashboard_alert.type }}">
+                    <div class="dashboard-alert-content">
+                        <span class="dashboard-alert-label">
+                            {{ dashboard_alert.label }}
+                        </span>
+
+                        <div>
+                            <strong>{{ dashboard_alert.title }}</strong>
+                            <p>{{ dashboard_alert.body }}</p>
+                        </div>
+                    </div>
+
+                    <a href="{{ dashboard_alert.link }}" class="dashboard-alert-link">
+                        View
+                    </a>
+                </div>
+                {% endif %}
                 </div>
 
                 <div class="caregiver-content">
@@ -84,7 +105,7 @@
                             <div class="caregiver-actions">
                                 <span class="badge {{ item.tag_class }}">{{ item.status }}</span>
 
-                                {% if item.tag_class == "upcoming" %}
+                                {% if item.tag_class == "upcoming" or item.allow_multiple_logs %}
                                     <button class="caregiver-log-btn" data-time="{{ item.time }}">Log dose</button>
                                 {% endif %}
 
@@ -125,14 +146,34 @@
                         {% else %}
                             <p class="empty-state">No notes yet. Use the ✎ button to add one.</p>
                         {% endif %}
+
+                        <div class="side-section">
+    <h3>Recent Events</h3>
+
+    {% if activity %}
+        <div class="recent-events-list">
+            {% for item in activity[:5] %}
+                <div class="recent-event-item {{ item.type }}">
+                    <div>
+                        <strong>{{ item.message }}</strong>
+                        <span>{{ item.time }}</span>
                     </div>
-
                 </div>
-
-            </section>
+            {% endfor %}
         </div>
+    {% else %}
+        <p class="empty-text">No events recorded today.</p>
+    {% endif %}
+</div>
 
-    </div>
+</div> 
+
+</div> 
+
+</section>
+</div>
+
+</div>
 
     <script src="{{ url_for('static', filename='js/caregiver_dashboard.js') }}?v=2"></script>
 </body>

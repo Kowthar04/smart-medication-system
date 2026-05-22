@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400;12..96,75..100,500;12..96,75..100,600;12..96,75..100,700&family=Manrope:wght@400;500;600;700;800&display=swap');
  
+
 :root {
 
     /* Surfaces & background */
@@ -68,6 +69,10 @@
     box-sizing: border-box;
 }
  
+html {
+    font-size: 17px;
+}
+
 body {
     font-family: var(--font-body);
     font-size: 14px;

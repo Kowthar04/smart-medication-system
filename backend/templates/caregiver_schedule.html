@@ -41,7 +41,9 @@
                         <h1>{{ ctx.active_patient_name }}'s schedule</h1>
                         <p>Today's doses, timings, and adherence</p>
                     </div>
-                    <div class="profile-box"></div>
+                    <div class="profile-box">
+                    {{ (session.get('full_name', 'Patient'))[0] }}
+                </div>
                 </header>
 
                 <div class="patient-picker">

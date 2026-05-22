@@ -27,6 +27,7 @@ body {
     gap: 20px;
     padding-bottom: 24px;
     min-width: 0;
+    max-width: 1350px;
 }
 
 /* Top bar */
@@ -55,9 +56,16 @@ body {
     width: 72px;
     height: 72px;
     background: var(--primary);
-    color: var(--text-on-dark);
     border-radius: 50%;
     box-shadow: var(--shadow-xs);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: white;
+    font-size: 28px;
+    font-weight: 800;
 }
 
 /* Main schedule layout */
@@ -170,6 +178,14 @@ body {
 
 .today-dot {
     background: var(--text-on-dark);
+}
+
+.partial-dot {
+    background: #f59e0b;
+}
+
+.missed-dot {
+    background: #ef4444;
 }
 
 .calendar-legend {
@@ -333,7 +349,7 @@ body {
 /* Summary bar */
 .day-stats {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 10px;
     margin-bottom: 18px;
 }

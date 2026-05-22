@@ -4,275 +4,348 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doctor Dashboard</title>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='doctor.css') }}">
 </head>
+
 <body class="doctor-page">
-    <div class="dashboard-container">
-        <aside class="sidebar">
-            <h2 class="logo">
-                <span class="logo-mark">M</span>
-                <span>MediTrack</span>
-            </h2>
+<div class="dashboard-container">
 
-            <nav>
-                <p class="nav-section-label">Doctor</p>
-                <ul>
-                    <li><a href="{{ url_for('doctor_dashboard') }}" class="sidebar-link active"><span class="sidebar-icon">⌂</span><span>Overview</span></a></li>
-                </ul>
-            </nav>
+    <aside class="sidebar">
+        <h2 class="logo">
+            <span class="logo-mark">M</span>
+            <span>MediTrack</span>
+        </h2>
 
-            <div class="sidebar-bottom">
-                <a href="{{ url_for('auth.logout') }}" class="sidebar-link logout-link">
-                    <span class="sidebar-icon">⇦</span><span>Sign out</span>
-                </a>
-            </div>
-        </aside>
+        <nav>
+            <p class="nav-section-label">Doctor</p>
+            <ul>
+                <li>
+                    <a href="{{ url_for('doctor_dashboard') }}" class="sidebar-link active">
+                        <span class="sidebar-icon">⌂</span>
+                        <span>Overview</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
 
-        <div class="content-wrapper">
-            <section class="main-panel">
-                <header class="top-bar">
-                    <div>
-                        <h1>Doctor Dashboard</h1>
-                        <p>Hi, {{ ctx.doctor_name }}{% if ctx.active_patient_name %} — reviewing {{ ctx.active_patient_name }}{% endif %}</p>
-                    </div>
-                </header>
+        <div class="sidebar-bottom">
+            <a href="{{ url_for('auth.logout') }}" class="sidebar-link logout-link">
+                <span class="sidebar-icon">⇦</span>
+                <span>Sign out</span>
+            </a>
+        </div>
+    </aside>
 
-                <section class="patient-card">
-                    <div class="patient-card-avatar">
-                        {{ (patient_summary.full_name or "?")[0] }}
-                    </div>
+    <div class="content-wrapper">
+        <section class="main-panel">
 
-                    <div class="patient-card-main">
-                        <p class="patient-card-label">Current patient</p>
-                        <div class="patient-card-title-row">
-                            <h2>{{ patient_summary.full_name }}</h2>
-                            {% if patient_summary.age %}
-                                <span class="patient-card-meta">Age {{ patient_summary.age }}</span>
-                            {% else %}
-                                <span class="patient-card-meta">Age —</span>
-                            {% endif %}
-                            <span class="patient-card-meta">{{ patient_summary.patient_code }}</span>
-                        </div>
+            <header class="top-bar">
+                <div>
+                    <h1>Doctor Dashboard</h1>
+                    <p>Hi, {{ ctx.doctor_name }} — reviewing {{ ctx.active_patient_name }}</p>
+                </div>
+            </header>
 
-                        <div class="patient-card-tags">
-                            {% if patient_summary.condition_tags %}
-                                {% for tag in patient_summary.condition_tags %}
-                                    <span class="condition-tag">{{ tag }}</span>
-                                {% endfor %}
-                            {% else %}
-                                <span class="condition-tag muted">No condition tags</span>
-                            {% endif %}
-                        </div>
+            <section class="patient-card">
+                <div class="patient-card-avatar">
+                    {{ (patient_summary.full_name or '?')[0] }}
+                </div>
 
-                        <p class="patient-card-assigned">{{ ctx.assigned_patients|length }} patient{{ '' if ctx.assigned_patients|length == 1 else 's' }} assigned to you</p>
+                <div class="patient-card-main">
+                    <p class="patient-card-label">Current patient</p>
+
+                    <div class="patient-card-title-row">
+                        <h2>{{ patient_summary.full_name }}</h2>
+                        <span class="patient-card-meta">Age —</span>
+                        <span class="patient-card-meta">{{ patient_summary.patient_code }}</span>
                     </div>
 
-                    <details class="picker-dropdown">
-                        <summary class="picker-button">Change patient ▾</summary>
-                        <div class="picker-menu">
-                            {% for p in ctx.assigned_patients %}
-                                <a href="{{ url_for('doctor_select_patient', patient_id=p.patient_id) }}"
-                                   class="picker-menu-item {% if p.patient_id == ctx.active_patient_id %}selected{% endif %}">
-                                    {{ p.full_name }}
-                                </a>
-                            {% endfor %}
-                        </div>
-                    </details>
-                </section>
-
-                <div class="doctor-placeholder-grid">
-                    <article class="doctor-card doctor-stats-card">
-                        <h3>30-Day Snapshot</h3>
-                        <div class="doctor-stats-grid">
-                            <div class="doctor-stat">
-                                <p class="doctor-stat-label">30-day adherence</p>
-                                <p class="doctor-stat-value">{{ doctor_stats.adherence_30d_pct }}%</p>
-                            </div>
-                            <div class="doctor-stat">
-                                <p class="doctor-stat-label">Active medications</p>
-                                <p class="doctor-stat-value">{{ doctor_stats.active_medications_count }}</p>
-                            </div>
-                            <div class="doctor-stat">
-                                <p class="doctor-stat-label">Wellbeing concerns (30d)</p>
-                                <p class="doctor-stat-value">{{ doctor_stats.side_effects_30d_count }}</p>
-                            </div>
-                            <div class="doctor-stat">
-                                <p class="doctor-stat-label">Last check-in</p>
-                                <p class="doctor-stat-value doctor-stat-value-small">{{ doctor_stats.last_checkin_label }}</p>
-                            </div>
-                        </div>
-                    </article>
-
-                    <article class="doctor-card doctor-card-wide doctor-chart-card">
-                        <div class="doctor-chart-header">
-                            <div>
-                                <h3>Adherence vs Self-Reported Concerns</h3>
-                                <p>Daily adherence over 30 days with patient-reported wellbeing concerns overlaid.</p>
-                            </div>
-                            <div class="doctor-chart-legend">
-                                <span><i class="dot dot-line"></i> Adherence</span>
-                                <span><i class="dot dot-mild"></i> Mild self-reported concern</span>
-                                <span><i class="dot dot-moderate"></i> Moderate self-reported concern</span>
-                            </div>
-                        </div>
-                        <div class="doctor-chart-wrap">
-                            <canvas id="doctorAdherenceSideEffectsChart"></canvas>
-                        </div>
-                    </article>
-
-                    <div class="doctor-context-grid">
-                        <article class="doctor-card">
-                            <div class="doctor-card-head-row">
-                                <h3>Recent Caregiver Notes</h3>
-                                <button type="button" class="doctor-link-btn" id="viewAllNotesBtn">View all</button>
-                            </div>
-
-                            {% if recent_notes %}
-                                <ul class="doctor-context-list">
-                                    {% for note in recent_notes %}
-                                        <li class="doctor-context-item">
-                                            <div class="doctor-context-head">
-                                                {% if note.tag %}
-                                                    <span class="doctor-context-tag">{{ note.tag }}</span>
-                                                {% endif %}
-                                                <span class="doctor-context-time">{{ note.created_at.strftime('%d %b, %H:%M') }}</span>
-                                            </div>
-                                            <p class="doctor-context-text">{{ note.text }}</p>
-                                            <p class="doctor-context-meta">
-                                                {{ note.author_name }}
-                                                {% if note.related_time %} · re: {{ note.related_time }} dose{% endif %}
-                                            </p>
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            {% else %}
-                                <p class="doctor-empty">No caregiver notes recorded yet.</p>
-                            {% endif %}
-                        </article>
-
-                        <article class="doctor-card">
-                            <div class="doctor-card-head-row">
-                                <h3>Recent Wellbeing Check-ins</h3>
-                                <button type="button" class="doctor-link-btn" id="viewAllWellbeingBtn">View all</button>
-                            </div>
-
-                            {% if recent_wellbeing %}
-                                <ul class="doctor-context-list">
-                                    {% for c in recent_wellbeing %}
-                                        <li class="doctor-context-item">
-                                            <div class="doctor-context-head">
-                                                <span class="doctor-context-tag">{{ c.mood or '—' }}</span>
-                                                <span class="doctor-context-time">{{ c.created_at.strftime('%d %b, %H:%M') }}</span>
-                                            </div>
-                                            <p class="doctor-context-text">
-                                                {% if c.side_effects %}{{ c.side_effects }}{% else %}<em>No side effects reported</em>{% endif %}
-                                            </p>
-                                            <p class="doctor-context-meta">
-                                                Mood: {{ c.mood or '—' }}
-                                                {% if c.energy %} · Energy: {{ c.energy }}{% endif %}
-                                            </p>
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            {% else %}
-                                <p class="doctor-empty">No wellbeing check-ins logged yet.</p>
-                            {% endif %}
-                        </article>
+                    <div class="patient-card-tags">
+                        {% for tag in patient_summary.condition_tags %}
+                            <span class="condition-tag">{{ tag }}</span>
+                        {% endfor %}
                     </div>
 
-                    <article class="doctor-card doctor-card-wide">
-                        <h3>Medication Schedule Management</h3>
+                    <p class="patient-card-assigned">
+                        {{ ctx.assigned_patients|length }}
+                        patient{{ '' if ctx.assigned_patients|length == 1 else 's' }}
+                        assigned to you
+                    </p>
+                </div>
 
-                        <form id="doctorAddMedicationForm" class="doctor-med-form">
-                            <input type="text" id="newMedName" placeholder="Medication name" required>
-                            <input type="text" id="newMedDose" placeholder="Dose (e.g., 5mg)" required>
-                            <input type="time" id="newMedTime" required>
-                            <button type="submit">Add medication</button>
-                        </form>
+                <details class="picker-dropdown">
+                    <summary>Change patient ▾</summary>
+                    <div class="picker-menu">
+                        {% for p in ctx.assigned_patients %}
+                            <a href="{{ url_for('doctor_select_patient', patient_id=p.patient_id) }}"
+                               class="picker-menu-item {% if p.patient_id == ctx.active_patient_id %}selected{% endif %}">
+                                {{ p.full_name }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </details>
 
-                        <div class="doctor-med-table">
-                            <div class="doctor-med-head">
-                                <span>Medication</span>
-                                <span>Dose</span>
-                                <span>Time</span>
-                                <span>Actions</span>
-                            </div>
+                {% if dashboard_alert %}
+                <div class="dashboard-alert-banner dashboard-alert-{{ dashboard_alert.type }}">
+                    <div class="dashboard-alert-content">
+                        <span class="dashboard-alert-label">
+                            {{ dashboard_alert.label }}
+                        </span>
 
-                            {% if medication_rows %}
-                                {% for med in medication_rows %}
-                                    <div class="doctor-med-row"
-                                        data-schedule-id="{{ med.id }}"
-                                        data-name="{{ med.name }}"
-                                        data-dose="{{ med.dose }}"
-                                        data-time="{{ med.time }}">
-                                        <span>{{ med.name }}</span>
-                                        <span>{{ med.dose }}</span>
-                                        <span>{{ med.time }}</span>
-                                        <span class="doctor-med-actions">
-                                            <button type="button" class="summary-btn doctor-edit-med-btn">Edit</button>
-                                            <button type="button" class="summary-btn doctor-delete-med-btn">Delete</button>
-                                        </span>
-                                    </div>
-                                {% endfor %}
-                            {% else %}
-                                <p class="doctor-empty">No active medications for this patient.</p>
-                            {% endif %}
+                        <div>
+                            <strong>{{ dashboard_alert.title }}</strong>
+                            <p>{{ dashboard_alert.body }}</p>
                         </div>
-                    </article>
+                    </div>
 
-                    <article class="doctor-card doctor-card-wide">
-                        <h3>Adherence Trend by Medication</h3>
-                        <p class="doctor-subtle">
-                            Per-medication 14-day adherence trajectory. Trend reflects the
-                            change between the first and second half of the window.
+                    <a href="{{ dashboard_alert.link }}" class="dashboard-alert-link">
+                        View
+                    </a>
+                </div>
+                {% endif %}
+            </section>
+
+            <section class="doctor-card doctor-card-wide">
+                <h3>30-Day Snapshot</h3>
+
+                <div class="doctor-stats-grid">
+                    <div class="doctor-stat">
+                        <p class="doctor-stat-label">30-day adherence</p>
+
+                        {% if doctor_stats.adherence_30d_pct is none %}
+                            <p class="doctor-stat-value">PRN only</p>
+                            <p class="doctor-empty">No scheduled adherence score</p>
+                        {% else %}
+                            <p class="doctor-stat-value">{{ doctor_stats.adherence_30d_pct }}%</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="doctor-stat">
+                        <p class="doctor-stat-label">Active medications</p>
+                        <p class="doctor-stat-value">{{ doctor_stats.active_medications_count }}</p>
+                    </div>
+
+                    <div class="doctor-stat">
+                        <p class="doctor-stat-label">Wellbeing concerns</p>
+                        <p class="doctor-stat-value">{{ doctor_stats.side_effects_30d_count }}</p>
+                    </div>
+
+                    <div class="doctor-stat">
+                        <p class="doctor-stat-label">Last check-in</p>
+                        <p class="doctor-stat-value doctor-stat-value-small">
+                            {{ doctor_stats.last_checkin_label }}
                         </p>
-
-                        <div class="doctor-effectiveness-list">
-                            {% if adherence_trend_rows %}
-                                {% for row in adherence_trend_rows %}
-                                    <div class="doctor-effect-row">
-                                        <div class="doctor-effect-main">
-                                            <strong>{{ row.medication_name }}</strong>
-                                            <span class="doctor-effect-adherence">{{ row.adherence_pct }}% adherence (14d)</span>
-                                        </div>
-
-                                        <div class="doctor-effect-spark-wrap">
-                                            <canvas class="doctor-sparkline"
-                                                    data-points="{{ row.sparkline_points|join(',') }}"></canvas>
-                                        </div>
-
-                                        <div class="doctor-effect-trend doctor-trend-{{ row.trend }}">
-                                            {% if row.trend == "improving" %}↗ improving{% endif %}
-                                            {% if row.trend == "stable" %}→ stable{% endif %}
-                                            {% if row.trend == "concerning" %}↘ concerning{% endif %}
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            {% else %}
-                                <p class="doctor-empty">No medication trends available yet.</p>
-                            {% endif %}
-                        </div>
-                    </article>
+                    </div>
                 </div>
             </section>
-        </div>
-    </div>
 
-    <div id="doctorModal" class="doctor-modal" hidden>
-        <div class="doctor-modal-backdrop" data-modal-close></div>
-        <div class="doctor-modal-panel" role="dialog" aria-modal="true" aria-labelledby="doctorModalTitle">
-            <div class="doctor-modal-head">
-                <h3 id="doctorModalTitle">Title</h3>
-                <button type="button" class="doctor-modal-close" data-modal-close aria-label="Close">×</button>
-            </div>
-            <div class="doctor-modal-body" id="doctorModalBody">
-                <p class="doctor-empty">Loading…</p>
-            </div>
-        </div>
-    </div>
+            <section class="doctor-card doctor-chart-card">
+                <div class="doctor-chart-header">
+                    <div>
+                        <h3>Adherence vs Self-Reported Concerns</h3>
+                        <p>Daily adherence over 30 days with patient-reported wellbeing concerns overlaid.</p>
+                    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="{{ url_for('static', filename='Js/doctor_dashboard.js') }}"></script>
+                    <div class="doctor-chart-legend">
+                        <span><i class="dot dot-line"></i> Adherence</span>
+                        <span><i class="dot dot-mild"></i> Mild concern</span>
+                        <span><i class="dot dot-moderate"></i> Moderate concern</span>
+                    </div>
+                </div>
+
+                {% if doctor_stats.adherence_30d_pct is none %}
+                    <div class="doctor-prn-message">
+                        <h3>PRN medication only</h3>
+                        <p>
+                            This patient has no fixed scheduled doses, so adherence percentage is not scored.
+                            PRN medication logs and wellbeing check-ins are still shown in the system.
+                        </p>
+                    </div>
+                {% else %}
+                    <div class="doctor-chart-wrap">
+                        <canvas id="doctorAdherenceSideEffectsChart"></canvas>
+                    </div>
+                {% endif %}
+            </section>
+
+            <section class="doctor-context-grid">
+
+                <div class="doctor-card">
+                    <div class="doctor-card-head-row">
+                        <h3>Recent Caregiver Notes</h3>
+                    </div>
+
+                    {% if recent_notes %}
+                        <ul class="doctor-context-list">
+                            {% for note in recent_notes %}
+                            <li class="doctor-context-item">
+                                <div class="doctor-context-head">
+                                    {% if note.tag %}
+                                        <span class="doctor-context-tag">{{ note.tag }}</span>
+                                    {% endif %}
+
+                                    {% if note.created_at %}
+                                        <span class="doctor-context-time">
+                                            {{ note.created_at.strftime('%d %b, %H:%M') }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                <p class="doctor-context-text">{{ note.text }}</p>
+
+                                <p class="doctor-context-meta">
+                                    {{ note.author_name }}
+                                    {% if note.related_time %}
+                                        · re: {{ note.related_time }} dose
+                                    {% endif %}
+                                </p>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="doctor-empty">No caregiver notes yet.</p>
+                    {% endif %}
+                </div>
+
+                <div class="doctor-card">
+                    <div class="doctor-card-head-row">
+                        <h3>Recent Wellbeing Check-ins</h3>
+                    </div>
+
+                    {% if recent_wellbeing %}
+                        <ul class="doctor-context-list">
+                            {% for checkin in recent_wellbeing %}
+                            <li class="doctor-context-item">
+                                <div class="doctor-context-head">
+                                    <span class="doctor-context-tag">{{ checkin.mood }}</span>
+
+                                    {% if checkin.created_at %}
+                                        <span class="doctor-context-time">
+                                            {{ checkin.created_at.strftime('%d %b, %H:%M') }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                <p class="doctor-context-text">
+                                    {{ checkin.side_effects or 'No side effects reported' }}
+                                </p>
+
+                                <p class="doctor-context-meta">
+                                    Mood: {{ checkin.mood }} · Energy: {{ checkin.energy }}
+                                </p>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p class="doctor-empty">No wellbeing check-ins yet.</p>
+                    {% endif %}
+                </div>
+
+            </section>
+
+            <section class="doctor-card doctor-card-wide">
+                <h3>Medication Schedule Management</h3>
+                <p class="doctor-subtle">Add, edit, or remove medication schedules for the selected patient.</p>
+
+                <form class="doctor-med-form" id="doctorAddMedicationForm">
+                    <input type="text" id="newMedName" placeholder="Medication name">
+                    <input type="text" id="newMedDose" placeholder="Dose e.g. 5mg">
+                    <input type="time" id="newMedTime" value="12:30">
+                    <button type="submit">Add medication</button>
+                </form>
+
+                <div class="doctor-med-table">
+                    <div class="doctor-med-head">
+                        <span>Medication</span>
+                        <span>Dose</span>
+                        <span>Time</span>
+                        <span>Actions</span>
+                    </div>
+
+                    {% for med in medication_rows %}
+                    <div class="doctor-med-row"
+                         data-schedule-id="{{ med.id }}"
+                         data-name="{{ med.name }}"
+                         data-dose="{{ med.dose }}"
+                         data-time="{{ med.time }}">
+                        <span>{{ med.name }}</span>
+                        <span>{{ med.dose }}</span>
+                        <span>{{ med.time }}</span>
+
+                        <span class="doctor-med-actions">
+                            <button type="button" class="summary-btn doctor-edit-med-btn">Edit</button>
+                            <button type="button" class="summary-btn doctor-delete-med-btn">Delete</button>
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <section class="doctor-card doctor-card-wide">
+                <h3>Adherence Trend by Medication</h3>
+                <p class="doctor-subtle">
+                    Per-medication 14-day adherence trajectory. PRN medications are shown separately because they are taken as needed.
+                </p>
+
+                <div class="doctor-effectiveness-list">
+                    {% for row in adherence_trend_rows %}
+                    <div class="doctor-effect-row">
+                        <div class="doctor-effect-main">
+                            <strong>{{ row.medication_name }}</strong>
+
+                            {% if row.trend == "prn" %}
+                                <span class="doctor-effect-adherence">
+                                    PRN medication · adherence not scored
+                                </span>
+                            {% else %}
+                                <span class="doctor-effect-adherence">
+                                    {{ row.adherence_pct }}% adherence (14d)
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="doctor-effect-spark-wrap">
+                            {% if row.trend != "prn" %}
+                                <div class="sparkline">
+                                    {% for point in row.sparkline_points %}
+                                        <span class="sparkline-bar" data-height="{{ point }}"></span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <span class="prn-trend-note">As needed</span>
+                            {% endif %}
+                        </div>
+
+                        <div>
+                            {% if row.trend == "prn" %}
+                                <span class="doctor-trend-stable">As needed</span>
+                            {% elif row.trend == "improving" %}
+                                <span class="doctor-trend-improving">↗ improving</span>
+                            {% elif row.trend == "concerning" %}
+                                <span class="doctor-trend-concerning">↘ concerning</span>
+                            {% else %}
+                                <span class="doctor-trend-stable">→ stable</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+        </section>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='Js/doctor_dashboard.js') }}"></script>
+
+<script>
+    document.querySelectorAll('.sparkline-bar').forEach(function (bar) {
+        bar.style.height = bar.dataset.height + '%';
+    });
+</script>
+
 </body>
 </html>

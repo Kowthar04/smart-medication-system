@@ -15,6 +15,16 @@ DEMO_USERS = [
         "role": "patient",
     },
     {
+        "email": "emma@meditrack.demo",
+        "full_name": "Emma Wilson",
+        "role": "patient",
+    },
+    {
+        "email": "michael@meditrack.demo",
+        "full_name": "Michael Brown",
+        "role": "patient",
+    },
+    {
         "email": "caregiver@meditrack.demo",
         "full_name": "Nurse Jane",
         "role": "caregiver",
@@ -53,7 +63,7 @@ def main():
     conn = psycopg2.connect(**DB_CONFIG)
     cur = conn.cursor()
     try:
-        password_hash = generate_password_hash(DEMO_PASSWORD, method="pbkdf2:sha256")
+        password_hash = generate_password_hash(DEMO_PASSWORD, method="pbkdf2:sha256", salt_length=8)
         print("Seeding demo accounts...")
         print()
         for u in DEMO_USERS:

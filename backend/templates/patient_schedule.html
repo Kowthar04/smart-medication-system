@@ -25,17 +25,12 @@
                     <ul>
                         <li><a href="{{ url_for('patient_adherence') }}" class="sidebar-link"><span class="sidebar-icon">◔</span><span>Adherence</span></a></li>
                     </ul>
-                    <p class="nav-section-label">People</p>
-                    <ul>
-                        <li><a href="#" class="sidebar-link"><span class="sidebar-icon">👥</span><span>Care Team</span></a></li>
-                    </ul>
                 </nav>
             </div>
 
             <div class="sidebar-bottom">
                 <nav>
                     <ul>
-                        <li><a href="#" class="sidebar-link"><span class="sidebar-icon">⚙</span><span>Settings</span></a></li>
                         <li><a href="{{ url_for('auth.logout') }}" class="sidebar-link logout-link"><span class="sidebar-icon">⇦</span><span>Sign out</span></a></li>
                     </ul>
                 </nav>
@@ -49,7 +44,9 @@
                         <h1>Medication Schedule</h1>
                         <p>Track your doses, timings, and today's medication plan</p>
                     </div>
-                    <div class="profile-box"></div>
+                    <div class="profile-box">
+                    {{ (session.get('full_name', 'Patient'))[0] }}
+                </div>
                 </header>
 
                 <div class="schedule-content">
