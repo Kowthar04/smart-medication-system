@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign in · MediTrack</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}"> 
 </head>
-<body class="login-page">
+<body class="login-page"> 
  
     <main class="login-shell">
  
@@ -24,11 +24,12 @@
             <h2>Sign in</h2>
             <p class="login-card-sub">Pick the role that matches your account.</p>
  
+            <!-- role tabs link to the same page with a different active_tab value -->
             <div class="login-tabs" role="tablist">
                 <a href="{{ url_for('auth.login_with_tab', role='patient') }}"
-                   class="login-tab {% if active_tab == 'patient' %}active{% endif %}"
+                   class="login-tab {% if active_tab == 'patient' %}active{% endif %}" <!-- active highlights the selected tab -->
                    role="tab"
-                   aria-selected="{{ 'true' if active_tab == 'patient' else 'false' }}">
+                   aria-selected="{{ 'true' if active_tab == 'patient' else 'false' }}"> <!-- accessibility for screen readers -->
                     Patient
                 </a>
                 <a href="{{ url_for('auth.login_with_tab', role='caregiver') }}"
@@ -45,19 +46,19 @@
                 </a>
             </div>
  
-            {% if error %}
+            {% if error %} <!-- shows error message passed from Flask on failed login -->
             <div class="login-error" role="alert">
                 {{ error }}
             </div>
             {% endif %}
  
-            <form action="{{ url_for('auth.login_submit') }}" method="POST" class="login-form" novalidate>
+            <form action="{{ url_for('auth.login_submit') }}" method="POST" class="login-form" novalidate> <!-- POSTs to Flask auth.login_submit route -->
  
-                <input type="hidden" name="role" value="{{ active_tab }}">
+                <input type="hidden" name="role" value="{{ active_tab }}"> <!-- sends selected role tab with form so Flask knows which role is logging in -->
  
                 <label class="login-field">
                     <span class="login-label">Email</span>
-                    <input type="email" name="email" required autocomplete="email" autofocus>
+                    <input type="email" name="email" required autocomplete="email" autofocus> 
                 </label>
  
                 <label class="login-field">
@@ -67,7 +68,7 @@
  
                 <button type="submit" class="login-submit">
                     Sign in as
-                    {%- if active_tab == 'patient' %} patient
+                    {%- if active_tab == 'patient' %} patient <!-- button label changes based on selected tab -->
                     {%- elif active_tab == 'caregiver' %} caregiver
                     {%- else %} doctor
                     {% endif -%}
@@ -75,6 +76,7 @@
  
             </form>
  
+            <!-- demo credentials panel for demonstration -->
             <div class="demo-creds">
                 <div class="demo-creds-head">
                     <span class="demo-creds-tag">Demo</span>
@@ -82,7 +84,7 @@
                 </div>
  
                 <div class="demo-creds-list">
-                    <button type="button" class="demo-cred-row" data-email="patient@meditrack.demo" data-tab="patient">
+                    <button type="button" class="demo-cred-row" data-email="patient@meditrack.demo" data-tab="patient"> <!-- data attributes read by JS to autofill the form -->
                         <span class="demo-cred-role">Patient</span>
                         <span class="demo-cred-email">patient@meditrack.demo</span>
                     </button>
@@ -108,13 +110,12 @@
     </main>
  
     <script>
-        
         document.querySelectorAll(".demo-cred-row").forEach(function (row) {
             row.addEventListener("click", function () {
-                var targetTab = row.dataset.tab;
-                var currentTab = "{{ active_tab }}";
+                var targetTab = row.dataset.tab; // tab the clicked credential belongs to
+                var currentTab = "{{ active_tab }}"; // current active tab from Flask
  
-                if (targetTab === currentTab) {
+                if (targetTab === currentTab) { 
                     var emailInput = document.querySelector('input[name="email"]');
                     var passwordInput = document.querySelector('input[name="password"]');
                     if (emailInput) {
@@ -124,16 +125,14 @@
                         passwordInput.value = "demo1234";
                         passwordInput.focus();
                     }
-                } else {
-                   
+                } else { // navigate to correct tab first before autofilling
                     var url = "{{ url_for('auth.login_with_tab', role='REPLACE_ME') }}".replace("REPLACE_ME", targetTab);
                     window.location.href = url + "?email=" + encodeURIComponent(row.dataset.email);
                 }
             });
         });
  
-        
-        (function () {
+        (function () { // auto-fills form if email was passed in URL params after a tab redirect
             var params = new URLSearchParams(window.location.search);
             var prefillEmail = params.get("email");
             if (prefillEmail) {

@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doctor Dashboard</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='doctor.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"> 
+    <link rel="stylesheet" href="{{ url_for('static', filename='doctor.css') }}"> 
 </head>
 
-<body class="doctor-page">
+<body class="doctor-page"> 
 <div class="dashboard-container">
 
     <aside class="sidebar">
@@ -22,7 +22,7 @@
             <p class="nav-section-label">Doctor</p>
             <ul>
                 <li>
-                    <a href="{{ url_for('doctor_dashboard') }}" class="sidebar-link active">
+                    <a href="{{ url_for('doctor_dashboard') }}" class="sidebar-link active"> <!-- nav item for the doctor role -->
                         <span class="sidebar-icon">⌂</span>
                         <span>Overview</span>
                     </a>
@@ -44,13 +44,14 @@
             <header class="top-bar">
                 <div>
                     <h1>Doctor Dashboard</h1>
-                    <p>Hi, {{ ctx.doctor_name }} — reviewing {{ ctx.active_patient_name }}</p>
+                    <p>Hi, {{ ctx.doctor_name }} — reviewing {{ ctx.active_patient_name }}</p> <!-- doctor context from Flask route -->
                 </div>
             </header>
 
+            <!-- patient summary card -->
             <section class="patient-card">
                 <div class="patient-card-avatar">
-                    {{ (patient_summary.full_name or '?')[0] }}
+                    {{ (patient_summary.full_name or '?')[0] }} <!-- first letter as avatar -->
                 </div>
 
                 <div class="patient-card-main">
@@ -63,7 +64,7 @@
                     </div>
 
                     <div class="patient-card-tags">
-                        {% for tag in patient_summary.condition_tags %}
+                        {% for tag in patient_summary.condition_tags %} <!-- condition tags from database -->
                             <span class="condition-tag">{{ tag }}</span>
                         {% endfor %}
                     </div>
@@ -75,6 +76,7 @@
                     </p>
                 </div>
 
+                <!-- patient picker using details/summary -->
                 <details class="picker-dropdown">
                     <summary>Change patient ▾</summary>
                     <div class="picker-menu">
@@ -87,7 +89,7 @@
                     </div>
                 </details>
 
-                {% if dashboard_alert %}
+                {% if dashboard_alert %} <!-- urgent banner if Flask detects a high-priority alert -->
                 <div class="dashboard-alert-banner dashboard-alert-{{ dashboard_alert.type }}">
                     <div class="dashboard-alert-content">
                         <span class="dashboard-alert-label">
@@ -107,6 +109,7 @@
                 {% endif %}
             </section>
 
+            <!-- 30-day snapshot stats grid -->
             <section class="doctor-card doctor-card-wide">
                 <h3>30-Day Snapshot</h3>
 
@@ -114,7 +117,7 @@
                     <div class="doctor-stat">
                         <p class="doctor-stat-label">30-day adherence</p>
 
-                        {% if doctor_stats.adherence_30d_pct is none %}
+                        {% if doctor_stats.adherence_30d_pct is none %} <!-- none means PRN-only patient with no scheduled doses -->
                             <p class="doctor-stat-value">PRN only</p>
                             <p class="doctor-empty">No scheduled adherence score</p>
                         {% else %}
@@ -141,6 +144,7 @@
                 </div>
             </section>
 
+            <!-- adherence vs side effects chart -->
             <section class="doctor-card doctor-chart-card">
                 <div class="doctor-chart-header">
                     <div>
@@ -155,7 +159,7 @@
                     </div>
                 </div>
 
-                {% if doctor_stats.adherence_30d_pct is none %}
+                {% if doctor_stats.adherence_30d_pct is none %} <!-- PRN patients get message instead of chart -->
                     <div class="doctor-prn-message">
                         <h3>PRN medication only</h3>
                         <p>
@@ -165,11 +169,12 @@
                     </div>
                 {% else %}
                     <div class="doctor-chart-wrap">
-                        <canvas id="doctorAdherenceSideEffectsChart"></canvas>
+                        <canvas id="doctorAdherenceSideEffectsChart"></canvas> <!-- Chart.js via doctor_dashboard.js -->
                     </div>
                 {% endif %}
             </section>
 
+            <!-- caregiver notes and wellbeing check-ins -->
             <section class="doctor-context-grid">
 
                 <div class="doctor-card">
@@ -188,7 +193,7 @@
 
                                     {% if note.created_at %}
                                         <span class="doctor-context-time">
-                                            {{ note.created_at.strftime('%d %b, %H:%M') }}
+                                            {{ note.created_at.strftime('%d %b, %H:%M') }} <!-- strftime formats Python datetime -->
                                         </span>
                                     {% endif %}
                                 </div>
@@ -229,7 +234,7 @@
                                 </div>
 
                                 <p class="doctor-context-text">
-                                    {{ checkin.side_effects or 'No side effects reported' }}
+                                    {{ checkin.side_effects or 'No side effects reported' }} <!-- 'or' if field is empty -->
                                 </p>
 
                                 <p class="doctor-context-meta">
@@ -245,11 +250,12 @@
 
             </section>
 
+            <!-- medication CRUD management - doctor can add, edit and delete medication from schedules -->
             <section class="doctor-card doctor-card-wide">
                 <h3>Medication Schedule Management</h3>
                 <p class="doctor-subtle">Add, edit, or remove medication schedules for the selected patient.</p>
 
-                <form class="doctor-med-form" id="doctorAddMedicationForm">
+                <form class="doctor-med-form" id="doctorAddMedicationForm"> <!-- JS intercepts submit and uses fetch POST -->
                     <input type="text" id="newMedName" placeholder="Medication name">
                     <input type="text" id="newMedDose" placeholder="Dose e.g. 5mg">
                     <input type="time" id="newMedTime" value="12:30">
@@ -264,9 +270,9 @@
                         <span>Actions</span>
                     </div>
 
-                    {% for med in medication_rows %}
+                    {% for med in medication_rows %} <!-- one row per medication in patient's current schedule -->
                     <div class="doctor-med-row"
-                         data-schedule-id="{{ med.id }}"
+                         data-schedule-id="{{ med.id }}" <!-- data attributes read by JS for edit and delete operations -->
                          data-name="{{ med.name }}"
                          data-dose="{{ med.dose }}"
                          data-time="{{ med.time }}">
@@ -283,6 +289,7 @@
                 </div>
             </section>
 
+            <!-- per-medication sparklines showing 14-day adherence trend -->
             <section class="doctor-card doctor-card-wide">
                 <h3>Adherence Trend by Medication</h3>
                 <p class="doctor-subtle">
@@ -310,7 +317,7 @@
                             {% if row.trend != "prn" %}
                                 <div class="sparkline">
                                     {% for point in row.sparkline_points %}
-                                        <span class="sparkline-bar" data-height="{{ point }}"></span>
+                                        <span class="sparkline-bar" data-height="{{ point }}"></span> <!-- JS sets height from data-height to build the bar chart -->
                                     {% endfor %}
                                 </div>
                             {% else %}
@@ -338,12 +345,12 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="{{ url_for('static', filename='Js/doctor_dashboard.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+<script src="{{ url_for('static', filename='Js/doctor_dashboard.js') }}"></script> <!-- handles chart and add/edit/delete buttons -->
 
 <script>
     document.querySelectorAll('.sparkline-bar').forEach(function (bar) {
-        bar.style.height = bar.dataset.height + '%';
+        bar.style.height = bar.dataset.height + '%'; // sets each sparkline bar height from its data 
     });
 </script>
 

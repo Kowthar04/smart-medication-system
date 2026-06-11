@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='patient.css') }}?v=8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"> 
+    <link rel="stylesheet" href="{{ url_for('static', filename='patient.css') }}?v=8"> 
 </head>
 
 <body>
@@ -22,13 +22,13 @@
                     <p class="nav-section-label">Today</p>
                     <ul>
                         <li>
-                            <a href="{{ url_for('patient_dashboard') }}" class="sidebar-link active">
+                            <a href="{{ url_for('patient_dashboard') }}" class="sidebar-link active"> <!-- active highlights current page -->
                                 <span class="sidebar-icon">⌂</span>
                                 <span>Dashboard</span>
                             </a>
                         </li>
                         <li>
-                            <a href="{{ url_for('patient_schedule') }}" class="sidebar-link">
+                            <a href="{{ url_for('patient_schedule') }}" class="sidebar-link"> <!-- url_for generates route URL dynamically -->
                                 <span class="sidebar-icon">🕒</span>
                                 <span>Schedule</span>
                             </a>
@@ -47,7 +47,7 @@
                 </nav>
             </div>
 
-            <div class="sidebar-bottom">
+            <div class="sidebar-bottom"> <!-- sign out separated at bottom -->
                 <nav>
                     <ul>
                         <li>
@@ -62,18 +62,17 @@
         </aside>
 
         <div class="content-wrapper">
-
             <section class="left-panel">
 
                 <header class="top-bar dashboard-greeting">
                     <div>
-                        <h1>Welcome back, {{ dashboard_data.patient_name.split()[0] }}</h1>
+                        <h1>Welcome back, {{ dashboard_data.patient_name.split()[0] }}</h1> <!-- gets first name only -->
                         <p><span class="status-dot"></span>Your medication overview for today</p>
-                        <p class="current-time" id="current-time"></p>
+                        <p class="current-time" id="current-time"></p> <!-- populated by JS with live clock -->
                     </div>
 
                     <div class="greeting-actions">
-                        {% if dashboard_data.streak > 0 %}
+                        {% if dashboard_data.streak > 0 %} <!-- only shows streak pill if streak exists -->
                         <div class="streak-pill">
                             <span>▥</span>
                             <strong>{{ dashboard_data.streak }}</strong>
@@ -81,14 +80,14 @@
                         </div>
                         {% endif %}
 
-                        <div class="profile-box profile-initial">{{ dashboard_data.patient_name[0] }}</div>
+                        <div class="profile-box profile-initial">{{ dashboard_data.patient_name[0] }}</div> <!-- first letter as avatar -->
                     </div>
                 </header>
 
                 <div class="middle-section">
-
                     <div class="middle-grid top-grid">
 
+                        <!-- NEXT DOSE CARD -->
                         <div class="next-dose-hero">
                             <div>
                                 <span class="hero-label">
@@ -96,7 +95,7 @@
                                     Next dose
                                 </span>
 
-                                <h2>{{ dashboard_data.next_due.name }}</h2>
+                                <h2>{{ dashboard_data.next_due.name }}</h2> <!-- next_due passed from Flask -->
                                 <p>{{ dashboard_data.next_due.dose }} scheduled for {{ dashboard_data.next_due.time }}</p>
 
                                 <div class="hero-time">
@@ -107,14 +106,14 @@
                                 </div>
 
                                 <div class="hero-countdown" id="hero-countdown"
-                                     data-due-time="{{ dashboard_data.next_due.time }}">
+                                     data-due-time="{{ dashboard_data.next_due.time }}"> <!-- JS reads data-due-time to calculate countdown -->
                                     <span id="countdown-label">Due in</span>
-                                    <strong id="countdown-time">--:--:--</strong>
+                                    <strong id="countdown-time">--:--:--</strong> <!-- updated every second by JS -->
                                 </div>
 
                                 <div class="hero-actions">
                                     <button class="hero-btn-primary" id="log-dose-btn"
-                                        data-dose-time="{{ dashboard_data.next_due.time }}"
+                                        data-dose-time="{{ dashboard_data.next_due.time }}" <!-- JS reads these to send to Flask -->
                                         data-dose-name="{{ dashboard_data.next_due.name }}">
                                         ✓ I took it
                                     </button>
@@ -122,13 +121,14 @@
                                 </div>
                             </div>
 
-                            <div class="hero-pill-visual"><span></span></div>
+                            <div class="hero-pill-visual"><span></span></div> <!-- decorative pill graphic image -->
                         </div>
 
+                        <!-- ADHERENCE CIRCLE -->
                         <div class="card adherence-card">
                             <h2>This week</h2>
                             <div class="adherence-circle large"
-                                 style="--progress: {{ dashboard_data.adherence_rate }}%;">
+                                 style="--progress: {{ dashboard_data.adherence_rate }}%;"> <!-- CSS circle based on % -->
                                 <span class="adherence-text">{{ dashboard_data.adherence_rate }}%</span>
                             </div>
                             <div class="adherence-breakdown">
@@ -139,20 +139,21 @@
                         </div>
                     </div>
 
+                    <!-- TODAY'S MEDICATION TIMELINE -->
                     <div class="card timeline-card">
                         <div class="timeline-header">
                             <h2>Today's medications</h2>
                             <a href="{{ url_for('patient_schedule') }}">View schedule →</a>
                         </div>
                         <div class="timeline-list">
-                            {% for item in dashboard_data.schedule %}
+                            {% for item in dashboard_data.schedule %} <!-- loops over today's scheduled doses -->
                             <div class="timeline-row">
                                 <div class="timeline-time">{{ item.time }}</div>
                                 <div class="timeline-details">
                                     <p class="timeline-name">{{ item.name }}</p>
                                     <p class="timeline-dose">{{ item.dose }}</p>
                                 </div>
-                                <div class="timeline-status {{ item.tag_class }}">{{ item.status }}</div>
+                                <div class="timeline-status {{ item.tag_class }}">{{ item.status }}</div> <!-- tag_class = taken/upcoming/missed, changes badge colour -->
                             </div>
                             {% endfor %}
                         </div>
@@ -160,6 +161,7 @@
 
                     <div class="middle-grid bottom-grid">
 
+                        <!-- CARE TEAM - hardcoded for demo -->
                         <div class="card team-card">
                             <h2>Care team</h2>
                             <div class="care-team-list">
@@ -181,8 +183,9 @@
                             </div>
                         </div>
 
+                        <!-- WELLBEING CHECK-IN - multi step form, all steps in HTML and JS shows/hides them -->
                         <div class="card wellbeing-card">
-                            <div class="checkin-step step-1 active-step">
+                            <div class="checkin-step step-1 active-step"> <!-- active-step = visible and others hidden by CSS -->
                                 <div class="checkin-progress">Step 1 of 3</div>
                                 <h2>Wellbeing Check-In</h2>
                                 <p class="checkin-question">How is your mood right now?</p>
@@ -198,7 +201,7 @@
                                 </div>
                             </div>
 
-                            <div class="checkin-step step-2">
+                            <div class="checkin-step step-2"> <!-- hidden until JS moves active-step here -->
                                 <div class="checkin-progress">Step 2 of 3</div>
                                 <h2>Wellbeing Check-In</h2>
                                 <p class="checkin-question">What is your energy level right now?</p>
@@ -228,16 +231,16 @@
                                 </div>
                                 <div class="checkin-actions">
                                     <button class="checkin-back" id="back-to-step-2">Back</button>
-                                    <button class="checkin-next" id="save-checkin">Save</button>
+                                    <button class="checkin-next" id="save-checkin">Save</button> <!-- triggers fetch POST to Flask -->
                                 </div>
                             </div>
 
-                            <div class="checkin-step step-complete">
+                            <div class="checkin-step step-complete"> <!-- shown after successful save -->
                                 <div class="checkin-progress">Completed</div>
                                 <h2>Wellbeing Check-In</h2>
                                 <p class="checkin-question">Your wellbeing check-in has been saved.</p>
                                 <div class="checkin-summary">
-                                    <p><strong>Mood:</strong> <span id="summary-mood">-</span></p>
+                                    <p><strong>Mood:</strong> <span id="summary-mood">-</span></p> <!-- JS fills these spans -->
                                     <p><strong>Energy:</strong> <span id="summary-energy">-</span></p>
                                     <p><strong>Side effects:</strong> <span id="summary-side-effects">-</span></p>
                                 </div>
@@ -246,29 +249,27 @@
                                 </div>
                             </div>
                         </div>
-
                     </div>
-
                 </div>
-
             </section>
 
+            <!-- RIGHT PANEL - trend, activity feed and insight -->
             <aside class="right-panel">
 
-                {% if dashboard_data.trend %}
+                {% if dashboard_data.trend %} <!-- only renders if Flask has enough data for a trend -->
                 <div class="trend-card">
                     <div class="trend-header">
                         <div>
                             <h2>Adherence trend</h2>
                             <p>Last 14 days</p>
                         </div>
-                        <span class="trend-delta trend-delta-{{ dashboard_data.trend.delta_class }}">
+                        <span class="trend-delta trend-delta-{{ dashboard_data.trend.delta_class }}"> <!-- delta_class = up/down/flat, changes colour -->
                             {{ dashboard_data.trend.delta_label }}
                         </span>
                     </div>
                     <svg class="trend-line" viewBox="0 0 260 90" preserveAspectRatio="none">
                         <polyline
-                            points="{{ dashboard_data.trend.points }}"
+                            points="{{ dashboard_data.trend.points }}" <!-- Flask generates x,y coordinate string -->
                             fill="none" stroke="currentColor" stroke-width="4"
                             stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
@@ -280,7 +281,7 @@
                     <div class="activity-list">
                         {% if dashboard_data.recent_activity %}
                             {% for activity in dashboard_data.recent_activity %}
-                                <div class="activity-row {{ activity.type }}">
+                                <div class="activity-row {{ activity.type }}"> <!-- type = on-time/late/missed, sets row colour -->
                                     <div class="activity-dot"></div>
                                     <div class="activity-content">
                                         <p class="activity-message">{{ activity.message }}</p>
@@ -294,7 +295,7 @@
                     </div>
                 </div>
 
-                {% if dashboard_data.insight %}
+                {% if dashboard_data.insight %} <!-- insight card only shown if Flask generated  -->
                 <div class="insight-card">
                     <div class="insight-label">{{ dashboard_data.insight.label }}</div>
                     <h4>{{ dashboard_data.insight.headline }}</h4>
@@ -303,10 +304,9 @@
                 {% endif %}
 
             </aside>
-
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/patient_dashboard.js') }}?v=2"></script>
+    <script src="{{ url_for('static', filename='js/patient_dashboard.js') }}?v=2"></script> <!-- handles countdown, dose logging and wellbeing steps -->
 </body>
 </html>

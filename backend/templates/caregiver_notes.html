@@ -21,7 +21,7 @@
                     <li><a href="{{ url_for('caregiver_dashboard') }}" class="sidebar-link"><span class="sidebar-icon">⌂</span><span>Overview</span></a></li>
                     <li><a href="{{ url_for('caregiver_schedule') }}" class="sidebar-link"><span class="sidebar-icon">🕒</span><span>Schedule</span></a></li>
                     <li><a href="{{ url_for('caregiver_adherence') }}" class="sidebar-link"><span class="sidebar-icon">◔</span><span>Adherence</span></a></li>
-                    <li><a href="{{ url_for('caregiver_notes_page') }}" class="sidebar-link active"><span class="sidebar-icon">📝</span><span>Notes</span></a></li>
+                    <li><a href="{{ url_for('caregiver_notes_page') }}" class="sidebar-link active"><span class="sidebar-icon">📝</span><span>Notes</span></a></li> <!-- active highlights current page -->
                     <li><a href="{{ url_for('caregiver_alerts') }}" class="sidebar-link"><span class="sidebar-icon">!</span><span>Alerts</span></a></li>
                 </ul>
             </nav>
@@ -41,6 +41,7 @@
                     </div>
                 </header>
 
+                <!-- patient picker -->
                 <div class="patient-picker">
                     <div class="patient-avatar">{{ (ctx.active_patient_name or '?')[0] }}</div>
                     <div class="patient-picker-info">
@@ -61,17 +62,18 @@
                     </details>
                 </div>
 
+                <!-- two column layout with the compose notes on left and the notes feed on right -->
                 <div class="notes-page-grid">
 
                     <div class="caregiver-panel notes-compose-panel">
                         <h3>Add a new note</h3>
 
-                        <form id="standalone-note-form">
+                        <form id="standalone-note-form"> <!-- JS intercepts submit and uses fetch() instead of page reload -->
                             <textarea id="standalone-note-text" placeholder="What did you observe today? Mood, side effects, appetite, sleep quality..."></textarea>
 
                             <p class="filter-subtext">Tag this note (optional)</p>
                             <div class="note-tags" id="standalone-note-tags">
-                                <span class="tag-chip" data-tag="Mood">Mood</span>
+                                <span class="tag-chip" data-tag="Mood">Mood</span> <!-- data-tag is read by JS when a mood is selected -->
                                 <span class="tag-chip" data-tag="Pain">Pain</span>
                                 <span class="tag-chip" data-tag="Side effect">Side effect</span>
                                 <span class="tag-chip" data-tag="Appetite">Appetite</span>
@@ -81,13 +83,13 @@
                             <p class="filter-subtext">Related to a specific dose? (optional)</p>
                             <select id="standalone-note-time" class="med-filter">
                                 <option value="">Not related to a dose</option>
-                                {% for item in schedule %}
+                                {% for item in schedule %} <!-- populates dropdown with today's scheduled doses -->
                                     <option value="{{ item.time }}">{{ item.time }} — {{ item.name }}</option>
                                 {% endfor %}
                             </select>
 
                             <button type="submit" class="save-note-btn" id="standalone-save-btn">Save note</button>
-                            <p class="standalone-note-feedback" id="standalone-note-feedback"></p>
+                            <p class="standalone-note-feedback" id="standalone-note-feedback"></p> <!-- JS writes success or error message-->
                         </form>
                     </div>
 
@@ -98,11 +100,11 @@
                             {% for note in notes %}
                             <div class="note-item">
                                 {% if note.tag %}
-                                    <span class="note-item-tag">{{ note.tag }}</span>
+                                    <span class="note-item-tag">{{ note.tag }}</span> <!-- tag only renders if one was selected -->
                                 {% endif %}
                                 <p class="note-item-text">{{ note.text }}</p>
                                 <p class="note-item-meta">
-                                    {{ note.author_name }} · {{ note.created_at.strftime('%d %b %Y, %H:%M') }}
+                                    {{ note.author_name }} · {{ note.created_at.strftime('%d %b %Y, %H:%M') }} <!-- full date format on notes page vs short on dashboard -->
                                     {% if note.related_time %} · re: {{ note.related_time }} dose{% endif %}
                                 </p>
                             </div>
@@ -118,41 +120,41 @@
     </div>
 
     <script>
-        (function () {
+        (function () { 
             var form = document.getElementById("standalone-note-form");
-            if (!form) return;
+            if (!form) return; // guard in case an element is not found
 
             var tagsRow = document.getElementById("standalone-note-tags");
-            var selectedTag = null;
+            var selectedTag = null; // tracks currently selected tag chip
 
             tagsRow.querySelectorAll(".tag-chip").forEach(function (chip) {
                 chip.addEventListener("click", function () {
-                    if (chip.classList.contains("selected")) {
+                    if (chip.classList.contains("selected")) { // clicking selected chip deselects it
                         chip.classList.remove("selected");
                         selectedTag = null;
                         return;
                     }
                     tagsRow.querySelectorAll(".tag-chip").forEach(function (c) {
-                        c.classList.remove("selected");
+                        c.classList.remove("selected"); // deselect all chips first
                     });
                     chip.classList.add("selected");
-                    selectedTag = chip.dataset.tag;
+                    selectedTag = chip.dataset.tag; // store the selected tag value
                 });
             });
 
             form.addEventListener("submit", async function (e) {
-                e.preventDefault();
+                e.preventDefault(); // stops default form POST, handles with fetch instead
                 var noteText = document.getElementById("standalone-note-text").value.trim();
                 var relatedTime = document.getElementById("standalone-note-time").value || null;
                 var feedback = document.getElementById("standalone-note-feedback");
 
-                if (!noteText) {
+                if (!noteText) { // validation before sending
                     feedback.textContent = "Please write a note before saving.";
                     return;
                 }
 
                 try {
-                    var res = await fetch("/save-note", {
+                    var res = await fetch("/save-note", { // POST to Flask /save-note route
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({
@@ -165,7 +167,7 @@
                     if (!res.ok) throw new Error("Save failed");
 
                     feedback.textContent = "Saved. Reloading...";
-                    setTimeout(function () { window.location.reload(); }, 600);
+                    setTimeout(function () { window.location.reload(); }, 600); // reload to show new note in feed
                 } catch (err) {
                     feedback.textContent = "Could not save. Try again.";
                 }

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Schedule · Caregiver</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='schedule.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='schedule.css') }}"> <!-- schedule layout and card styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename='caregiver.css') }}">
 </head>
 <body class="caregiver-page">
@@ -20,7 +20,7 @@
                 <p class="nav-section-label">Caregiver</p>
                 <ul>
                     <li><a href="{{ url_for('caregiver_dashboard') }}" class="sidebar-link"><span class="sidebar-icon">⌂</span><span>Overview</span></a></li>
-                    <li><a href="{{ url_for('caregiver_schedule') }}" class="sidebar-link active"><span class="sidebar-icon">🕒</span><span>Schedule</span></a></li>
+                    <li><a href="{{ url_for('caregiver_schedule') }}" class="sidebar-link active"><span class="sidebar-icon">🕒</span><span>Schedule</span></a></li> <!-- active highlights current page -->
                     <li><a href="{{ url_for('caregiver_adherence') }}" class="sidebar-link"><span class="sidebar-icon">◔</span><span>Adherence</span></a></li>
                     <li><a href="{{ url_for('caregiver_notes_page') }}" class="sidebar-link"><span class="sidebar-icon">📝</span><span>Notes</span></a></li>
                     <li><a href="{{ url_for('caregiver_alerts') }}" class="sidebar-link"><span class="sidebar-icon">!</span><span>Alerts</span></a></li>
@@ -42,10 +42,11 @@
                         <p>Today's doses, timings, and adherence</p>
                     </div>
                     <div class="profile-box">
-                    {{ (session.get('full_name', 'Patient'))[0] }}
+                    {{ (session.get('full_name', 'Patient'))[0] }} <!-- caregiver's initial from Flask session -->
                 </div>
                 </header>
 
+                <!-- patient picker -->
                 <div class="patient-picker">
                     <div class="patient-avatar">{{ (ctx.active_patient_name or '?')[0] }}</div>
                     <div class="patient-picker-info">
@@ -68,13 +69,15 @@
 
                 <div class="schedule-content">
 
+                    <!-- left column: mini calendar and medication filter -->
                     <div class="schedule-left-column">
                         <div class="schedule-calendar">
                             <div class="calendar-top">
-                                <h3>{{ schedule_data.calendar.month_name }}</h3>
+                                <h3>{{ schedule_data.calendar.month_name }}</h3> <!-- month name from Flask -->
                                 <p>This month</p>
                             </div>
                             <div class="mini-calendar">
+                                <!-- day name headers -->
                                 <div class="mini-day-name">M</div>
                                 <div class="mini-day-name">T</div>
                                 <div class="mini-day-name">W</div>
@@ -82,11 +85,11 @@
                                 <div class="mini-day-name">F</div>
                                 <div class="mini-day-name">S</div>
                                 <div class="mini-day-name">S</div>
-                                {% for day in schedule_data.calendar.days %}
-                                    <div class="mini-day {% if day.is_empty %}empty{% endif %} {% if day.is_today %}active-day{% endif %}">
+                                {% for day in schedule_data.calendar.days %} <!-- Flask generates all days -->
+                                    <div class="mini-day {% if day.is_empty %}empty{% endif %} {% if day.is_today %}active-day{% endif %}"> <!-- active-day highlights today -->
                                         {% if not day.is_empty %}
                                             <span>{{ day.day }}</span>
-                                            {% if day.dot_class %}
+                                            {% if day.dot_class %} <!-- dot colour shows adherence status for that day -->
                                                 <span class="calendar-dot {{ day.dot_class }}"></span>
                                             {% endif %}
                                         {% endif %}
@@ -95,6 +98,7 @@
                             </div>
                         </div>
 
+                        <!-- radio filter - JS shows/hides schedule rows matching selected medication -->
                         <div class="schedule-filters">
                             <h3>Filter by Medication</h3>
                             <p class="filter-subtext">Choose a medication to view its schedule</p>
@@ -103,7 +107,7 @@
                                     <input type="radio" name="medication-filter" value="all" checked>
                                     All Medications
                                 </label>
-                                {% for medication in schedule_data.medications %}
+                                {% for medication in schedule_data.medications %} <!-- one radio per unique medication -->
                                     <label>
                                         <input type="radio" name="medication-filter" value="{{ medication }}">
                                         {{ medication }}
@@ -113,7 +117,9 @@
                         </div>
                     </div>
 
+                    <!-- right: schedule board -->
                     <div class="schedule-board-area">
+                        <!-- daily summary counts -->
                         <div class="day-stats">
                             <div class="day-stat"><span>{{ schedule_data.day_stats.taken }}</span><p>Taken</p></div>
                             <div class="day-stat"><span>{{ schedule_data.day_stats.upcoming }}</span><p>Upcoming</p></div>
@@ -129,16 +135,17 @@
                             </div>
                         </div>
 
+                        <!-- one card per scheduled dose -->
                         <div class="calendar-grid">
                             {% for item in schedule_data.schedule %}
-                                <div class="schedule-row" data-medication="{{ item.name }}">
+                                <div class="schedule-row" data-medication="{{ item.name }}"> <!-- data-medication used by JS filter to show/hide rows -->
                                     <div class="time-label">{{ item.time }}</div>
-                                    <div class="med-card {{ item.tag_class }} med-{{ item.name|replace(' ', '-')|lower }}">
+                                    <div class="med-card {{ item.tag_class }} med-{{ item.name|replace(' ', '-')|lower }}"> <!-- tag_class sets card colour, med- adds colour strip via CSS -->
                                         <p class="med-card-title">{{ item.name }}</p>
                                         <p class="med-card-dose">{{ item.dose }}</p>
-                                        {% if item.tag_class == "upcoming" %}
+                                        {% if item.tag_class == "upcoming" %} <!-- only upcoming doses get a log button -->
                                             <button class="mark-taken-btn caregiver-log-btn" data-time="{{ item.time }}">
-                                                ✓ Log dose
+                                                ✓ Log dose <!-- data-time read by JS to POST correct dose time -->
                                             </button>
                                         {% else %}
                                             <span class="med-card-status">{{ item.status }}</span>
@@ -153,6 +160,6 @@
             </section>
         </div>
     </div>
-    <script src="{{ url_for('static', filename='js/patient_schedule.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/patient_schedule.js') }}"></script> <!-- shared with patient schedule, handles filter and log dose button -->
 </body>
 </html>

@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alerts · Caregiver</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='schedule.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='caregiver.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"> 
+    <link rel="stylesheet" href="{{ url_for('static', filename='schedule.css') }}"> 
+    <link rel="stylesheet" href="{{ url_for('static', filename='caregiver.css') }}"> 
 </head>
-<body class="caregiver-page">
+<body class="caregiver-page"> 
     <div class="dashboard-container">
         <aside class="sidebar">
             <h2 class="logo">
@@ -22,7 +22,7 @@
                     <li><a href="{{ url_for('caregiver_schedule') }}" class="sidebar-link"><span class="sidebar-icon">🕒</span><span>Schedule</span></a></li>
                     <li><a href="{{ url_for('caregiver_adherence') }}" class="sidebar-link"><span class="sidebar-icon">◔</span><span>Adherence</span></a></li>
                     <li><a href="{{ url_for('caregiver_notes_page') }}" class="sidebar-link"><span class="sidebar-icon">📝</span><span>Notes</span></a></li>
-                    <li><a href="{{ url_for('caregiver_alerts') }}" class="sidebar-link active"><span class="sidebar-icon">!</span><span>Alerts</span></a></li>
+                    <li><a href="{{ url_for('caregiver_alerts') }}" class="sidebar-link active"><span class="sidebar-icon">!</span><span>Alerts</span></a></li> <!-- active highlights current page -->
                 </ul>
             </nav>
             <div class="sidebar-bottom">
@@ -37,23 +37,24 @@
                 <header class="top-bar">
                     <div>
                         <h1>Alerts</h1>
-                        <p>Issues that need your attention for {{ ctx.active_patient_name }}</p>
+                        <p>Issues that need your attention for {{ ctx.active_patient_name }}</p> <!-- caregiver context passed from Flask route -->
                     </div>
                 </header>
 
+                <!-- patient picker uses details/summary toggle and no JS needed -->
                 <div class="patient-picker">
-                    <div class="patient-avatar">{{ (ctx.active_patient_name or '?')[0] }}</div>
+                    <div class="patient-avatar">{{ (ctx.active_patient_name or '?')[0] }}</div> <!-- first letter as avatar and uses '?' if none is selected -->
                     <div class="patient-picker-info">
                         <p class="picker-label">Currently monitoring</p>
                         <h2>{{ ctx.active_patient_name or 'No patient selected' }}</h2>
-                        <span>{{ ctx.assigned_patients|length }} patient{{ '' if ctx.assigned_patients|length == 1 else 's' }} assigned to you</span>
+                        <span>{{ ctx.assigned_patients|length }} patient{{ '' if ctx.assigned_patients|length == 1 else 's' }} assigned to you</span> <!-- |length counts list, inline if handles plural -->
                     </div>
-                    <details class="picker-dropdown">
+                    <details class="picker-dropdown"> 
                         <summary class="picker-button">Change patient ▾</summary>
                         <div class="picker-menu">
-                            {% for p in ctx.assigned_patients %}
+                            {% for p in ctx.assigned_patients %} <!-- one link per assigned patient -->
                                 <a href="{{ url_for('caregiver_select_patient', patient_id=p.patient_id) }}"
-                                   class="picker-menu-item {% if p.patient_id == ctx.active_patient_id %}selected{% endif %}">
+                                   class="picker-menu-item {% if p.patient_id == ctx.active_patient_id %}selected{% endif %}"> <!-- selected highlights active patient -->
                                     {{ p.full_name }}
                                 </a>
                             {% endfor %}
@@ -61,9 +62,10 @@
                     </details>
                 </div>
 
+                <!-- summary chips showing counts for each alert category -->
                 <div class="alerts-summary">
                     <div class="alert-chip alert-chip-high">
-                        <span class="alert-chip-num">{{ alerts_data.counts.high_unacked }}</span>
+                        <span class="alert-chip-num">{{ alerts_data.counts.high_unacked }}</span> <!-- unacknowledged high priority count -->
                         <span class="alert-chip-label">Need attention</span>
                     </div>
                     <div class="alert-chip alert-chip-medium">
@@ -76,6 +78,7 @@
                     </div>
                 </div>
 
+                <!-- high priority alerts section -->
                 <div class="alerts-section">
                     <div class="alerts-section-head">
                         <h3>Needs attention now</h3>
@@ -84,9 +87,9 @@
 
                     {% if alerts_data.needs_attention %}
                         {% for alert in alerts_data.needs_attention %}
-                            <article class="alert-card alert-{{ alert.severity }}" data-alert-id="{{ alert.id }}">
+                            <article class="alert-card alert-{{ alert.severity }}" data-alert-id="{{ alert.id }}"> <!-- severity sets card colour, data-alert-id used by JS -->
                                 <div class="alert-icon">
-                                    {%- if alert.type == 'missed' -%}!{%- elif alert.type == 'suspicious' -%}⚠{%- else -%}!{%- endif -%}
+                                    {%- if alert.type == 'missed' -%}!{%- elif alert.type == 'suspicious' -%}⚠{%- else -%}!{%- endif -%} <!-- icon changes based on alert type -->
                                 </div>
                                 <div class="alert-body">
                                     <div class="alert-meta">
@@ -97,7 +100,7 @@
                                     <p class="alert-text">{{ alert.body }}</p>
                                 </div>
                                 <div class="alert-actions">
-                                    <button class="alert-ack-btn" data-alert-id="{{ alert.id }}">
+                                    <button class="alert-ack-btn" data-alert-id="{{ alert.id }}"> <!-- JS reads data-alert-id and POSTs acknowledgement to Flask -->
                                         Acknowledge
                                     </button>
                                 </div>
@@ -111,6 +114,7 @@
                     {% endif %}
                 </div>
 
+                <!-- medium priority alerts section -->
                 <div class="alerts-section">
                     <div class="alerts-section-head">
                         <h3>Worth reviewing</h3>
@@ -121,7 +125,7 @@
                         {% for alert in alerts_data.worth_reviewing %}
                             <article class="alert-card alert-{{ alert.severity }}" data-alert-id="{{ alert.id }}">
                                 <div class="alert-icon">
-                                    {%- if alert.type == 'late_pattern' -%}↻{%- elif alert.type == 'wellbeing' -%}♥{%- else -%}!{%- endif -%}
+                                    {%- if alert.type == 'late_pattern' -%}↻{%- elif alert.type == 'wellbeing' -%}♥{%- else -%}!{%- endif -%} <!-- different icons for late pattern vs wellbeing alerts -->
                                 </div>
                                 <div class="alert-body">
                                     <div class="alert-meta">
@@ -146,6 +150,7 @@
                     {% endif %}
                 </div>
 
+                <!-- acknowledged alerts shortened by default using details/summary -->
                 <details class="alerts-section alerts-section-collapsible">
                     <summary class="alerts-section-head">
                         <h3>Acknowledged</h3>
@@ -158,7 +163,7 @@
                                 <div class="alert-icon">✓</div>
                                 <div class="alert-body">
                                     <div class="alert-meta">
-                                        <span class="alert-severity-tag tag-{{ alert.severity }}">{{ alert.severity|capitalize }}</span>
+                                        <span class="alert-severity-tag tag-{{ alert.severity }}">{{ alert.severity|capitalize }}</span> <!-- |capitalize makes first letter uppercase -->
                                         <span class="alert-when">{{ alert.when }}</span>
                                     </div>
                                     <h4 class="alert-title">{{ alert.title }}</h4>
@@ -166,10 +171,10 @@
                                     <p class="alert-ack-stamp">
                                         Acknowledged by {{ alert.acknowledgement.by_name }}
                                         on {% if alert.acknowledgement.at %}
-                                {% if alert.acknowledgement.at.strftime is defined %}
+                                {% if alert.acknowledgement.at.strftime is defined %} <!-- checks if it's a datetime object before formatting -->
                                     {{ alert.acknowledgement.at.strftime('%d %b, %H:%M') }}
                                 {% else %}
-                                    {{ alert.acknowledgement.at }}
+                                    {{ alert.acknowledgement.at }} 
                                 {% endif %}
                             {% endif %}
                                     </p>
@@ -188,23 +193,23 @@
     </div>
 
     <script>
-    (function () {
+    (function () { // keeps variables out of global scope
         document.querySelectorAll(".alert-ack-btn").forEach(function (btn) {
             btn.addEventListener("click", async function () {
-                btn.disabled = true;
+                btn.disabled = true; // prevents double-clicking while request is in flight
                 btn.textContent = "Acknowledging...";
 
                 try {
-                    var res = await fetch("/caregiver/alerts/acknowledge", {
+                    var res = await fetch("/caregiver/alerts/acknowledge", { // POST to Flask acknowledge route
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ alert_id: btn.dataset.alertId }),
+                        body: JSON.stringify({ alert_id: btn.dataset.alertId }), // sends alert ID from data attribute
                     });
                     if (!res.ok) throw new Error("Failed");
                     btn.textContent = "✓ Acknowledged";
-                    setTimeout(function () { window.location.reload(); }, 500);
+                    setTimeout(function () { window.location.reload(); }, 500); // reload to update alert lists
                 } catch (e) {
-                    btn.disabled = false;
+                    btn.disabled = false; // re-enable button on failure
                     btn.textContent = "Acknowledge";
                     alert("Could not acknowledge — please try again.");
                 }

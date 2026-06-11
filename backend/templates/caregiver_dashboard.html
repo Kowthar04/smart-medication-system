@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Caregiver Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='schedule.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='caregiver.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"> 
+    <link rel="stylesheet" href="{{ url_for('static', filename='schedule.css') }}"> 
+    <link rel="stylesheet" href="{{ url_for('static', filename='caregiver.css') }}"> 
 </head>
 
-<body class="caregiver-page">
+<body class="caregiver-page"> 
     <div class="dashboard-container">
 
         <aside class="sidebar">
@@ -21,7 +21,7 @@
             <nav>
                 <p class="nav-section-label">Caregiver</p>
                 <ul>
-                    <li><a href="{{ url_for('caregiver_dashboard') }}" class="sidebar-link active"><span class="sidebar-icon">⌂</span><span>Overview</span></a></li>
+                    <li><a href="{{ url_for('caregiver_dashboard') }}" class="sidebar-link active"><span class="sidebar-icon">⌂</span><span>Overview</span></a></li> <!-- active highlights current page -->
                     <li><a href="{{ url_for('caregiver_schedule') }}" class="sidebar-link"><span class="sidebar-icon">🕒</span><span>Schedule</span></a></li>
                     <li><a href="{{ url_for('caregiver_adherence') }}" class="sidebar-link"><span class="sidebar-icon">◔</span><span>Adherence</span></a></li>
                     <li><a href="{{ url_for('caregiver_notes_page') }}" class="sidebar-link"><span class="sidebar-icon">📝</span><span>Notes</span></a></li>
@@ -42,13 +42,13 @@
                 <header class="top-bar">
                     <div>
                         <h1>Caregiver Dashboard</h1>
-                        <p>Hi, {{ ctx.caregiver_name }}{% if ctx.active_patient_name %} — currently monitoring {{ ctx.active_patient_name }}{% endif %}</p>
+                        <p>Hi, {{ ctx.caregiver_name }}{% if ctx.active_patient_name %} — currently monitoring {{ ctx.active_patient_name }}{% endif %}</p> <!-- inline if only shows patient name if one is selected -->
                     </div>
                 </header>
 
                 {# Patient picker — real dropdown, scoped to assigned patients #}
                 <div class="patient-picker">
-                    <div class="patient-avatar">{{ (ctx.active_patient_name or '?')[0] }}</div>
+                    <div class="patient-avatar">{{ (ctx.active_patient_name or '?')[0] }}</div> <!-- first letter as avatar -->
 
                     <div class="patient-picker-info">
                         <p class="picker-label">Currently monitoring</p>
@@ -56,22 +56,20 @@
                         <span>{{ ctx.assigned_patients|length }} patient{{ '' if ctx.assigned_patients|length == 1 else 's' }} assigned to you</span>
                     </div>
 
-                    
-                    
-                    <details class="picker-dropdown">
+                    <details class="picker-dropdown"> 
                         <summary class="picker-button">Change patient ▾</summary>
                         <div class="picker-menu">
-                            {% for p in ctx.assigned_patients %}
+                            {% for p in ctx.assigned_patients %} <!-- one link per assigned patient -->
                                 <a href="{{ url_for('caregiver_select_patient', patient_id=p.patient_id) }}"
-                                   class="picker-menu-item {% if p.patient_id == ctx.active_patient_id %}selected{% endif %}">
+                                   class="picker-menu-item {% if p.patient_id == ctx.active_patient_id %}selected{% endif %}"> <!-- selected highlights active patient -->
                                     {{ p.full_name }}
                                 </a>
                             {% endfor %}
                         </div>
                     </details>
 
-                    {% if dashboard_alert %}
-                <div class="dashboard-alert-banner dashboard-alert-{{ dashboard_alert.type }}">
+                    {% if dashboard_alert %} <!-- urgent banner shown if Flask detects a high-priority alert -->
+                <div class="dashboard-alert-banner dashboard-alert-{{ dashboard_alert.type }}"> <!-- sets banner colour -->
                     <div class="dashboard-alert-content">
                         <span class="dashboard-alert-label">
                             {{ dashboard_alert.label }}
@@ -83,7 +81,7 @@
                         </div>
                     </div>
 
-                    <a href="{{ dashboard_alert.link }}" class="dashboard-alert-link">
+                    <a href="{{ dashboard_alert.link }}" class="dashboard-alert-link"> <!-- links to alerts page -->
                         View
                     </a>
                 </div>
@@ -92,10 +90,11 @@
 
                 <div class="caregiver-content">
 
+                    <!-- medication schedule with log dose and note buttons -->
                     <div class="caregiver-panel">
                         <h3>Medication Schedule</h3>
 
-                        {% for item in schedule %}
+                        {% for item in schedule %} <!-- loops over today's doses for the active patient -->
                         <div class="caregiver-item">
                             <span>{{ item.time }}</span>
                             <div>
@@ -103,42 +102,43 @@
                                 <p>{{ item.dose }}</p>
                             </div>
                             <div class="caregiver-actions">
-                                <span class="badge {{ item.tag_class }}">{{ item.status }}</span>
+                                <span class="badge {{ item.tag_class }}">{{ item.status }}</span> 
 
-                                {% if item.tag_class == "upcoming" or item.allow_multiple_logs %}
-                                    <button class="caregiver-log-btn" data-time="{{ item.time }}">Log dose</button>
+                                {% if item.tag_class == "upcoming" or item.allow_multiple_logs %} <!-- only show log button for upcoming doses -->
+                                    <button class="caregiver-log-btn" data-time="{{ item.time }}">Log dose</button> <!-- data-time read by JS to send correct time to Flask -->
                                 {% endif %}
 
-                                <button class="caregiver-note-btn">✎</button>
+                                <button class="caregiver-note-btn">✎</button> 
                             </div>
 
-                            <div class="note-form">
+                            <div class="note-form"> <!-- hidden by default and only shown when pen icon is clicked -->
                                 <textarea placeholder="Add a caregiver note about {{ item.name }}..."></textarea>
                                 <div class="note-tags">
-                                    <span class="tag-chip" data-tag="Mood">Mood</span>
+                                    <span class="tag-chip" data-tag="Mood">Mood</span> <!-- data-tag read by JS when saving note -->
                                     <span class="tag-chip" data-tag="Pain">Pain</span>
                                     <span class="tag-chip" data-tag="Side effect">Side effect</span>
                                     <span class="tag-chip" data-tag="Appetite">Appetite</span>
                                     <span class="tag-chip" data-tag="Sleep">Sleep</span>
                                 </div>
-                                <button class="save-note-btn" data-time="{{ item.time }}">Save note</button>
+                                <button class="save-note-btn" data-time="{{ item.time }}">Save note</button> <!-- data-time links note to a specific dose -->
                             </div>
                         </div>
                         {% endfor %}
                     </div>
 
+                    <!-- recent notes and recent events -->
                     <div class="caregiver-panel">
                         <h3>Recent Notes</h3>
 
                         {% if notes %}
                             {% for note in notes %}
                             <div class="note-item">
-                                {% if note.tag %}
+                                {% if note.tag %} 
                                     <span class="note-item-tag">{{ note.tag }}</span>
                                 {% endif %}
                                 <p class="note-item-text">{{ note.text }}</p>
                                 <p class="note-item-meta">
-                                    {{ note.author_name }} · {{ note.created_at.strftime('%d %b, %H:%M') }}
+                                    {{ note.author_name }} · {{ note.created_at.strftime('%d %b, %H:%M') }} <!-- strftime formats Python datetime object -->
                                     {% if note.related_time %} · re: {{ note.related_time }} dose{% endif %}
                                 </p>
                             </div>
@@ -152,8 +152,8 @@
 
     {% if activity %}
         <div class="recent-events-list">
-            {% for item in activity[:5] %}
-                <div class="recent-event-item {{ item.type }}">
+            {% for item in activity[:5] %} <!-- slices list to show max 5 events -->
+                <div class="recent-event-item {{ item.type }}"> <!-- sets row colour -->
                     <div>
                         <strong>{{ item.message }}</strong>
                         <span>{{ item.time }}</span>
@@ -175,6 +175,6 @@
 
 </div>
 
-    <script src="{{ url_for('static', filename='js/caregiver_dashboard.js') }}?v=2"></script>
+    <script src="{{ url_for('static', filename='js/caregiver_dashboard.js') }}?v=2"></script> <!-- handles log dose button, note form toggle, save note -->
 </body>
 </html>

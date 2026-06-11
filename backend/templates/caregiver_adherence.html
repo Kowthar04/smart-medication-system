@@ -23,6 +23,7 @@
         <nav>
             <p class="nav-section-label">Caregiver</p>
             <ul>
+                <!-- generates the route URL dynamically -->
                 <li>
                     <a href="{{ url_for('caregiver_dashboard') }}" class="sidebar-link">
                         <span class="sidebar-icon">⌂</span><span>Overview</span>
@@ -33,7 +34,7 @@
                         <span class="sidebar-icon">🕒</span><span>Schedule</span>
                     </a>
                 </li>
-                <li>
+                <li> <!-- active class highlights the current page in the sidebar -->
                     <a href="{{ url_for('caregiver_adherence') }}" class="sidebar-link active">
                         <span class="sidebar-icon">◔</span><span>Adherence</span>
                     </a>
@@ -51,6 +52,7 @@
             </ul>
         </nav>
 
+        <!-- sign out at bottom ofsidebar -->
         <div class="sidebar-bottom">
             <a href="{{ url_for('auth.logout') }}" class="sidebar-link logout-link">
                 <span class="sidebar-icon">⇦</span><span>Sign out</span>
@@ -61,37 +63,43 @@
     <div class="content-wrapper">
         <section class="main-panel">
 
+           
+            
             <header class="top-bar">
                 <div>
-                    <h1>{{ ctx.active_patient_name }}'s adherence</h1>
+                    <h1>{{ ctx.active_patient_name }}'s adherence</h1> <!-- contains caregiver context data passed from Flask route -->
                     <p>Clear medication progress for the selected patient</p>
                 </div>
                 <div class="profile-box">
-                    {{ (session.get('full_name', 'Patient'))[0] }}
+                    {{ (session.get('full_name', 'Patient'))[0] }}  <!-- reads the logged-in caregiver's name from the Flask session -->
                 </div>
             </header>
-
-            <div class="patient-picker">
+           
+            <div class="patient-picker">  <!-- lets caregiver switch between assigned patients -->
+                
                 <div class="patient-avatar">
-                    {{ (ctx.active_patient_name or '?')[0] }}
+                    {{ (ctx.active_patient_name or '?')[0] }} <!-- [0] takes the first letter for the profile avatar -->
                 </div>
 
-                <div class="patient-picker-info">
+                <div class="patient-picker-info"> 
                     <p class="picker-label">Currently monitoring</p>
                     <h2>{{ ctx.active_patient_name or 'No patient selected' }}</h2>
                     <span>
-                        {{ ctx.assigned_patients|length }}
+                        {{ ctx.assigned_patients|length }} <!-- |length counts the list inline if handles singular/plural -->
                         patient{{ '' if ctx.assigned_patients|length == 1 else 's' }}
                         assigned to you
                     </span>
                 </div>
 
                 <details class="picker-dropdown">
-                    <summary class="picker-button">Change patient ▾</summary>
+                    <summary class="picker-button">Change patient ▾</summary> <!-- clicking summary toggles the dropdown -->
 
                     <div class="picker-menu">
-                        {% for p in ctx.assigned_patients %}
-                            <a href="{{ url_for('caregiver_select_patient', patient_id=p.patient_id) }}"
+                        
+                        {% for p in ctx.assigned_patients %} <!-- loop to render one link per assigned patient -->
+                       
+                            <!-- selected class highlights the currently active patient -->
+                            <a href="{{ url_for('caregiver_select_patient', patient_id=p.patient_id) }}" 
                                class="picker-menu-item {% if p.patient_id == ctx.active_patient_id %}selected{% endif %}">
                                 {{ p.full_name }}
                             </a>
@@ -100,7 +108,9 @@
                 </details>
             </div>
 
+            <!-- summary dictionary is passed from Flask with these calculated values -->
             <div class="adherence-stats">
+                <!-- stat-card-primary adds blue left border to emphasise main metric -->
                 <div class="stat-card stat-card-primary">
                     <div class="stat-icon adherence-icon">◔</div>
                     <div class="stat-text">
@@ -128,8 +138,9 @@
                     </div>
                 </div>
             </div>
-
-            {% if summary.total_doses == 0 %}
+            <!-- PRN only shows if patient has no fixed schedule -->
+            
+            {% if summary.total_doses == 0 %} <!-- PRN = as required medication, no scheduled time so adherence % is not scored -->
             <div class="prn-info-card">
                 <div>
                     <p class="chart-kicker">PRN medication</p>
@@ -140,7 +151,7 @@
                 </div>
             </div>
             {% endif %}
-
+            <!-- Adherence trend chart -->
             <div class="adherence-card">
                 <div class="adherence-header">
                     <div>
@@ -150,14 +161,14 @@
                         </p>
                     </div>
 
-                    <select class="med-filter" id="medicationFilter">
+                    <select class="med-filter" id="medicationFilter"> <!-- dropdown populated by Flask to filter chart to a single medication -->
                         <option value="all">All Medications</option>
                         {% for medication in medications %}
                             <option value="{{ medication }}">{{ medication }}</option>
                         {% endfor %}
                     </select>
                 </div>
-
+                <!-- Summary of the chart data -->
                 <div class="chart-summary">
                     <div>
                         <p class="chart-kicker">Current view</p>
@@ -174,7 +185,7 @@
                     </div>
 
                     <div class="target-pill {% if summary.overall_adherence >= 80 %}on-track{% else %}needs-attention{% endif %}">
-                        {% if summary.overall_adherence >= 80 %}
+                        {% if summary.overall_adherence >= 80 %} <!-- badge colour changes based on whether adherence meets the 80% target -->
                             On track
                         {% else %}
                             Needs support
@@ -183,50 +194,52 @@
                 </div>
 
                 <div class="chart-placeholder">
-                    <canvas id="adherenceChart"></canvas>
+                    <canvas id="adherenceChart"></canvas> <!--Chart.js fetched from adherence.js -->
                 </div>
 
-                <div class="chart-legend">
+                <div class="chart-legend"> <!-- legend explaining the dot colours used on the chart -->
                     <span><i class="legend-dot good"></i> Good: 80%+</span>
                     <span><i class="legend-dot okay"></i> Watch: 60–79%</span>
                     <span><i class="legend-dot low"></i> Low: below 60%</span>
                     <span><i class="legend-line"></i> Target: 80%</span>
                 </div>
 
-                <div class="time-tabs">
+                <!-- clicking a tab triggers a fetch() request and re-renders the chart -->
+                <div class="time-tabs"> <!-- data-period is read by adherence.js to fetch the correct data -->
                     <button class="time-tab active" data-period="daily">Today</button>
                     <button class="time-tab" data-period="weekly">This Week</button>
                     <button class="time-tab" data-period="monthly">This Month</button>
                 </div>
             </div>
-
-            <div class="med-breakdown-card">
+            
+            <div class="med-breakdown-card"> <!-- MEDICATION BREAKDOWN BARS - one progress bar per medication -->
                 <div class="breakdown-header">
                     <h3>Medication breakdown</h3>
-                    <p>Simple progress by medication</p>
+                    <p>Simple progress by medication</p> 
                 </div>
 
                 <div class="breakdown-list">
-                    {% for item in medication_breakdown %}
+                    {% for item in medication_breakdown %} <!-- list from Flask with name and percentage -->
                     <div class="breakdown-row">
                         <div class="breakdown-info">
                             <strong>{{ item.name }}</strong>
                             <span>Current period</span>
                         </div>
 
+                        <!-- adherence.js reads this and sets it as inline width-->
                         <div class="breakdown-bar">
-                            <div class="breakdown-fill" data-width="{{ item.percentage }}"></div>
+                            <div class="breakdown-fill" data-width="{{ item.percentage }}"></div> <!-- data-width stores the percentage value -->
                         </div>
 
-                        <span class="breakdown-percent">{{ item.percentage }}%</span>
+                        <span class="breakdown-percent">{{ item.percentage }}%</span> 
                     </div>
                     {% endfor %}
                 </div>
             </div>
-
+            <!-- Insight only renders if flask generated an insight for this patient -->
             {% if insight %}
             <div class="adherence-insight-card">
-                <div class="insight-label">{{ insight.label }}</div>
+                <div class="insight-label">{{ insight.label }}</div> <!-- insight contains label, headline and body generated by the Python route -->
                 <h3>{{ insight.headline }}</h3>
                 <p>{{ insight.body }}</p>
             </div>
@@ -235,8 +248,9 @@
         </section>
     </div>
 </div>
-
+<!-- Chart.js loaded-->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- javascript handles chart rendering, medication filter, time tab switching and bar animations -->
 <script src="{{ url_for('static', filename='js/adherence.js') }}"></script>
 </body>
 </html>
